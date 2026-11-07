@@ -278,6 +278,8 @@ kbd{font:600 10px var(--f-body);background:var(--chip-on);border-radius:5px;padd
 #ctx button:hover{background:var(--chip-on)}#ctx button svg{width:14px;height:14px;color:var(--muted)}#ctx button.warn{color:var(--warn)}#ctx button.warn svg{color:var(--warn)}
 #ctx hr{border:0;height:1px;background:var(--line);margin:3px 4px}
 @media (max-width:720px){#side,#menu{width:auto}}
+.tile span,.sw span,.btn,.pill,.lbl,.sh,.kp2 .lbl,#ctx button,.ch,.tool,.palItem span,.tgTab,.keys span,.net .lbl,.fin>span{white-space:nowrap}
+.tile.arm{background:var(--accent-soft);color:var(--accent)}.tile.warn.arm{background:rgba(239,111,91,.16);color:var(--warn)}
 @media (prefers-reduced-motion: reduce){*{transition:none!important}}
 </style>
 </head>
@@ -285,7 +287,7 @@ kbd{font:600 10px var(--f-body);background:var(--chip-on);border-radius:5px;padd
 
 
 <canvas id="view" aria-label="도시 지도"></canvas>
-<div id="loading" role="status">도시를 짓는 중…</div>
+<div id="loading" role="status">도시 짓는 중</div>
 
 <header id="hud">
   <div class="hgrp hcity">
@@ -342,11 +344,11 @@ kbd{font:600 10px var(--f-body);background:var(--chip-on);border-radius:5px;padd
   </div>
   <h2>그래픽</h2>
   <div class="sws">
-    <button class="sw pill" data-fx="post"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="3" fill="currentColor"/><path d="M8 1.5v2M8 12.5v2M1.5 8h2M12.5 8h2M3.4 3.4l1.4 1.4M11.2 11.2l1.4 1.4M3.4 12.6l1.4-1.4M11.2 4.8l1.4-1.4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg><span>빛 번짐·색보정</span><i class="knob"></i></button>
-    <button class="sw pill" data-fx="tilt"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="5.5" fill="none" stroke="currentColor" stroke-width="1.4"/><circle cx="8" cy="8" r="2" fill="currentColor"/></svg><span>미니어처 초점</span><i class="knob"></i></button>
+    <button class="sw pill" data-fx="post"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="3" fill="currentColor"/><path d="M8 1.5v2M8 12.5v2M1.5 8h2M12.5 8h2M3.4 3.4l1.4 1.4M11.2 11.2l1.4 1.4M3.4 12.6l1.4-1.4M11.2 4.8l1.4-1.4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg><span>빛 번짐</span><i class="knob"></i></button>
+    <button class="sw pill" data-fx="tilt"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="5.5" fill="none" stroke="currentColor" stroke-width="1.4"/><circle cx="8" cy="8" r="2" fill="currentColor"/></svg><span>미니어처</span><i class="knob"></i></button>
     <button class="sw pill" data-fx="shadow"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="3" y="3" width="6" height="8" rx="1" fill="currentColor"/><path d="M9 11l5 2.5H6.5L3 11" fill="currentColor" opacity=".45"/></svg><span>그림자</span><i class="knob"></i></button>
     <button class="sw pill" data-fx="perf"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M9 1.5 3.5 9H8l-1 5.5L12.5 7H8z" fill="currentColor"/></svg><span>성능 모드</span><i class="knob"></i></button>
-    <button class="sw pill" data-fx="grow"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 14V7M8 7c0-3 2-4.5 5-4.5 0 3-2 4.5-5 4.5zM8 9C8 6.5 6.3 5 3.5 5 3.5 7.5 5.2 9 8 9z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg><span>구역 자동 성장</span><i class="knob"></i></button>
+    <button class="sw pill" data-fx="grow"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 14V7M8 7c0-3 2-4.5 5-4.5 0 3-2 4.5-5 4.5zM8 9C8 6.5 6.3 5 3.5 5 3.5 7.5 5.2 9 8 9z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg><span>자동 성장</span><i class="knob"></i></button>
   </div>
   <div class="tiles two">
     <button class="tile" id="bPhoto"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1.5" y="4" width="13" height="9" rx="2" fill="none" stroke="currentColor" stroke-width="1.4"/><circle cx="8" cy="8.5" r="2.4" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M5.5 4l1-1.8h3l1 1.8" fill="none" stroke="currentColor" stroke-width="1.4"/></svg><span>사진 모드</span></button>
@@ -371,7 +373,7 @@ kbd{font:600 10px var(--f-body);background:var(--chip-on);border-radius:5px;padd
       <label class="tile" for="fImport"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 10V2M4.5 5.5 8 2l3.5 3.5M2.5 13.5h11" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><span>가져오기</span></label><input type="file" id="fImport" accept=".pixelcity,.txt,.json" hidden>
     </div>
     <textarea id="codeBox" rows="2" placeholder="도시 코드 붙여넣기" aria-label="도시 코드"></textarea>
-    <button class="btn" id="bPaste" style="margin-top:6px;width:100%;justify-content:center">코드로 불러오기</button>
+    <button class="btn" id="bPaste" style="margin-top:6px;width:100%;justify-content:center">불러오기</button>
   </details>
   <div class="keys"><span><kbd>좌</kbd>건설</span><span><kbd>우</kbd>메뉴·이동</span><span><kbd>휠</kbd>확대</span></div>
 </div>
@@ -389,10 +391,10 @@ kbd{font:600 10px var(--f-body);background:var(--chip-on);border-radius:5px;padd
   <div class="blk"><span class="sh">기반시설</span>
     <div class="mtr" title="전력 공급"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M9 1.5 3.5 9H8l-1 5.5L12.5 7H8z" fill="#f2c94c"/></svg><div class="mt"><i id="mPw"></i></div><span class="num" id="sPw">-</span></div>
     <div class="mtr" title="용수 공급"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5C6 5 3.8 7.4 3.8 10a4.2 4.2 0 0 0 8.4 0C12.2 7.4 10 5 8 1.5z" fill="#5fb3ff"/></svg><div class="mt"><i id="mWt" style="background:#5fb3ff"></i></div><span class="num" id="sWt">-</span></div>
-    <div class="mtr" title="평균 지가(주거)"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 13.5h11M4 13.5V7l4-3.5L12 7v6.5" fill="none" stroke="#c9a7ff" stroke-width="1.5" stroke-linejoin="round"/></svg><div class="mt"><i id="mLv" style="background:#c9a7ff"></i></div><span class="num" id="sLv">-</span></div>
+    <div class="mtr" title="지가"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 13.5h11M4 13.5V7l4-3.5L12 7v6.5" fill="none" stroke="#c9a7ff" stroke-width="1.5" stroke-linejoin="round"/></svg><div class="mt"><i id="mLv" style="background:#c9a7ff"></i></div><span class="num" id="sLv">-</span></div>
   </div>
   <div class="blk"><span class="sh">재정</span>
-    <div class="net"><b class="num" id="fNet">0</b><span class="lbl">월 수지 · 만원</span></div>
+    <div class="net"><b class="num" id="fNet">0</b><span class="lbl">월 수지</span></div>
     <div class="fin"><span><i class="dot" style="background:var(--zr)"></i><span class="num" id="fInc">0</span></span><span><i class="dot" style="background:var(--warn)"></i><span class="num" id="fExp">0</span></span><span class="lbl">누적&nbsp;<span class="num" id="fSpent">0</span></span></div>
     <div class="tax"><label for="taxR" style="color:var(--zr)">R</label><input id="taxR" type="range" min="0" max="20" value="9"><output id="oR">9%</output></div>
     <div class="tax"><label for="taxC" style="color:var(--zc)">C</label><input id="taxC" type="range" min="0" max="20" value="9"><output id="oC">9%</output></div>
@@ -623,13 +625,20 @@ function treeCols(type,sea,r){if(type==='oak'&&sea===2)return rp(r,AUT);if(type=
 function bare(g,x,y,h,s,r){g.strokeStyle='#5e4c3e';g.lineCap='round';
   const br=(x0,y0,a,l,w,d)=>{const x1=x0+Math.cos(a)*l,y1=y0-Math.sin(a)*l;g.lineWidth=w;g.beginPath();g.moveTo(x0,y0);g.lineTo(x1,y1);g.stroke();if(d>0){br(x1,y1,a+.42+r()*.35,l*.7,Math.max(.6,w*.62),d-1);br(x1,y1,a-.42-r()*.35,l*.7,Math.max(.6,w*.62),d-1);if(r()<.4)br(x1,y1,a+(r()-.5)*.3,l*.6,Math.max(.6,w*.55),d-1);}};
   br(x,y,Math.PI/2+(r()-.5)*.12,h*.42,1.6*s+.6,3);}
-function crown(g,cx,cy,R,cols,r,flat){flat=flat||.8;const n=9+((r()*5)|0),cl=[];
-  for(let k=0;k<n;k++){const a=r()*Math.PI*2,d=Math.sqrt(r())*R*.6;cl.push([cx+Math.cos(a)*d,cy+Math.sin(a)*d*flat,R*(.32+r()*.22)]);}
-  cl.sort((p,q)=>p[1]-q[1]);
-  for(const c of cl)blob(g,c[0]+R*.12,c[1]+R*.14,c[2],cols[2]);
-  for(const c of cl)blob(g,c[0],c[1],c[2]*.92,cols[0]);
-  for(const c of cl){const ul=(c[0]-cx)/R+(c[1]-cy)/R;if(ul<.25)blob(g,c[0]-c[2]*.3,c[1]-c[2]*.34,c[2]*.46,cols[1]);}
-  const m=Math.round(R*R*.6);for(let k=0;k<m;k++){const a=r()*Math.PI*2,d=Math.sqrt(r())*R*.72,px=Math.round(cx+Math.cos(a)*d),py=Math.round(cy+Math.sin(a)*d*flat);g.fillStyle=r()<.6?cols[2]:shd(cols[1],.12);g.fillRect(px,py,1,1);}}
+function crown(g,cx,cy,R,cols,r,flat){flat=flat||.8;
+  /* foliage: 3-5 leaf masses, each a cluster of small clumps; dark underside, mid body, sunlit upper-left clumps, ragged leafy rim and gaps */
+  const masses=[],nm=3+((r()*3)|0);for(let k=0;k<nm;k++){const a=-Math.PI/2+(k/nm-.5)*2.4+(r()-.5)*.6,d=k===0?0:R*(.42+r()*.18);masses.push([cx+Math.cos(a)*d,cy+Math.sin(a)*d*flat+(k===0?-R*.1:R*.08),R*(k===0?.78:.56+r()*.14)]);}
+  const cl=[];for(const [mx,my,mr] of masses){const n=6+((mr*1.1)|0);for(let k=0;k<n;k++){const a=r()*Math.PI*2,d=Math.pow(r(),.6)*mr*.85;cl.push([mx+Math.cos(a)*d,my+Math.sin(a)*d*flat,Math.max(1.4,mr*(.34+r()*.2))]);}}
+  cl.sort((p,q)=>p[1]-q[1]);const dk=shd(cols[2],-.22);
+  for(const c of cl)blob(g,c[0]+R*.06,c[1]+R*.1,c[2]*1.05,dk);
+  for(const c of cl)blob(g,c[0],c[1],c[2],cols[2]);
+  for(const c of cl){const t=(c[1]-cy)/R;if(t<.35)blob(g,c[0]-c[2]*.18,c[1]-c[2]*.22,c[2]*.78,cols[0]);}
+  for(const c of cl){const ul=(c[0]-cx)/R*.7+(c[1]-cy)/R;if(ul<-.05)blob(g,c[0]-c[2]*.32,c[1]-c[2]*.36,c[2]*.42,cols[1]);}
+  const rim=Math.round(R*5);for(let k=0;k<rim;k++){const c=cl[(r()*cl.length)|0],a=r()*Math.PI*2,px=Math.round(c[0]+Math.cos(a)*c[2]*1.05),py=Math.round(c[1]+Math.sin(a)*c[2]*1.05);g.fillStyle=py<cy-R*.2?cols[1]:py<cy+R*.1?cols[0]:cols[2];g.fillRect(px,py,r()<.5?2:1,1);}
+  const holes=Math.round(R*.35);for(let k=0;k<holes;k++){const c=cl[(r()*cl.length)|0];if(c[1]<cy-R*.3)continue;g.fillStyle=dk;g.fillRect(Math.round(c[0]+(r()-.5)*c[2]),Math.round(c[1]+(r()-.2)*c[2]*.6),2,1);}
+  const m=Math.round(R*R*.35);for(let k=0;k<m;k++){const c=cl[(r()*cl.length)|0],px=Math.round(c[0]+(r()-.5)*c[2]*1.4),py=Math.round(c[1]+(r()-.5)*c[2]*1.2);g.fillStyle=py<cy-R*.15?shd(cols[1],.1):r()<.5?cols[2]:cols[0];g.fillRect(px,py,1,1);}}
+function trunk(g,x,y,tr,R,s){const c1='#5e4535',c2='#7a5a44',top=y-tr-R*.35;g.fillStyle=c1;g.beginPath();g.moveTo(x-1.6*s,y);g.lineTo(x-.7*s,top);g.lineTo(x+.7*s,top);g.lineTo(x+1.6*s,y);g.closePath();g.fill();g.fillStyle=c2;g.fillRect(Math.round(x-1.2*s),Math.round(top),1,Math.round(y-top));
+  g.strokeStyle=c1;g.lineWidth=Math.max(1,s);for(const d of [-1,1]){g.beginPath();g.moveTo(x,y-tr*.9);g.quadraticCurveTo(x+d*R*.25,y-tr-R*.2,x+d*R*.45,y-tr-R*.55);g.stroke();}}
 function treeH(g,u,v,s,type,sea,r){s/=PSC;type={dec:'oak',con:'fir',chr:'cherry'}[type]||type;const p=P(u,v,0),x=Math.round(p[0]),y=Math.round(p[1]);
   g.fillStyle='rgba(28,40,24,.32)';g.beginPath();g.ellipse(x+1,y,5*s,2.2*s,0,0,Math.PI*2);g.fill();
   if(type==='bush'){const cols=sea===3?['#7a7f62','#959a7c','#5c6048']:sea===2?['#a8743a','#c79556','#7a5226']:sea===0?['#6a9e4a','#8cbc66','#4a7636']:['#4f8a3e','#6fa858','#355f2c'];crown(g,x,y-4*s,5.5*s,cols,r,.66);
@@ -647,11 +656,11 @@ function treeH(g,u,v,s,type,sea,r){s/=PSC;type={dec:'oak',con:'fir',chr:'cherry'
   if(type==='birch'){const cols=TP.birch[sea],tr=Math.round(10*s);g.fillStyle='#ecebe4';g.fillRect(x-1,y-tr-4,2,tr+4);g.fillStyle='#3a3a36';for(let k=2;k<tr+3;k+=3)if(r()<.7)g.fillRect(x-1+(r()<.5?0:1),y-k,1,1);
     if(!cols){g.strokeStyle='#d8d6cc';g.lineWidth=1;for(let k=0;k<6;k++){const a=Math.PI/2+(r()-.5)*1.4,l=(5+r()*6)*s,y0=y-tr*(.5+r()*.5);g.beginPath();g.moveTo(x,y0);g.lineTo(x+Math.cos(a)*l,y0-Math.sin(a)*l);g.stroke();}return;}
     crown(g,x,y-tr-5*s,5.6*s,cols,r,.95);crown(g,x+(r()-.5)*2*s,y-tr-11*s,4.4*s,cols,r,.95);return;}
-  const cols=treeCols(type,sea,r),tr=Math.round((type==='ginkgo'?8:type==='zelkova'?6:type==='maple'?5:7)*s),R=(type==='zelkova'?10:type==='ginkgo'?6.6:type==='maple'?7.4:8.4)*s;
+  const cols=treeCols(type,sea,r),tr=Math.round((type==='ginkgo'?7:type==='zelkova'?5:type==='maple'?4:5)*s),R=(type==='zelkova'?10.5:type==='ginkgo'?6.8:type==='maple'?7.8:8.8)*s;
   if(!cols){bare(g,x,y,tr+R*2.4,s,r);return;}
-  g.fillStyle='#6b4f3a';g.fillRect(x-1,y-tr-3,2,tr+3);if(type==='zelkova'){g.fillRect(x-3,y-tr-2,2,1);g.fillRect(x+2,y-tr-3,2,1);}
+  trunk(g,x,y,tr,R,s);
   if(type==='ginkgo'){crown(g,x,y-tr-R*.55,R*.95,cols,r,.95);crown(g,x,y-tr-R*1.45,R*.72,cols,r,.95);}
-  else crown(g,x,y-tr-R*.72,R,cols,r,type==='zelkova'?.58:.76);}
+  else crown(g,x,y-tr-R*.62,R,cols,r,type==='zelkova'?.62:.8);}
 const TREE_LAYOUT=[[[.5,.5,1.1,'oak']],[[.3,.35,1,'pine'],[.68,.66,1.05,'oak']],[[.42,.42,1.2,'pine']],[[.3,.3,1,'zelkova'],[.7,.66,.9,'oak'],[.35,.78,.7,'bush']],
   [[.5,.5,1.1,'cherry']],[[.35,.4,1,'fir'],[.7,.66,.95,'fir']],[[.28,.3,.7,'bush'],[.66,.36,.8,'bush'],[.5,.66,1,'ginkgo']],[[.45,.45,1.15,'zelkova'],[.8,.8,.6,'bush']]];
 const FOREST=[['pine',12,0],['oak',11,0],['mix',12,0],['mix',7,1],['pine',5,2],['oak',4,2]];
@@ -1976,7 +1985,7 @@ function cxGroundTex(a,sea){const r=mulberry(36000+CXA.indexOf(a)*7+sea),G=GRASS
 function buildCxSprites(){SP.cxb=[];for(let s=0;s<CXSLOT.length;s++)SP.cxb[s]=oszpS(cxTower(s),40000+s,2);SP.cxa=CXA.map(()=>[]);SP.cxaR=CXA.map(()=>[]);SP.cxg=CXA.map(()=>[]);
   for(let sea=0;sea<4;sea++)CXA.forEach((a,k)=>{SP.cxa[k][sea]=cxAmen(a,sea,0);SP.cxaR[k][sea]='ekqr'.includes(a)?cxAmen(a,sea,1):SP.cxa[k][sea];SP.cxg[k][sea]=cxGroundTex(a,sea);});
   SP.cxgV=[0,1,2,3].map(sea=>[SP.cxa[0][sea],cxAmen('g',sea,0,false,1),cxAmen('g',sea,0,false,2)]);SP.cxPave=cxGroundTex('w',1);SP.cxa1p=[0,1,2,3].map(sea=>cxAmen('p',sea,0,true));}
-function placeComplex(t,cells){const T=CXT[t];const x0=cells[0][0],y0=cells[0][1],w=T.w,h=T.h,W=2*w,Hh=2*h;let wtr=0;for(const [x,y] of cells){const i=idx(x,y);if(terr[i]===TWA)wtr++;}if(wtr)return toast('물 위에는 단지를 지을 수 없습니다');
+function placeComplex(t,cells){const T=CXT[t];const x0=cells[0][0],y0=cells[0][1],w=T.w,h=T.h,W=2*w,Hh=2*h;let wtr=0;for(const [x,y] of cells){const i=idx(x,y);if(terr[i]===TWA)wtr++;}if(wtr)return toast('물 위는 불가');
   const rd=(x,y)=>x>=0&&y>=0&&x<N&&y<N&&kind[idx(x,y)]===K.ROAD;const cnt=[0,0,0,0];for(let k=0;k<W;k++){if(rd(x0+k,y0+Hh))cnt[0]++;if(rd(x0+k,y0-1))cnt[2]++;}for(let k=0;k<Hh;k++){if(rd(x0+W,y0+k))cnt[1]++;if(rd(x0-1,y0+k))cnt[3]++;}
   let rot=0;for(let k=1;k<4;k++)if(cnt[k]>cnt[rot])rot=k;
   const LL=(x,y)=>rot===0?[x,y]:rot===1?[w-1-y,x]:rot===2?[w-1-x,h-1-y]:[y,h-1-x];
@@ -1991,7 +2000,7 @@ function placeComplex(t,cells){const T=CXT[t];const x0=cells[0][0],y0=cells[0][1
   const OD=[[0,1],[1,0],[0,-1],[-1,0]][rot];let gateOK=true;for(let y=0;y<Hh;y++)for(let x=0;x<W;x++){const i=idx(x0+x,y0+y);if(!isGate(i))continue;const gx=x0+x+OD[0],gy=y0+y+OD[1];if(gx<0||gy<0||gx>=N||gy>=N)continue;const gi=idx(gx,gy);if(isGate(gi))continue;if(kind[gi]!==K.ROAD)gateOK=false;}
   if(!gateOK){const side=[[0,Hh,W,1],[W,0,1,Hh],[0,-1,W,1],[-1,0,1,Hh]][rot],ax=x0+side[0],ay=y0+side[1];const SV=ROADL;ROADL=2;applyTool('road',{x:clamp(ax-(side[2]>1?1:0),0,N-1),y:clamp(ay-(side[3]>1?1:0),0,N-1)},{x:clamp(ax+side[2]-(side[2]>1?0:1),0,N-1),y:clamp(ay+side[3]-(side[3]>1?0:1),0,N-1)});ROADL=SV;}
   for(let y=0;y<Hh;y++)for(let x=0;x<W;x++){const i=idx(x0+x,y0+y);if(isGate(i))touchN2(i);}
-  compsDirty=true;spawnDirty=true;sim.spent+=W*Hh*30;ovDirty=true;toast(T.name+' 배치 완료');}
+  compsDirty=true;spawnDirty=true;sim.spent+=W*Hh*30;ovDirty=true;toast(T.name+'');}
 /* ---- fitted complexes: an irregular block is filled edge to edge with towers, landscaping and amenities ---- */
 const CXFIT=[{t:1,name:'탑상형'},{t:2,name:'혼합형'},{t:5,name:'하이엔드'},{t:0,name:'판상형'}];
 function cellFlat(x,y){const h=H[y*HN+x];for(let dy=0;dy<=2;dy++)for(let dx=0;dx<=2;dx++)if(H[(y+dy)*HN+x+dx]!==h)return false;return true;}
@@ -2029,10 +2038,10 @@ function fitComplex(cells,t,r){if(cells.length<6)return 0;const T=CXT[t],KK=(x,y
     const a=idx(x+1,y+1);for(let yy=y;yy<y+2;yy++)for(let xx=x;xx<x+2;xx++){const i=idx(xx,yy);rabClear(i);if(kind[i]||lmkA[i]>=0)clearTile(i);kind[i]=k;lvl[i]=L;vari[i]=v;fix[i]=2;deco[i]=0;terr[i]=TG;lmkA[i]=a;touch(i);}}
   for(const [x,y] of gates)for(let yy=y;yy<y+2;yy++)for(let xx=x;xx<x+2;xx++)touchN2(idx(xx,yy));
   compsDirty=true;spawnDirty=true;ovDirty=true;return nb;}
-function placeFitComplex(k,b){const reg=fitRegion(b.x,b.y,26);if(reg.size<24)return toast('도로나 건물로 둘러싸인 빈 땅을 눌러 주세요');
+function placeFitComplex(k,b){const reg=fitRegion(b.x,b.y,26);if(reg.size<24)return toast('도로로 둘러싸인 빈 땅을 누르세요');
   let hs=0;for(const i of reg)hs+=tileAvgH(i&NM,i>>NS);const h=Math.round(hs/reg.size),ch=new Set(),road=new Set();for(const i of reg){const x=i&NM,y=i>>NS;for(const [dx,dy] of [[0,0],[1,0],[0,1],[1,1]]){const c=(y+dy)*HN+x+dx;let nearRoad=false;for(const [ex,ey] of [[0,0],[-1,0],[0,-1],[-1,-1]]){const tx=x+dx+ex,ty=y+dy+ey;if(tx>=0&&ty>=0&&tx<N&&ty<N){const j=idx(tx,ty);if(!reg.has(j)&&(kind[j]===K.ROAD||kind[j]===K.LMK||fix[j]))nearRoad=true;}}if(!nearRoad&&H[c]!==h){H[c]=h;ch.add(c);}}}
-  if(ch.size){relax();afterTerrain(ch);}const cl=fitCells(reg);if(cl.length<6)return toast('단지를 앉힐 평평한 땅이 부족합니다');const T=CXFIT[k];const nb=fitComplex(cl,T.t,mulberry(b.x*733+b.y*31+k));
-  for(const i of reg){if(!kind[i]&&!deco[i]&&terr[i]!==TWA&&Math.random()<.6){deco[i]=1+((Math.random()*8)|0);touch(i);}}sim.spent+=cl.length*120;toast(T.name+' 단지 '+nb+'개 동을 땅 모양에 맞춰 배치했습니다');}
+  if(ch.size){relax();afterTerrain(ch);}const cl=fitCells(reg);if(cl.length<6)return toast('평지가 부족해요');const T=CXFIT[k];const nb=fitComplex(cl,T.t,mulberry(b.x*733+b.y*31+k));
+  for(const i of reg){if(!kind[i]&&!deco[i]&&terr[i]!==TWA&&Math.random()<.6){deco[i]=1+((Math.random()*8)|0);touch(i);}}sim.spent+=cl.length*120;toast(T.name+' '+nb+'개 동');}
 
 /*@@END@@*/
 /*@@PARKS@@*/
@@ -2115,13 +2124,13 @@ function placePark(t,b){const T=PKT[t],plan=pkPlan(t,b.x,b.y);if(plan.length<4)r
     else{if(terr[i]!==TG&&terr[i]!==TSA)terr[i]=TG;kind[i]=K.PARK;lvl[i]=1;fix[i]=2;vari[i]=20+CXA.indexOf(c);deco[i]=0;}}
   for(const i of wq){const x=i&NM,y=i>>NS;H[y*HN+x]=H[y*HN+x+1]=H[(y+1)*HN+x]=H[(y+1)*HN+x+1]=0;if(T.nat&&kind[i]===K.EMPTY&&landMask(x,y)&&Math.random()<.7)deco[i]=22;}if(wq.length)relax();
   const ch=new Set();for(let y=y0-2;y<=y1+3;y++)for(let x=x0-2;x<=x1+3;x++)if(x>=0&&y>=0&&x<=N&&y<=N)ch.add(y*HN+x);afterTerrain(ch);calcWnear(x0,y0,x1,y1);
-  for(let y=y0-1;y<=y1+1;y++)for(let x=x0-1;x<=x1+1;x++)if(x>=0&&y>=0&&x<N&&y<N)touch(idx(x,y));compsDirty=true;ovDirty=true;sim.spent+=plan.length*60;toast(T.name+' 조성 완료');}
+  for(let y=y0-1;y<=y1+1;y++)for(let x=x0-1;x<=x1+1;x++)if(x>=0&&y>=0&&x<N&&y<N)touch(idx(x,y));compsDirty=true;ovDirty=true;sim.spent+=plan.length*60;toast(T.name+'');}
 /*@@END@@*/
 
 /*@@STREAM@@*/
 function placeStream(cells){if(cells.length<2)return;for(const [x,y] of cells){const i=idx(x,y);if(kind[i]===K.LMK)continue;applyTool('lake',{x,y},{x,y});vari[i]=250;GLDIRTY.add(i);}
   for(const [x,y] of cells)for(const [dx,dy] of DIRS){const xx=x+dx,yy=y+dy;if(xx<0||yy<0||xx>=N||yy>=N)continue;const j=idx(xx,yy);if(terr[j]===TWA||kind[j])continue;if(terr[j]===TSA||terr[j]===TPAD||terr[j]===TFLD)terr[j]=TG;if(Math.random()<.45)deco[j]=18+((Math.random()*2)|0);touch(j);}
-  vfDirty=true;toast('하천을 만들었습니다');}
+  vfDirty=true;toast('하천 완료');}
 /*@@END@@*/
 /*@@WALKERS@@*/
 const WLK=new Map();
@@ -2304,7 +2313,7 @@ const PKPV={k:-1,c:[]};function toolCells(t,a,b){if((t==='road'||t==='croad')&&R
 function rabClear(i){const v=vari[i];if(kind[i]!==K.ROAD||v<100||v>108)return;const p=v-100,x0=(i&NM)-p%3,y0=(i>>NS)-((p/3)|0);for(let y=y0;y<y0+3;y++)for(let x=x0;x<x0+3;x++){if(x<0||y<0||x>=N||y>=N)continue;const j=idx(x,y);if(kind[j]===K.ROAD&&vari[j]>=100&&vari[j]<=108){vari[j]=0;touchN2(j);}}}
 function applyTool(t,a,b){let spent=0;const RL=t==='avenue'||t==='cavenue'?1:LANE2LV[ROADL];if((t==='croad'||t==='cavenue')&&RC[RL].W>1)t='road';if(t==='croad')t='road$';if(t==='cavenue')t='avenue$';
   if(t==='road'&&RC[RL].W>1){for(const [x,y,k,ax] of wideCells(a,b,RC[RL].W)){const i=idx(x,y);if(kind[i]===K.LMK)continue;rabClear(i);clearTile(i);kind[i]=K.ROAD;lvl[i]=RL;deco[i]=0;vari[i]=64+k+ax*8;if(terr[i]===TPAD||terr[i]===TFLD)terr[i]=TG;touchN2(i);spent+=COST.road*(terr[i]===TWA?8:2);}fillWideCorners(a,b,RC[RL].W+2);compsDirty=true;sim.spent+=spent;ovDirty=true;return;}const cells=t.endsWith('$')?curveCells(a,b):toolCells(t,a,b);t=t.replace('$','');
-  if(t==='rab'){for(const [x,y] of cells){const i=idx(x,y);if(terr[i]===TWA)return toast('물 위에는 로터리를 놓을 수 없습니다');}const x0=cells[0][0],y0=cells[0][1];for(const [x,y] of cells){const i=idx(x,y);rabClear(i);clearTile(i);kind[i]=K.ROAD;lvl[i]=0;deco[i]=0;vari[i]=100+(x-x0)+(y-y0)*3;if(terr[i]===TPAD||terr[i]===TFLD)terr[i]=TG;touchN2(i);}compsDirty=true;sim.spent+=COST.road*9;ovDirty=true;return;}
+  if(t==='rab'){for(const [x,y] of cells){const i=idx(x,y);if(terr[i]===TWA)return toast('물 위는 불가');}const x0=cells[0][0],y0=cells[0][1];for(const [x,y] of cells){const i=idx(x,y);rabClear(i);clearTile(i);kind[i]=K.ROAD;lvl[i]=0;deco[i]=0;vari[i]=100+(x-x0)+(y-y0)*3;if(terr[i]===TPAD||terr[i]===TFLD)terr[i]=TG;touchN2(i);}compsDirty=true;sim.spent+=COST.road*9;ovDirty=true;return;}
   if(t.startsWith('cx:')){placeComplex(+t.slice(3),cells);return;}
   if(t.startsWith('cxf:')){placeFitComplex(+t.slice(4),b);return;}
   if(t.startsWith('pk:')){PKPV.k=-1;placePark(+t.slice(3),b);return;}
@@ -2312,10 +2321,10 @@ function applyTool(t,a,b){let spent=0;const RL=t==='avenue'||t==='cavenue'?1:LAN
   if(t==='elev'||t==='under'){const B0=t==='under'?134:130,ax=Math.abs(b.x-a.x)>=Math.abs(b.y-a.y)?0:1,L=RC[LANE2LV[ROADL]].W>1?1:LANE2LV[ROADL]===2?0:LANE2LV[ROADL];if(cells.length<4)return toast((t==='under'?'지하차도':'고가도로')+'는 4칸 이상 끌어서 놓으세요');
     for(const [x,y] of cells){const i=idx(x,y);if(kind[i]===K.LMK||isWide(i))continue;const under=kind[i]===K.ROAD&&!isElev(i);const pm=under?roadMask(x,y):0,perp=ax===0?(pm&5):(pm&10);if(under&&perp){vari[i]=B0+2+ax;}else{rabClear(i);clearTile(i);kind[i]=K.ROAD;lvl[i]=L;deco[i]=0;vari[i]=B0+ax;}touchN2(i);}
     const f=cells[0],l=cells[cells.length-1];for(const [x,y] of [f,l]){const i=idx(x,y);if(isElev(i)&&!elX(i)){vari[i]=0;touchN2(i);}}compsDirty=true;spawnDirty=true;sim.spent+=cells.length*COST.road*6;return;}
-  if(t==='fbridge'){const [x,y]=cells[cells.length-1],i=idx(x,y),m=roadMask(x,y);if(kind[i]!==K.ROAD||terr[i]===TWA||(m!==5&&m!==10))return toast('직선 도로 위에만 육교를 놓을 수 있습니다');vari[i]=vari[i]===120?0:120;touchN(i);return;}
+  if(t==='fbridge'){const [x,y]=cells[cells.length-1],i=idx(x,y),m=roadMask(x,y);if(kind[i]!==K.ROAD||terr[i]===TWA||(m!==5&&m!==10))return toast('직선 도로에만 가능');vari[i]=vari[i]===120?0:120;touchN(i);return;}
   if(t.startsWith('put:')){putTool(t,cells);return;}
   if(t.startsWith('lmk:')){const tid=+t.slice(4);placeLmk(tid,b.x,b.y);sim.spent+=LMKT[tid].cost;return;}
-  if(['power','water','police','fire'].includes(t)){const i=idx(b.x,b.y);if(terr[i]===TWA||kind[i]===K.ROAD)return toast('도로나 물 위에는 지을 수 없습니다');if(!isFlat(b.x,b.y))return toast('평평한 땅에만 지을 수 있습니다');
+  if(['power','water','police','fire'].includes(t)){const i=idx(b.x,b.y);if(terr[i]===TWA||kind[i]===K.ROAD)return toast('도로·물 위는 불가');if(!isFlat(b.x,b.y))return toast('평지에만 가능');
     clearTile(i);deco[i]=0;kind[i]={power:K.POWER,water:K.WATER,police:K.POLICE,fire:K.FIRE}[t];lvl[i]=1;touch(i);compsDirty=true;sim.spent+=COST[t];return;}
   if(t==='up'||t==='down'){terraform(cells,t==='up'?1:-1);sim.spent+=cells.length*COST.up;return;}
   let terrEdit=false;
@@ -2838,7 +2847,7 @@ function auInit(){const C=window.AudioContext||window.webkitAudioContext;if(!C)r
   const rs=a.createBufferSource();rs.buffer=nb;rs.loop=true;const rh=a.createBiquadFilter();rh.type='highpass';rh.frequency.value=500;const rf=a.createBiquadFilter();rf.type='lowpass';rf.frequency.value=3600;AU.rainG=a.createGain();AU.rainG.gain.value=0;rs.connect(rh);rh.connect(rf);rf.connect(AU.rainG);AU.rainG.connect(AU.master);rs.start();
   const ws=a.createBufferSource();ws.buffer=nb;ws.loop=true;ws.playbackRate.value=.5;const wf=a.createBiquadFilter();wf.type='bandpass';wf.frequency.value=480;wf.Q.value=.6;AU.windG=a.createGain();AU.windG.gain.value=0;ws.connect(wf);wf.connect(AU.windG);AU.windG.connect(AU.master);ws.start();
   return true;}
-function auStart(){if(!AU.ctx&&!auInit()){toast('이 브라우저에서는 소리를 재생할 수 없습니다');return false;}AU.ctx.resume();AU.on=true;AU.master.gain.cancelScheduledValues(AU.ctx.currentTime);AU.master.gain.setTargetAtTime(AU.vol*.55,AU.ctx.currentTime,.8);AU.next=AU.ctx.currentTime+.1;AU.step=0;AU.mood='';pickTrack();
+function auStart(){if(!AU.ctx&&!auInit()){toast('소리 재생 불가');return false;}AU.ctx.resume();AU.on=true;AU.master.gain.cancelScheduledValues(AU.ctx.currentTime);AU.master.gain.setTargetAtTime(AU.vol*.55,AU.ctx.currentTime,.8);AU.next=AU.ctx.currentTime+.1;AU.step=0;AU.mood='';pickTrack();
   if(!AU.timer)AU.timer=setInterval(auSched,40);return true;}
 function auStop(){if(!AU.ctx)return;AU.on=false;AU.master.gain.setTargetAtTime(0,AU.ctx.currentTime,.35);setTimeout(()=>{if(!AU.on)AU.ctx.suspend();},1800);}
 function auSched(){if(!AU.on)return;const a=AU.ctx,now=a.currentTime;if(AU.next<now-.2)AU.next=now+.05;
@@ -2928,7 +2937,7 @@ document.querySelectorAll('#speed button').forEach(b=>b.addEventListener('click'
 document.querySelectorAll('#todSeg button').forEach(b=>b.addEventListener('click',()=>setTod(b.dataset.t)));
 document.querySelectorAll('#wxSel .pill').forEach(b=>b.addEventListener('click',()=>setWeather(b.dataset.w)));
 $('bgm').addEventListener('click',toggleMusic);
-function syncFxUI(){document.querySelectorAll('[data-fx]').forEach(b=>b.setAttribute('aria-pressed',!!FX[b.dataset.fx]));document.querySelectorAll('#seasonSel .pill').forEach(b=>b.setAttribute('aria-pressed',+b.dataset.s===FX.season));if(!gl){['post','tilt'].forEach(k=>{const b=document.querySelector('[data-fx="'+k+'"]');if(b){b.disabled=true;b.title='이 브라우저에서는 사용할 수 없습니다';}});}}
+function syncFxUI(){document.querySelectorAll('[data-fx]').forEach(b=>b.setAttribute('aria-pressed',!!FX[b.dataset.fx]));document.querySelectorAll('#seasonSel .pill').forEach(b=>b.setAttribute('aria-pressed',+b.dataset.s===FX.season));if(!gl){['post','tilt'].forEach(k=>{const b=document.querySelector('[data-fx="'+k+'"]');if(b){b.disabled=true;b.title='지원 안 됨';}});}}
 document.querySelectorAll('[data-fx]').forEach(b=>b.addEventListener('click',()=>{const k=b.dataset.fx;FX[k]=!FX[k];try{localStorage.setItem('pixelcity.fx',JSON.stringify(FX));}catch(err){}if(k==='shadow')bumpAll();if(k==='perf'){FX.perfAsked=true;resize();}syncFxUI();}));
 document.querySelectorAll('#seasonSel .pill').forEach(b=>b.addEventListener('click',()=>{FX.season=+b.dataset.s;try{localStorage.setItem('pixelcity.fx',JSON.stringify(FX));}catch(err){}checkSeason();syncFxUI();if(PAL.open)renderPalette();}));
 function setMenu(open){$('menu').hidden=!open;$('menuBtn').setAttribute('aria-expanded',open);}
@@ -2944,10 +2953,10 @@ $('bFw').addEventListener('click',()=>{setTod('night');fwOn=30;fwT=0;setMenu&&se
 {const wa=$('wxAmt');wa.value=Math.round(WXA*100);wa.addEventListener('input',()=>{WXA=wa.value/100;try{localStorage.setItem('pixelcity.wxa',String(WXA));}catch(err){}});}
 $('bUndo').addEventListener('click',undo);$('bRedo').addEventListener('click',redo);
 $('bPhoto').addEventListener('click',()=>{setMenu(false);setPhoto(true);});$('photoExit').addEventListener('click',()=>setPhoto(false));
-$('bCopy').addEventListener('click',async()=>{const b=$('codeBox');b.value='만드는 중…';const code=await packCity();b.value=code;try{await navigator.clipboard.writeText(code);toast('도시 코드를 복사했습니다 ('+Math.round(code.length/1024)+'KB)');}catch(err){b.focus();b.select();toast('코드를 선택해 두었습니다. 직접 복사해 주세요');}});
-$('bExport').addEventListener('click',async()=>{const code=await packCity(),a=document.createElement('a');a.href=URL.createObjectURL(new Blob([code],{type:'text/plain'}));a.download=(sim.name||'city').replace(/[^\w가-힣-]+/g,'_')+'.pixelcity';document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},2000);toast('파일 저장을 요청했습니다. 막히면 「도시 코드 복사」를 쓰세요');});
+$('bCopy').addEventListener('click',async()=>{const b=$('codeBox');b.value='만드는 중…';const code=await packCity();b.value=code;try{await navigator.clipboard.writeText(code);toast('도시 코드를 복사했습니다 ('+Math.round(code.length/1024)+'KB)');}catch(err){b.focus();b.select();toast('코드를 직접 복사하세요');}});
+$('bExport').addEventListener('click',async()=>{const code=await packCity(),a=document.createElement('a');a.href=URL.createObjectURL(new Blob([code],{type:'text/plain'}));a.download=(sim.name||'city').replace(/[^\w가-힣-]+/g,'_')+'.pixelcity';document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},2000);toast('파일 저장 요청');});
 $('fImport').addEventListener('change',async e=>{const f=e.target.files&&e.target.files[0];if(!f)return;const txt=await f.text();e.target.value='';if(await importCity(txt))setMenu(false);});
-$('bPaste').addEventListener('click',async()=>{const v=$('codeBox').value;if(!v.trim())return toast('먼저 코드를 붙여넣어 주세요');if(await importCity(v))setMenu(false);});
+$('bPaste').addEventListener('click',async()=>{const v=$('codeBox').value;if(!v.trim())return toast('코드를 먼저 붙여넣으세요');if(await importCity(v))setMenu(false);});
 
 
 $('vol').addEventListener('input',e=>{AU.vol=e.target.value/100;$('oVol').textContent=e.target.value;if(AU.on)AU.master.gain.setTargetAtTime(AU.vol*.55,AU.ctx.currentTime,.1);});
@@ -3015,15 +3024,15 @@ function renderPalette(){const tabs=$('palTabs');tabs.innerHTML='';for(const [id
   const lv=$('palLv');lv.innerHTML='';const hasLv=PAL.tab==='res'||PAL.tab==='com'||PAL.tab==='ind';lv.hidden=!hasLv;if(hasLv)for(let L=1;L<=5;L++){if(PAL.tab==='ind'&&L===5)continue;const b=document.createElement('button');b.className='pill';b.textContent=L+'단계 · '+LVN[PAL.tab][L];b.setAttribute('aria-pressed',PAL.lv===L);b.onclick=()=>{PAL.lv=L;renderPalette();};lv.appendChild(b);}
   if(PAL.tab==='ind'&&PAL.lv===5)PAL.lv=4;
   const grid=$('palGrid');grid.innerHTML='';for(const it of palItems()){const b=document.createElement('button');b.className='palItem';b.setAttribute('aria-pressed',tool===it.id);b.title=it.label;b.innerHTML=(it.o?'<img alt="" src="'+thumb(it.o)+'">':'<span class="palX">×</span>')+'<span>'+it.label+'</span>';b.onclick=()=>{if(it.id.startsWith('cx:'))PAL.cx=+it.id.slice(3);if(it.id.startsWith('pk:'))PAL.pk=+it.id.slice(3);setTool(it.id);renderPalette();};grid.appendChild(b);}
-  $('palNote').textContent=PAL.tab==='park'?'큰 공원은 클릭한 곳 주변의 빈 땅 모양을 따라 만들어집니다. 도로·건물은 피해 갑니다. 습지·숲 공원은 지형과 숲을 그대로 살리고, 둔치공원은 물가에 놓으세요.':PAL.tab==='cx'?'땅 맞춤: 도로로 둘러싸인 빈 블록을 누르면 모양이 비정형이어도 블록 전체에 동·조경·정문·커뮤니티를 빈틈없이 채웁니다. 나머지 정형 단지는 클릭한 위치를 중심으로 배치합니다.':PAL.tab==='nat'?'드래그한 범위에 자연물을 깝니다. 빈 땅에만 놓입니다.':PAL.tab==='lmk'?'클릭한 위치에 배치하고 바닥을 평평하게 다집니다.':'드래그한 범위에 같은 건물을 채웁니다. 경사지에는 놓이지 않습니다.';}
+  $('palNote').textContent=PAL.tab==='park'?'빈 땅 모양을 따라 조성':PAL.tab==='cx'?'빈 블록을 누르면 꽉 채움':PAL.tab==='nat'?'드래그로 깔기':PAL.tab==='lmk'?'클릭해서 배치':'드래그로 채우기';}
 function togglePalette(open){PAL.open=open==null?!PAL.open:open;$('palette').hidden=!PAL.open;const b=$('tool-palette');if(b)b.setAttribute('aria-pressed',PAL.open);if(PAL.open)renderPalette();}
 function putTool(t,cells){const p=t.split(':');let skip=0;
   if(p[1]==='b'&&BFS(+p[2],+p[3])===2){const k=+p[2],L=+p[3],v=+p[4],done=new Set();for(const [x,y] of cells){const x0=x&~1,y0=y&~1,key=y0*N+x0;if(done.has(key))continue;done.add(key);if(!footFree(x0,y0,j=>kind[j]!==K.ROAD&&kind[j]!==K.LMK)){skip++;continue;}makeFoot(x0,y0,k,L,v<0?(Math.random()*VN[k])|0:v,1);}compsDirty=true;}
   else if(p[1]==='b'){const k=+p[2],L=+p[3],v=+p[4];for(const [x,y] of cells){const i=idx(x,y);if(terr[i]===TWA||kind[i]===K.ROAD||kind[i]===K.LMK)continue;if(!isFlat(x,y)){skip++;continue;}clearTile(i);kind[i]=k;lvl[i]=L;vari[i]=v<0?(Math.random()*VN[k])|0:v;fix[i]=1;deco[i]=0;if(terr[i]!==TG)terr[i]=TG;touch(i);}compsDirty=true;}
-  else if(p[1]==='s'){const k=+p[2],x=cells[cells.length-1][0],y=cells[cells.length-1][1],i=idx(x,y);if(terr[i]===TWA||kind[i]===K.ROAD)return toast('도로나 물 위에는 지을 수 없습니다');if(!isFlat(x,y))return toast('평평한 땅에만 지을 수 있습니다');clearTile(i);deco[i]=0;kind[i]=k;lvl[i]=1;fix[i]=1;terr[i]=TG;touch(i);compsDirty=true;}
+  else if(p[1]==='s'){const k=+p[2],x=cells[cells.length-1][0],y=cells[cells.length-1][1],i=idx(x,y);if(terr[i]===TWA||kind[i]===K.ROAD)return toast('도로·물 위는 불가');if(!isFlat(x,y))return toast('평지에만 가능');clearTile(i);deco[i]=0;kind[i]=k;lvl[i]=1;fix[i]=1;terr[i]=TG;touch(i);compsDirty=true;}
   else if(p[1]==='p'){const v=+p[2];for(const [x,y] of cells){const i=idx(x,y);if(terr[i]===TWA||kind[i]===K.ROAD||kind[i]===K.LMK)continue;if(!isFlat(x,y)){skip++;continue;}clearTile(i);deco[i]=0;kind[i]=K.PARK;lvl[i]=1;vari[i]=v;fix[i]=1;terr[i]=TG;touch(i);}}
   else if(p[1]==='n'){const d=+p[2];for(const [x,y] of cells){const i=idx(x,y);if(terr[i]===TWA)continue;const k=kind[i];if(k!==K.EMPTY&&!((k>=K.RES&&k<=K.IND)&&!lvl[i]))continue;deco[i]=d<0?9+((Math.random()*6)|0):d;if(d===17)terr[i]=TFLD;else if(terr[i]===TFLD&&d!==0)terr[i]=TG;touch(i);}}
-  if(skip)toast('경사지 '+skip+'칸은 건너뛰었습니다');ovDirty=true;}
+  if(skip)toast('경사지 '+skip+'칸 제외');ovDirty=true;}
 
 /* ================= input ================= */
 const ptrs=new Map();
@@ -3056,7 +3065,7 @@ function ctxOpen(t,sx,sy){const el=$('ctx'),i=idx(t.x,t.y),k=kind[i],a=lmkA[i]>=
     if(A==='info')showInfo(t);else if(A==='center')centerOn(t.x,t.y);else if(A==='esc')setTool('inspect');
     else if(A==='del'){pushUndo();applyTool('bulldoze',t,t);dirtySave();showInfo(null);}
     else if(A==='shape'){pushUndo();vari[a]=(vari[a]+1)%VN[k];if(isFoot(a)){const x0=a&NM,y0=a>>NS;for(let dy=0;dy<2;dy++)for(let dx=0;dx<2;dx++)touch(idx(x0+dx,y0+dy));}else touch(a);dirtySave();if(sel)showInfo(sel);}
-    else if(A==='pick'){if(k===K.LMK)setTool('lmk:'+vari[a]);else{const L=lvl[a],n=catOf(k,L).length;PAL.tab={[K.RES]:'res',[K.COM]:'com',[K.IND]:'ind'}[k];PAL.lv=L;setTool('put:b:'+k+':'+L+':'+(vari[a]%n));}toast(nm+' · 클릭해서 짓기');}});}
+    else if(A==='pick'){if(k===K.LMK)setTool('lmk:'+vari[a]);else{const L=lvl[a],n=catOf(k,L).length;PAL.tab={[K.RES]:'res',[K.COM]:'com',[K.IND]:'ind'}[k];PAL.lv=L;setTool('put:b:'+k+':'+L+':'+(vari[a]%n));}toast(nm+'');}});}
 document.addEventListener('pointerdown',e=>{if(!$('ctx').hidden&&!$('ctx').contains(e.target))ctxClose();},true);
 addEventListener('keydown',e=>{if(e.key==='Escape')ctxClose();});cv.addEventListener('wheel',ctxClose,{passive:true});
 $('tools').addEventListener('contextmenu',e=>{e.preventDefault();setTool('inspect');});cv.addEventListener('pointercancel',e=>endPtr(e,true));
@@ -3080,21 +3089,21 @@ function snapState(){return{t:terr.slice(),k:kind.slice(),l:lvl.slice(),v:vari.s
 function restoreState(s){terr.set(s.t);kind.set(s.k);lvl.set(s.l);vari.set(s.v);deco.set(s.d);H.set(s.h);lmkA.set(s.m);fix.set(s.f);calcWnear(0,0,N-1,N-1);RDC.clear();compsDirty=true;bumpAll();mmAll();vfDirty=true;ovDirty=true;spawnDirty=true;cars=[];peds=[];dirtySave();}
 function updUndo(){$('bUndo').disabled=!UNDO.length;$('bRedo').disabled=!REDO.length;}
 function pushUndo(){UNDO.push(snapState());if(UNDO.length>30)UNDO.shift();REDO.length=0;updUndo();}
-function undo(){if(!UNDO.length)return toast('되돌릴 작업이 없습니다');REDO.push(snapState());restoreState(UNDO.pop());updUndo();toast('되돌렸습니다');}
-function redo(){if(!REDO.length)return;UNDO.push(snapState());restoreState(REDO.pop());updUndo();toast('다시 실행했습니다');}
+function undo(){if(!UNDO.length)return toast('되돌릴 작업 없음');REDO.push(snapState());restoreState(UNDO.pop());updUndo();toast('되돌리기');}
+function redo(){if(!REDO.length)return;UNDO.push(snapState());restoreState(REDO.pop());updUndo();toast('다시 실행');}
 function clearUndo(){UNDO.length=0;REDO.length=0;updUndo();}
 let saveT=0;function dirtySave(){clearTimeout(saveT);saveT=setTimeout(()=>save(true),4000);}
 setInterval(()=>save(true),60000);
 async function packCity(){const js=JSON.stringify(serialize());if(window.CompressionStream){const cs=new Blob([js]).stream().pipeThrough(new CompressionStream('gzip'));return'PCZ1'+b64(new Uint8Array(await new Response(cs).arrayBuffer()));}return'PCJ1'+btoa(unescape(encodeURIComponent(js)));}
 async function unpackCity(str){str=str.trim();if(str.startsWith('PCZ1')){const ds=new Blob([unb64(str.slice(4))]).stream().pipeThrough(new DecompressionStream('gzip'));return JSON.parse(await new Response(ds).text());}if(str.startsWith('PCJ1'))return JSON.parse(decodeURIComponent(escape(atob(str.slice(4)))));return JSON.parse(str);}
-async function importCity(str){try{const o=await unpackCity(str);if(!deserialize(o))throw new Error('bad');clearUndo();save(true);toast('도시를 가져왔습니다');return true;}catch(err){toast('도시 코드를 읽지 못했습니다. 코드 전체를 붙여넣었는지 확인해 주세요');return false;}}
+async function importCity(str){try{const o=await unpackCity(str);if(!deserialize(o))throw new Error('bad');clearUndo();save(true);toast('가져오기 완료');return true;}catch(err){toast('코드를 읽지 못했어요');return false;}}
 function setPhoto(on){document.body.classList.toggle('photo',on);$('photoExit').hidden=!on;if(on)togglePalette(false);}
 
 /* ================= save / load ================= */
 function b64(u){let s='';for(let i=0;i<u.length;i+=8192)s+=String.fromCharCode.apply(null,u.subarray(i,i+8192));return btoa(s);}
 function unb64(s){const b=atob(s),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u;}
 function serialize(){return{v:6,N,fx:b64(fix),lm:b64(new Uint8Array(lmkA.buffer)),sim:Object.assign({},sim,{hist:sim.hist.slice()}),cam:[camX,camY,zoom],wx:WX.mode,a:[b64(terr),b64(kind),b64(lvl),b64(vari),b64(deco)],h:b64(H)};}
-function deserialize(s){if(!s||s.v!==6||s.N!==N){if(s&&s.v)setTimeout(()=>toast('이전 버전(256칸) 도시는 새 512칸 맵과 호환되지 않습니다'),400);return false;}alloc();[terr,kind,lvl,vari,deco]=s.a.map(unb64);roadComp=new Int32Array(NN).fill(-1);accC=new Int32Array(NN).fill(-1);if(s.h)H=unb64(s.h);if(s.lm){const u=unb64(s.lm);lmkA=new Int32Array(u.buffer,0,NN);}if(s.fx)fix=unb64(s.fx);
+function deserialize(s){if(!s||s.v!==6||s.N!==N){if(s&&s.v)setTimeout(()=>toast('이전 버전 도시는 호환 안 됨'),400);return false;}alloc();[terr,kind,lvl,vari,deco]=s.a.map(unb64);roadComp=new Int32Array(NN).fill(-1);accC=new Int32Array(NN).fill(-1);if(s.h)H=unb64(s.h);if(s.lm){const u=unb64(s.lm);lmkA=new Int32Array(u.buffer,0,NN);}if(s.fx)fix=unb64(s.fx);
   Object.assign(sim,s.sim);[camX,camY,zoom]=s.cam;if(s.v===1)zoom=Math.min(8,zoom*2);calcWnear(0,0,N-1,N-1);afterLoad();if(s.wx)setWeather(s.wx);return true;}
 function connectWater(){let ch=0;const W=(x,y)=>x>=0&&y>=0&&x<N&&y<N&&terr[idx(x,y)]===TWA,nat=(x,y)=>{const i=idx(x,y);return kind[i]===K.EMPTY;};
   for(let pass=0;pass<2;pass++)for(let y=0;y<N;y++)for(let x=0;x<N;x++){if(!W(x,y))continue;for(const [dx,dy] of [[1,1],[1,-1]]){const xx=x+dx,yy=y+dy;if(!W(xx,yy)||W(xx,y)||W(x,yy))continue;let px=-1,py=-1;if(xx<N&&nat(xx,y)){px=xx;py=y;}else if(yy>=0&&yy<N&&nat(x,yy)){px=x;py=yy;}if(px<0)continue;const i=idx(px,py);terr[i]=TWA;deco[i]=0;H[py*HN+px]=H[py*HN+px+1]=H[(py+1)*HN+px]=H[(py+1)*HN+px+1]=0;ch++;}}
@@ -3105,13 +3114,13 @@ function warmTick(ms){if(!WARM)return;const t0=performance.now(),NC=N>>4;while(W
 function afterLoad(){LOADT=performance.now();connectWater();clearUndo();RDC.clear();vfDirty=true;vtSeed=-1;compsDirty=true;recomputeComps();fields();SEASON=curSeason();bumpAll();mmAll();ovDirty=true;cars=[];peds=[];spawnDirty=true;$('cityName').value=sim.name;
   ['R','C','I'].forEach((s,j)=>{$('tax'+s).value=sim.tax[j];$('o'+s).textContent=sim.tax[j]+'%';});setSpeed(sim.speed);updatePanels();sel=null;$('info').hidden=true;warmStart();}
 const SKEY='pixelcity.save.v2';
-function save(quiet){try{localStorage.setItem(SKEY,JSON.stringify(serialize()));if(!quiet)toast('저장했습니다');}catch(err){if(!quiet)toast('이 브라우저에서는 저장할 수 없습니다');}}
+function save(quiet){try{localStorage.setItem(SKEY,JSON.stringify(serialize()));if(!quiet)toast('저장 완료');}catch(err){if(!quiet)toast('저장 불가');}}
 function autosave(){save(true);}
 function loadSaved(){try{const s=localStorage.getItem(SKEY);if(!s)return false;return deserialize(JSON.parse(s));}catch(err){return false;}}
 $('bSave').addEventListener('click',()=>save(false));
-$('bLoad').addEventListener('click',()=>{if(loadSaved())toast('불러왔습니다');else toast('저장된 도시가 없습니다');});
-let newArm=0;$('bNew').addEventListener('click',()=>{const b=$('bNew');if(Date.now()-newArm>3000){newArm=Date.now();b.textContent='한 번 더 누르면 시작';setTimeout(()=>b.textContent='새 도시',3000);return;}newArm=0;b.textContent='새 도시';newCity((Math.random()*1e6)|0,true);toast('새 땅에서 시작합니다');});
-let randArm=0;$('bRand').addEventListener('click',()=>{const b=$('bRand');if(Date.now()-randArm>3000){randArm=Date.now();b.textContent='한 번 더 누르면 생성';setTimeout(()=>b.textContent='랜덤 도시',3000);return;}randArm=0;b.textContent='랜덤 도시';$('loading').hidden=false;$('loading').textContent='도시를 짓는 중…';setTimeout(()=>{clearUndo&&clearUndo();newCity((Math.random()*1e6)|0,'rand');$('loading').hidden=true;$('cityName').value=sim.name;dirtySave();toast(sim.name+'를 만들었습니다');},30);});
+$('bLoad').addEventListener('click',()=>{if(loadSaved())toast('불러오기 완료');else toast('저장된 도시 없음');});
+let newArm=0;$('bNew').addEventListener('click',()=>{const b=$('bNew');if(Date.now()-newArm>3000){newArm=Date.now();b.classList.add('arm');b.querySelector('span').textContent='한 번 더';setTimeout(()=>{b.classList.remove('arm');b.querySelector('span').textContent='빈 땅';},3000);return;}newArm=0;b.classList.remove('arm');b.querySelector('span').textContent='빈 땅';newCity((Math.random()*1e6)|0,true);toast('빈 땅에서 시작');});
+let randArm=0;$('bRand').addEventListener('click',()=>{const b=$('bRand');if(Date.now()-randArm>3000){randArm=Date.now();b.classList.add('arm');b.querySelector('span').textContent='한 번 더';setTimeout(()=>{b.classList.remove('arm');b.querySelector('span').textContent='랜덤 도시';},3000);return;}randArm=0;b.classList.remove('arm');b.querySelector('span').textContent='랜덤 도시';$('loading').hidden=false;$('loading').textContent='도시를 짓는 중…';setTimeout(()=>{clearUndo&&clearUndo();newCity((Math.random()*1e6)|0,'rand');$('loading').hidden=true;$('cityName').value=sim.name;dirtySave();toast(sim.name+'');},30);});
 const CNAMES=['해온시','청림시','다온시','새솔시','한별시','누리시','가람시','온빛시','미르시','라온시','은하시','푸른시'];
 function genCity(seed){const r=mulberry(seed*13+5),SAVE=ROADL,DIR=[[1,0],[-1,0],[0,1],[0,-1]];
   const inMap=(x,y)=>x>=4&&y>=4&&x<N-4&&y<N-4,hh=(x,y)=>tileAvgH(x,y);
@@ -3288,7 +3297,7 @@ function newCity(seed,blank){Object.assign(sim,{day:0,month:0,year:2027,speed:1,
 /* ================= loop ================= */
 let last=performance.now(),simAcc=0,hudT=0;
 let LASTR=0;function frame(now){{const ck=camX+','+camY+','+zoom,idle=ck===RCAM.k&&RCAM.n>20&&!keys.size;if(now-LASTR<(idle?31:15)){requestAnimationFrame(frame);return;}LASTR=now;}const dtm=Math.min(100,now-last);last=now;const dt=dtm/1000;
-  if(!document.hidden){if(dpr>1&&now-LOADT>8000){slowT=dtm>42?slowT+dtm:Math.max(0,slowT-dtm*.5);if(slowT>4000){DPRCAP=DPRCAP>1.5?1.5:1;slowT=0;resize();}}else if(!FX.perf&&!FX.perfAsked){slowT2=dtm>45?slowT2+dtm:Math.max(0,slowT2-dtm*.5);if(slowT2>6000){FX.perfAsked=true;FX.perf=true;resize();syncFxUI&&syncFxUI();toast('화면이 느려 성능 모드를 켰습니다 · 메뉴 > 그래픽에서 끌 수 있습니다');}}}
+  if(!document.hidden){if(dpr>1&&now-LOADT>8000){slowT=dtm>42?slowT+dtm:Math.max(0,slowT-dtm*.5);if(slowT>4000){DPRCAP=DPRCAP>1.5?1.5:1;slowT=0;resize();}}else if(!FX.perf&&!FX.perfAsked){slowT2=dtm>45?slowT2+dtm:Math.max(0,slowT2-dtm*.5);if(slowT2>6000){FX.perfAsked=true;FX.perf=true;resize();syncFxUI&&syncFxUI();toast('성능 모드 켜짐');}}}
   if(keys.size){const sp=700*dt/zoom;if(keys.has('ArrowLeft'))camX-=sp;if(keys.has('ArrowRight'))camX+=sp;if(keys.has('ArrowUp'))camY-=sp;if(keys.has('ArrowDown'))camY+=sp;clampCam();}
   if(sim.speed>0){lastSpeed=sim.speed;simAcc+=dtm;const iv=[0,1100,450,160][sim.speed];let n=0;while(simAcc>=iv&&n<8){tick(false);simAcc-=iv;n++;}if(n>=8)simAcc=0;
     if(todMode==='auto')tod=(tod+dt/420*sim.speed)%1;}
