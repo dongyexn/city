@@ -2957,7 +2957,7 @@ function agH(p){const x=Math.floor(p[0]),y=Math.floor(p[1]);let h=surfH(p[0],p[1
 const SPMUL=[0,1,1.5,2.2];
 function updateAgents(dt){if(spawnDirty)buildSpawn();const mult=SPMUL[sim.speed],d=dt*mult;viewBox();
   const RH=rhythm(),tc=Math.min(Math.round((MEMLOW?240:340)*Math.min(1,RH[0])),Math.round(sim.pop/70*RH[0])),tp=Math.min(Math.round((MEMLOW?320:460)*Math.min(1,RH[1])),Math.round(sim.pop/50*RH[1]));
-  if(mult&&zoom>=1.2){cars=cars.filter(a=>inView(a.x,a.y,14)||Math.random()>.04);peds=peds.filter(a=>inView(a.x,a.y,10)||Math.random()>.05);}
+  if(mult&&zoom>=3){cars=cars.filter(a=>inView(a.x,a.y,14)||Math.random()>.04);peds=peds.filter(a=>inView(a.x,a.y,10)||Math.random()>.05);}
   if(mult){for(let n=0;n<3&&cars.length<tc;n++){const a=spawnAgent(false);if(a)cars.push(a);else break;}for(let n=0;n<3&&peds.length<tp;n++){const a=spawnAgent(true);if(a)peds.push(a);else break;}}
   if(cars.length>tc+10)cars=cars.filter((a,k)=>k<tc||Math.random()<.97);if(peds.length>tp+10)peds=peds.filter((a,k)=>k<tp||Math.random()<.97);
   if(!d)return;buildOcc();cars=cars.filter(a=>stepAgent(a,d,false));peds=peds.filter(a=>stepAgent(a,d,true));for(const p of peds)p.ph+=d*8;}
@@ -3068,7 +3068,7 @@ const RQ=[],TB=new Map();function renderNear(S,ox,oy,vl,vr,vt,vb,dt,deadline,n){
   if(!GLT||FX.shadow)for(const ci of GC.order){const G=chunkGeom(GC,ci);if(G.left>vr||G.left+GC.CW<vl||G.top>vb||G.top+GC.CH<vt)continue;const e=getChunk(GC,ci,k,false,deadline,2);if(e)drawC(g,e,G,S,ox,oy);else if(!GLT){const cx=ci%32,cy=(ci/32)|0,fci=(cy>>1)*16+(cx>>1),fe=cache.get(ckey(FC,fci,5,false));if(fe){g.save();const G2=G;g.beginPath();const L=[G2.left*S+ox,(G2.top+GC.topOff)*S+oy];g.rect(G2.left*S+ox,G2.top*S+oy,GC.CW*S,GC.CH*S);g.clip();drawC(g,fe,chunkGeom(FC,fci),S,ox,oy);g.restore();}}}
   g.setTransform(S,0,0,S,ox,oy);
   if(overlay!=='none'){const r0=visRange(vl,vr,vt,vb,0);for(let s=r0.s0;s<=r0.s1;s++)for(let d=r0.d0;d<=r0.d1;d++){if((s+d)&1)continue;const x=(s+d)>>1,y=(s-d)>>1;if(x<0||y<0||x>=N||y>=N)continue;const c=ovColor(idx(x,y));if(c)poly(g,tilePts(x,y),c);}}
-  const rg=visRange(vl,vr,vt,vb,TOPM+ELEV),showA=S>=1.6,halfR=S/SR<.75,buckets=new Map();
+  const rg=visRange(vl,vr,vt,vb,TOPM+ELEV),showA=zoom>=.5,halfR=S/SR<.75,buckets=new Map();
 
   if(showA){const add=(a,ped)=>{const p=agentPos(a,ped),hb=agH(p),wx=(p[0]-p[1])*16,wy=(p[0]+p[1])*8-hb;if(wx<vl-20||wx>vr+20||wy<vt-20||wy>vb+20)return;const s=Math.floor(p[0])+Math.floor(p[1]);let b=buckets.get(s);if(!b){b=[];buckets.set(s,b);}b.push([a,ped,wx,wy,p,!ped&&agH(p)<surfH(p[0],p[1])*E-1]);};
     for(const a of cars)add(a,false);for(const a of peds)add(a,true);}
@@ -3118,6 +3118,8 @@ function render(dt){frameNo++;const W=scn.width,Hh=scn.height,S=zoom*dpr,ox=W/2-
   const nA=nightAmt();let res=null,vis=[];
   if(near){res=renderNear(S,ox,oy,vl,vr,vt,vb,dt,deadline,nA);if(RCAM.n>10&&zoom<NEARZ*1.35){const dl=performance.now()+3,k2=clamp(Math.ceil(Math.log2(4/(NEARZ*.98*dpr))-.05),2,6);for(const ci of FC.order){const G=chunkGeom(FC,ci);if(G.left>vr||G.left+FC.CW<vl||G.top>vb||G.top+FC.CH<vt)continue;if(performance.now()>dl)break;getChunk(FC,ci,k2,false,dl,k2);}}if(S>=1.6&&!GLT)drawGlints(S,ox,oy,vl,vr,vt,vb,dt);}
   else{const k=clamp(Math.ceil(Math.log2(4/S)-.05),2,6);for(const ci of FC.order){const G=chunkGeom(FC,ci);if(G.left>vr||G.left+FC.CW<vl||G.top>vb||G.top+FC.CH<vt)continue;vis.push([ci,G]);const e=getChunk(FC,ci,k,false,deadline,6);if(e)drawC(g,e,G,S,ox,oy);}
+    /* far view keeps traffic visible (drawn over the cached chunks; no depth sort at this scale) */
+    if(zoom>=.35){g.setTransform(S,0,0,S,ox,oy);g.imageSmoothingEnabled=true;const L=[];const add=(a,ped)=>{const p=agentPos(a,ped),wx=(p[0]-p[1])*16,wy=(p[0]+p[1])*8-agH(p);if(wx<vl-20||wx>vr+20||wy<vt-20||wy>vb+20)return;L.push([p[0]+p[1],a,ped,wx,wy,p]);};for(const a of cars)add(a,false);if(zoom>=.8)for(const a of peds)add(a,true);L.sort((a,b)=>a[0]-b[0]);for(const it of L){if(it[2])drawPedV(g,it[1],it[3],it[4],it[5],S);else drawVeh(g,it[1],it[3],it[4],it[5],S);}g.setTransform(1,0,0,1,0,0);}
     if(overlay!=='none'){if(ovDirty){buildOverlay();ovDirty=false;}const Gs=overlay==='util'?1:CG;g.setTransform(16*Gs*S,8*Gs*S,-16*Gs*S,8*Gs*S,ox,oy);g.imageSmoothingEnabled=overlay!=='util';g.globalAlpha=overlay==='util'?.75:.62;g.drawImage(overlay==='util'?ovT:ovC,0,0);g.globalAlpha=1;g.setTransform(1,0,0,1,0,0);}}
   if(WX.snowCover>.01){g.fillStyle='rgba(240,245,250,'+(WX.snowCover*.28).toFixed(3)+')';g.fillRect(0,0,W,Hh);}
   if(WX.cover>.05){g.setTransform(S,0,0,S,ox,oy);for(const c of clouds){if(c.x+c.r<vl||c.x-c.r>vr||c.y+c.r<vt||c.y-c.r>vb)continue;const gr=g.createRadialGradient(c.x,c.y,0,c.x,c.y,c.r);const a=(.16*WXA*1.4*Math.min(1,WX.cover*1.4)).toFixed(3);gr.addColorStop(0,'rgba(15,25,40,'+a+')');gr.addColorStop(1,'rgba(15,25,40,0)');g.fillStyle=gr;g.fillRect(c.x-c.r,c.y-c.r,c.r*2,c.r*2);}g.setTransform(1,0,0,1,0,0);}
