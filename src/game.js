@@ -2757,6 +2757,31 @@ function genVRoads(seed){const r=mulberry(seed*31+7);VR={on:true,edges:[],ver:VR
   for(const i of cand){const x=i&NM,y=i>>NS;if(near(x,y,4))continue;const f=ANG[i]===ANG[i]?ANG[i]:0;for(const a of [f,f+Math.PI/2])for(const s of [0,Math.PI]){const p=trace(x+.5,y+.5,a+s);if(p.length<5)continue;const q=vResample(p,.5);const cls=UR[i]<.35?2:1;VR.edges.push({cls,pts:q});for(const [px,py] of q){const j=idx(px|0,py|0);if(!OCC[j])OCC[j]=2;}}}
   /* rasterize: road tiles under the asphalt */
   for(const e of VR.edges){const W=VCLS[e.cls].w*.5+.3;for(const [px,py] of e.pts){for(let y=Math.floor(py-W);y<=py+W;y++)for(let x=Math.floor(px-W);x<=px+W;x++){if(x<0||y<0||x>=N||y>=N)continue;if(Math.hypot(x+.5-px,y+.5-py)>W+.2)continue;const i=idx(x,y);if(OCEAN[i])continue;clearTile(i);kind[i]=K.ROAD;lvl[i]=0;vari[i]=VRV;deco[i]=0;fix[i]=0;touch(i);}}}
+  /* big pieces first: apartment complexes in large blocks, parks, schools and civic buildings */
+  {const dN=(x,y)=>Math.min(...C.map((c,k)=>Math.hypot(x-c[0],y-c[1])/(k?24:32)));
+   const okL=i=>land(i)&&!kind[i]&&UR[i]<1&&slope[i]<=1&&!OCEAN[i];
+   const blocks=[];{const seen=new Uint8Array(NN);for(let s0=0;s0<NN;s0++){if(seen[s0]||!okL(s0))continue;const q=[s0];seen[s0]=1;for(let h=0;h<q.length;h++){const i=q[h],x=i&NM,y=i>>NS;for(const [dx,dy] of DIRS){const xx=x+dx,yy=y+dy;if(xx<0||yy<0||xx>=N||yy>=N)continue;const j=idx(xx,yy);if(!seen[j]&&okL(j)){seen[j]=1;q.push(j);}}}
+     let sx=0,sy=0;for(const i of q){sx+=i&NM;sy+=i>>NS;}blocks.push({t:q,cx:sx/q.length,cy:sy/q.length,d:dN(sx/q.length,sy/q.length)});}}
+   blocks.sort((a,b)=>b.t.length-a.t.length);
+   /* parks: a lake park near downtown, a neighbourhood park per sub-centre */
+   const park=(t,x,y)=>{const n0=[...Array(NN)].length;placePark(t,{x:Math.round(x),y:Math.round(y)});};
+   {const b=blocks.find(b=>b.d<.7&&b.t.length>=90);if(b)placePark(1,{x:Math.round(b.cx),y:Math.round(b.cy)});}
+   C.slice(1).forEach(c=>{const b=blocks.filter(b=>b.t.length>=30&&b.t.length<200&&Math.hypot(b.cx-c[0],b.cy-c[1])<20).sort((p,q)=>Math.hypot(p.cx-c[0],p.cy-c[1])-Math.hypot(q.cx-c[0],q.cy-c[1]))[0];if(b&&okL(idx(Math.round(b.cx),Math.round(b.cy))))placePark(0,{x:Math.round(b.cx),y:Math.round(b.cy)});});
+   /* apartment complexes */
+   for(const b of blocks){if(b.t.length<44||b.d<.28||b.d>1)continue;if(r()>(b.d<.5?.5:.7))continue;const set=new Set(b.t.filter(okL));if(set.size<44)continue;const cl=fitCells(set);if(cl.length<8)continue;
+     const q=r(),st=b.d<.45?(q<.45?5:2):b.d<.7?(q<.7?1:2):(q<.3?0:1);fitComplex(cl,st,r);}
+   /* civic facilities: frontage lots of the right size near the right centre */
+   const TID=id=>LMKT.findIndex(t=>t.id===id);
+   const put=(id,near,maxD)=>{const tid=TID(id);if(tid<0)return false;const sz=LMKT[tid].sz;let best=null,bd=1e9;
+     for(let k=0;k<500;k++){const x0=Math.round(near[0]+(r()-.5)*maxD*2),y0=Math.round(near[1]+(r()-.5)*maxD*2);if(x0<2||y0<2||x0+sz>=N-2||y0+sz>=N-2)continue;if((x0>>4)!==((x0+sz-1)>>4)||(y0>>4)!==((y0+sz-1)>>4))continue;
+       let ok=true,road=false;for(let y=y0;y<y0+sz&&ok;y++)for(let x=x0;x<x0+sz;x++){if(!okL(idx(x,y))){ok=false;break;}}if(!ok)continue;
+       for(let q=-1;q<=sz&&!road;q++)for(const [ax,ay] of [[x0+q,y0-1],[x0+q,y0+sz],[x0-1,y0+q],[x0+sz,y0+q]])if(ax>=0&&ay>=0&&ax<N&&ay<N&&kind[idx(ax,ay)]===K.ROAD){road=true;break;}if(!road)continue;
+       const d=Math.hypot(x0-near[0],y0-near[1]);if(d<bd){bd=d;best=[x0,y0];}}
+     if(!best)return false;placeLmk(tid,best[0]+((sz-1)>>1),best[1]+((sz-1)>>1),1);return true;};
+   for(const id of ['cityhall','culture','library','museum','busterm','court','post','police2'])put(id,dt,16);
+   C.slice(1).forEach(c=>{for(const id of ['guhall','comctr','highsch','school','school','kinder','health','gym','senior'])put(id,c,14);});
+   put('univ',C[C.length-1],22);put('stadium',C[1]||dt,22);
+  }
   /* lots: develop tiles next to roads by distance to the centres */
   const RD=new Uint8Array(NN).fill(9);{const q=[];for(let i=0;i<NN;i++)if(kind[i]===K.ROAD){RD[i]=0;q.push(i);}for(let h=0;h<q.length;h++){const i=q[h];if(RD[i]>=4)continue;const x=i&NM,y=i>>NS;for(const [dx,dy] of DIRS){const xx=x+dx,yy=y+dy;if(xx<0||yy<0||xx>=N||yy>=N)continue;const j=idx(xx,yy);if(RD[j]>RD[i]+1){RD[j]=RD[i]+1;q.push(j);}}}}
   for(let y=1;y<N-1;y+=2)for(let x=1;x<N-1;x+=2){const i=idx(x,y);if(UR[i]>=1)continue;const t4=[idx(x,y),idx(x+1,y),idx(x,y+1),idx(x+1,y+1)];if(!t4.every(j=>!kind[j]&&land(j)&&slope[j]<=1&&RD[j]<=3&&RD[j]>=1))continue;
