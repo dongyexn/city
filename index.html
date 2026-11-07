@@ -187,6 +187,83 @@ body.photo .panel,body.photo #hud{display:none!important}
   .tool{min-width:40px}
   #menu,#side{max-height:calc(100% - var(--tbh,96px) - 70px)}
 }
+
+/* ===== matte dark: low-transparency glass, one border per surface, no nested outlines ===== */
+:root,:root[data-theme],:root:not([data-theme="light"]){
+  --bg:#0d1015; --glass:rgba(19,22,28,.86); --glass2:rgba(19,22,28,.86); --glass-brd:rgba(255,255,255,.07); --glass-hi:transparent;
+  --solid:#14171d; --ink:#e7ebf0; --muted:#8a94a1; --line:rgba(255,255,255,.07); --chip:rgba(255,255,255,.055); --chip-on:rgba(255,255,255,.13);
+  --accent:#6fa2ff; --accent-soft:rgba(111,162,255,.17); --shadow:rgba(0,0,0,.42); --toast-bg:rgba(19,22,28,.94); --toast-fg:#e7ebf0;
+  --zr:#4cc06a; --zc:#57a3ea; --zi:#e8ad34; --warn:#ef6f5b; color-scheme:dark}
+.panel,.hgrp{background:var(--glass)!important;-webkit-backdrop-filter:blur(10px)!important;backdrop-filter:blur(10px)!important;border:1px solid var(--glass-brd)!important;box-shadow:0 8px 22px var(--shadow)!important}
+.panel{border-radius:14px}.hgrp{border-radius:13px}
+.seg,.btn,.ddBtn,.wx,.pill,.track,#codeBox,.palItem,.tool{border-color:transparent!important}
+.seg{background:rgba(255,255,255,.04)}
+.seg button[aria-pressed="true"],.tgTab[aria-pressed="true"],.ddList button[aria-selected="true"]{box-shadow:none;background:var(--chip-on)}
+.tool[aria-pressed="true"]{background:var(--accent-soft);box-shadow:none}
+.palItem[aria-pressed="true"]{background:var(--accent-soft);box-shadow:none;outline:1.5px solid var(--accent);outline-offset:-1.5px}
+#miniWrap{padding:6px}#mini{border-radius:9px}
+svg{flex:none}
+/* status card: same width as the minimap, numbers first */
+#side{width:254px;box-sizing:border-box;padding:12px 12px 10px;display:flex;flex-direction:column;gap:12px;overflow-y:auto;scrollbar-width:none}
+#side::-webkit-scrollbar{display:none}
+.kpi .kh{display:flex;align-items:baseline;justify-content:space-between}
+.kpi b{font-size:24px;font-weight:600;letter-spacing:-.01em}
+#spark{width:100%;height:42px;display:block;margin-top:2px}
+.kp2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.kp2>div{background:var(--chip);border-radius:10px;padding:7px 9px;display:flex;flex-direction:column;gap:2px}
+.kp2 b{font-size:15px;font-weight:600}
+.kp2 .lbl{font-size:10.5px;display:flex;align-items:center}
+.blk{display:flex;flex-direction:column;gap:6px}
+.sh{font-size:10.5px;color:var(--muted);letter-spacing:.08em;font-weight:600}
+.dem{display:grid;grid-template-columns:12px 1fr;align-items:center;gap:8px;font-size:11px}
+.dtrack{position:relative;height:8px;background:var(--chip);border-radius:4px;overflow:hidden}
+.dtrack::after{content:"";position:absolute;top:0;bottom:0;left:50%;width:1px;background:rgba(255,255,255,.22)}
+.dtrack .fill{position:absolute;top:0;bottom:0;border-radius:4px}
+.mtr{display:grid;grid-template-columns:16px 1fr 40px;align-items:center;gap:8px}
+.mtr svg{width:14px;height:14px}
+.mt{height:6px;background:var(--chip);border-radius:3px;overflow:hidden}.mt i{display:block;height:100%;width:0;background:#f2c94c;border-radius:3px;transition:width .4s}
+.mtr .num{text-align:right;font-size:12px}
+.net{display:flex;align-items:baseline;gap:8px}.net b{font-size:20px;font-weight:600}
+.fin{display:flex;gap:12px;font-size:11.5px;align-items:center;flex-wrap:wrap}.fin>span{display:inline-flex;align-items:center}
+.tax{grid-template-columns:14px 1fr 34px;gap:8px;margin:0}.tax label{font-weight:700;font-size:11px}
+.ovg{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
+.ovb{display:flex;flex-direction:column;align-items:center;gap:3px;border-radius:10px!important;padding:7px 2px!important;font-size:10.5px!important;min-height:0!important}
+.ovb svg{width:16px;height:16px}
+.ovb[aria-pressed="true"]{background:var(--accent-soft)!important;color:var(--accent)!important}
+.legend{margin-top:2px}
+/* settings: tiles, switches, icon segments */
+#menu{width:288px;padding:12px 14px 12px}
+#menu h2{font-family:var(--f-body);font-size:10.5px;color:var(--muted);letter-spacing:.08em;font-weight:600;margin:14px 0 6px}
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.tiles.two{grid-template-columns:1fr 1fr;margin-top:6px}.tiles.three{grid-template-columns:repeat(3,1fr)}
+.tile{display:flex;flex-direction:column;align-items:center;gap:5px;padding:10px 2px 8px;border:0;border-radius:11px;background:var(--chip);cursor:pointer;font-size:11px;color:var(--ink)}
+.tile:hover{background:var(--chip-on)}.tile svg{width:18px;height:18px}.tile.warn{color:var(--warn)}
+.tiles.two .tile{flex-direction:row;justify-content:center;padding:8px}
+.sws{display:flex;flex-direction:column;gap:1px}
+.sw{display:flex!important;align-items:center;gap:10px;width:100%;border:0!important;border-radius:9px!important;background:transparent!important;padding:7px 6px!important;cursor:pointer;font-size:12.5px!important;color:var(--ink)!important;text-align:left}
+.sw:hover{background:var(--chip)!important}.sw svg{width:15px;height:15px;color:var(--muted)}
+.sw span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.knob{width:30px;height:17px;border-radius:9px;background:rgba(255,255,255,.14);position:relative;flex:none;transition:background .15s}
+.knob::after{content:"";position:absolute;top:2px;left:2px;width:13px;height:13px;border-radius:50%;background:#cfd6df;transition:transform .15s}
+.sw[aria-pressed="true"] .knob{background:var(--accent)}.sw[aria-pressed="true"] .knob::after{transform:translateX(13px);background:#fff}
+.sw[aria-pressed="true"] svg{color:var(--accent)}
+.seg.wide{display:grid;grid-template-columns:repeat(5,1fr);width:100%;box-sizing:border-box}
+.seg.wide .pill{display:flex;justify-content:center;align-items:center;border-radius:8px!important;padding:6px 0!important;background:transparent}
+.seg.wide .pill svg{width:16px;height:16px}
+.seg.wide .pill[aria-pressed="true"]{background:var(--chip-on)!important;color:var(--ink)!important}
+.vol{grid-template-columns:18px 1fr 30px;margin:5px 0}.vol label svg{width:15px;height:15px;color:var(--muted)}
+details.move{margin-top:4px}details.move summary{list-style:none;cursor:pointer;display:flex;align-items:center}
+details.move summary::-webkit-details-marker{display:none}details.move summary h2::after{content:" ▾";opacity:.6}
+#codeBox{margin-top:6px}
+.keys{display:flex;gap:10px;justify-content:space-between;margin-top:14px;font-size:11px;color:var(--muted)}
+.keys span{display:inline-flex;align-items:center;gap:5px}
+kbd{font:600 10px var(--f-body);background:var(--chip-on);border-radius:5px;padding:2px 5px;color:var(--ink)}
+/* right-click quick menu */
+#ctx{z-index:40;padding:5px;min-width:168px;display:flex;flex-direction:column;gap:1px}
+#ctx .ch{font-size:11px;color:var(--muted);padding:5px 9px 4px;white-space:nowrap}
+#ctx button{display:flex;align-items:center;gap:9px;border:0;background:transparent;border-radius:8px;padding:7px 9px;font-size:12.5px;cursor:pointer;color:var(--ink);text-align:left}
+#ctx button:hover{background:var(--chip-on)}#ctx button svg{width:14px;height:14px;color:var(--muted)}#ctx button.warn{color:var(--warn)}#ctx button.warn svg{color:var(--warn)}
+#ctx hr{border:0;height:1px;background:var(--line);margin:3px 4px}
+@media (max-width:720px){#side{width:auto}}
 @media (prefers-reduced-motion: reduce){*{transition:none!important}}
 </style>
 </head>
@@ -233,7 +310,7 @@ body.photo .panel,body.photo #hud{display:none!important}
   <div class="hfill"></div>
   <div class="hgrp mx hend">
     <button id="bgm" class="btn" aria-pressed="false" title="배경음악"><svg viewBox="0 0 12 12"><path d="M4 2l7-1.5v7.2a1.8 1.8 0 1 1-1-1.6V3L5 4v5.2a1.8 1.8 0 1 1-1-1.6z"/></svg>음악</button>
-    <button id="sideToggle" class="btn" aria-expanded="true" aria-controls="side"><svg viewBox="0 0 12 12"><rect x="1" y="7" width="2" height="4"/><rect x="5" y="4" width="2" height="7"/><rect x="9" y="1" width="2" height="10"/></svg>현황</button>
+    <button id="sideToggle" class="btn" aria-expanded="false" aria-controls="side"><svg viewBox="0 0 12 12"><rect x="1" y="7" width="2" height="4"/><rect x="5" y="4" width="2" height="7"/><rect x="9" y="1" width="2" height="10"/></svg>현황</button>
     <button id="menuBtn" class="btn" aria-expanded="false" aria-controls="menu"><svg viewBox="0 0 12 12"><rect x="1" y="2" width="10" height="1.6" rx=".8"/><rect x="1" y="5.2" width="10" height="1.6" rx=".8"/><rect x="1" y="8.4" width="10" height="1.6" rx=".8"/></svg>메뉴</button>
   </div>
 </header>
@@ -243,125 +320,74 @@ body.photo .panel,body.photo #hud{display:none!important}
 </div>
 
 <div id="menu" class="panel" hidden role="dialog" aria-label="게임 메뉴">
-  <section>
-    <h2>게임</h2>
-    <div class="actions" style="margin-top:0">
-      <button class="btn" id="bSave">저장</button>
-      <button class="btn" id="bLoad">불러오기</button>
-      <button class="btn" id="bRand">랜덤 도시</button>
-      <button class="btn warn" id="bNew">빈 땅에서 시작</button>
+  <div class="tiles">
+    <button class="tile" id="bSave"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 2h8l2 2v10H3z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M5 2v4h6V2M5 14v-4h6v4" fill="none" stroke="currentColor" stroke-width="1.5"/></svg><span>저장</span></button>
+    <button class="tile" id="bLoad"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 5h5l1.5 1.5H14V13H2z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg><span>불러오기</span></button>
+    <button class="tile" id="bRand"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="2.5" y="2.5" width="11" height="11" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="5.6" cy="5.6" r="1.1" fill="currentColor"/><circle cx="10.4" cy="10.4" r="1.1" fill="currentColor"/><circle cx="8" cy="8" r="1.1" fill="currentColor"/></svg><span>랜덤 도시</span></button>
+    <button class="tile warn" id="bNew"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 12.5h12M4 12.5V9l3-2 3 2v3.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg><span>빈 땅</span></button>
+  </div>
+  <h2>그래픽</h2>
+  <div class="sws">
+    <button class="sw pill" data-fx="post"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="3" fill="currentColor"/><path d="M8 1.5v2M8 12.5v2M1.5 8h2M12.5 8h2M3.4 3.4l1.4 1.4M11.2 11.2l1.4 1.4M3.4 12.6l1.4-1.4M11.2 4.8l1.4-1.4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg><span>빛 번짐·색보정</span><i class="knob"></i></button>
+    <button class="sw pill" data-fx="tilt"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="5.5" fill="none" stroke="currentColor" stroke-width="1.4"/><circle cx="8" cy="8" r="2" fill="currentColor"/></svg><span>미니어처 초점</span><i class="knob"></i></button>
+    <button class="sw pill" data-fx="shadow"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="3" y="3" width="6" height="8" rx="1" fill="currentColor"/><path d="M9 11l5 2.5H6.5L3 11" fill="currentColor" opacity=".45"/></svg><span>그림자</span><i class="knob"></i></button>
+    <button class="sw pill" data-fx="perf"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M9 1.5 3.5 9H8l-1 5.5L12.5 7H8z" fill="currentColor"/></svg><span>성능 모드</span><i class="knob"></i></button>
+    <button class="sw pill" data-fx="grow"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 14V7M8 7c0-3 2-4.5 5-4.5 0 3-2 4.5-5 4.5zM8 9C8 6.5 6.3 5 3.5 5 3.5 7.5 5.2 9 8 9z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg><span>구역 자동 성장</span><i class="knob"></i></button>
+  </div>
+  <div class="tiles two">
+    <button class="tile" id="bPhoto"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1.5" y="4" width="13" height="9" rx="2" fill="none" stroke="currentColor" stroke-width="1.4"/><circle cx="8" cy="8.5" r="2.4" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M5.5 4l1-1.8h3l1 1.8" fill="none" stroke="currentColor" stroke-width="1.4"/></svg><span>사진 모드</span></button>
+    <button class="tile" id="bFw"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 8l-4-4M8 8l4-4M8 8V2M8 8l-5 2M8 8l5 2M8 8v6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg><span>불꽃놀이</span></button>
+  </div>
+  <h2>계절</h2>
+  <div class="seg wide" id="seasonSel" role="group" aria-label="계절">
+    <button class="pill" data-s="-1" title="계절 흐름"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M13 8a5 5 0 1 1-1.5-3.5M13 2.5v2.5h-2.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+    <button class="pill" data-s="0" title="봄"><svg viewBox="0 0 16 16" aria-hidden="true"><g fill="#f28aa0"><circle cx="8" cy="4.6" r="2.3"/><circle cx="11.2" cy="7" r="2.3"/><circle cx="10" cy="10.8" r="2.3"/><circle cx="6" cy="10.8" r="2.3"/><circle cx="4.8" cy="7" r="2.3"/></g><circle cx="8" cy="8" r="1.6" fill="#f2d24a"/></svg></button>
+    <button class="pill" data-s="1" title="여름"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="3.2" fill="#f2b233"/><path d="M8 1.5v2M8 12.5v2M1.5 8h2M12.5 8h2M3.4 3.4l1.4 1.4M11.2 11.2l1.4 1.4M3.4 12.6l1.4-1.4M11.2 4.8l1.4-1.4" stroke="#f2b233" stroke-width="1.4" stroke-linecap="round"/></svg></button>
+    <button class="pill" data-s="2" title="가을"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5 9.6 5l3.6-.8-1.6 3.4 2.4 2.3-3.6.6.2 3.5L8 12l-2.6 2 .2-3.5-3.6-.6 2.4-2.3L2.8 4.2 6.4 5z" fill="#e2683a"/></svg></button>
+    <button class="pill" data-s="3" title="겨울"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5v13M2.4 4.8l11.2 6.4M2.4 11.2l11.2-6.4" stroke="#a9d4ff" stroke-width="1.6" stroke-linecap="round"/></svg></button>
+  </div>
+  <h2>소리</h2>
+  <div class="sws"><button class="sw" id="bgm2" aria-pressed="false"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 3l8-1.5v8.2a2 2 0 1 1-1.2-1.8V4L6.2 5v6.2a2 2 0 1 1-1.2-1.8z" fill="currentColor"/></svg><span id="moodLbl">음악 꺼짐</span><i class="knob"></i></button></div>
+  <div class="vol"><label for="vol" title="음악"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 6h3l4-3v10l-4-3H2z" fill="currentColor"/><path d="M11 5.5a3.5 3.5 0 0 1 0 5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></label><input id="vol" type="range" min="0" max="100" value="70"><output id="oVol">70</output></div>
+  <div class="vol"><label for="evol" title="환경음"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 9c2-3 4-3 6 0s4 3 6 0M2 5.5c2-3 4-3 6 0s4 3 6 0" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></label><input id="evol" type="range" min="0" max="100" value="50"><output id="oEvol">50</output></div>
+  <details class="move"><summary><h2>도시 옮기기</h2></summary>
+    <div class="tiles three">
+      <button class="tile" id="bCopy"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="5" y="5" width="8.5" height="8.5" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M3 10.5V3.5A1 1 0 0 1 4 2.5h6.5" fill="none" stroke="currentColor" stroke-width="1.4"/></svg><span>코드 복사</span></button>
+      <button class="tile" id="bExport"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2v8M4.5 6.5 8 10l3.5-3.5M2.5 13.5h11" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><span>내보내기</span></button>
+      <label class="tile" for="fImport"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 10V2M4.5 5.5 8 2l3.5 3.5M2.5 13.5h11" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><span>가져오기</span></label><input type="file" id="fImport" accept=".pixelcity,.txt,.json" hidden>
     </div>
-  </section>
-  <section>
-    <h2>도시 옮기기</h2>
-    <div class="actions" style="margin-top:0">
-      <button class="btn" id="bCopy">도시 코드 복사</button>
-      <button class="btn" id="bExport">파일로 내보내기</button>
-      <label class="btn" for="fImport">파일 가져오기</label><input type="file" id="fImport" accept=".pixelcity,.txt,.json" hidden>
-    </div>
-    <textarea id="codeBox" rows="3" placeholder="다른 기기에서 복사한 도시 코드를 여기에 붙여넣으세요" aria-label="도시 코드"></textarea>
-    <div class="actions" style="margin-top:6px"><button class="btn" id="bPaste">붙여넣은 코드 불러오기</button></div>
-    <p class="note">Claude 앱과 GitHub 페이지처럼 주소가 다르면 저장이 따로 됩니다. 코드나 파일로 옮기세요. 파일 내보내기는 Claude 앱 안에서는 막혀 있을 수 있습니다.</p>
-  </section>
-  <section>
-    <h2>그래픽</h2>
-    <div class="pills">
-      <button class="pill" data-fx="post">빛 번짐·색보정</button>
-      <button class="pill" data-fx="tilt">미니어처 초점</button>
-      <button class="pill" data-fx="shadow">그림자</button>
-      <button class="pill" data-fx="perf">성능 모드</button>
-    </div>
-    <div class="actions" style="margin-top:8px"><button class="btn" id="bPhoto">사진 모드</button><button class="btn" id="bFw">불꽃놀이</button></div>
-    <p class="note">느리면 성능 모드를 켜 보세요. 해상도와 잔디 디테일을 낮춥니다.</p>
-  </section>
-  <section>
-    <h2>도시</h2>
-    <div class="pills"><button class="pill" data-fx="grow">구역 자동 성장</button></div>
-    <p class="note">끄면 팔레트로 직접 놓은 건물만 바뀝니다. 켜면 구역 도구로 칠한 땅에 건물이 자랍니다.</p>
-    <div class="pills" id="seasonSel" style="margin-top:8px" role="group" aria-label="계절">
-      <button class="pill" data-s="-1">계절 흐름</button><button class="pill" data-s="0">봄</button><button class="pill" data-s="1">여름</button><button class="pill" data-s="2">가을</button><button class="pill" data-s="3">겨울</button>
-    </div>
-  </section>
-  <section>
-    <h2>소리</h2>
-    <div class="row" style="margin-top:0"><button class="btn" id="bgm2" aria-pressed="false">음악 켜기</button></div>
-    <div class="vol" style="margin-top:8px"><label for="vol">음악</label><input id="vol" type="range" min="0" max="100" value="70"><output id="oVol">70</output></div>
-    <div class="vol"><label for="evol">환경음</label><input id="evol" type="range" min="0" max="100" value="50"><output id="oEvol">50</output></div>
-    <div class="mood" id="moodLbl">음악 꺼짐</div>
-  </section>
-  <section>
-    <h2>조작</h2>
-    <dl class="kv keys">
-      <dt>건설</dt><dd>왼쪽 드래그</dd>
-      <dt>화면 이동</dt><dd>오른쪽 드래그 · 두 손가락</dd>
-      <dt>확대·축소</dt><dd>휠 · 손가락 벌리기</dd>
-    </dl>
-  </section>
+    <textarea id="codeBox" rows="2" placeholder="도시 코드 붙여넣기" aria-label="도시 코드"></textarea>
+    <button class="btn" id="bPaste" style="margin-top:6px;width:100%;justify-content:center">코드로 불러오기</button>
+  </details>
+  <div class="keys"><span><kbd>좌</kbd>건설</span><span><kbd>우</kbd>메뉴·이동</span><span><kbd>휠</kbd>확대</span></div>
 </div>
 
 <nav id="tools" class="panel" aria-label="건설 도구"></nav>
 
-<aside id="side" class="panel" aria-label="도시 현황">
-  <section>
-    <h2>수요</h2>
-    <div class="rci">
-      <div class="col"><div class="track"><div class="fill" id="dR" style="background:var(--zr)"></div></div><span class="lbl"><b style="color:var(--zr)">R</b> 주거</span></div>
-      <div class="col"><div class="track"><div class="fill" id="dC" style="background:var(--zc)"></div></div><span class="lbl"><b style="color:var(--zc)">C</b> 상업</span></div>
-      <div class="col"><div class="track"><div class="fill" id="dI" style="background:var(--zi)"></div></div><span class="lbl"><b style="color:var(--zi)">I</b> 공업</span></div>
-    </div>
-  </section>
-  <section>
-    <h2>도시 현황</h2>
-    <dl class="kv">
-      <dt>인구</dt><dd id="sPop">0</dd>
-      <dt>상업 일자리</dt><dd id="sJc">0</dd>
-      <dt>공업 일자리</dt><dd id="sJi">0</dd>
-      <dt>평균 지가 (주거)</dt><dd id="sLv">-</dd>
-      <dt>전력 공급</dt><dd id="sPw">-</dd>
-      <dt>용수 공급</dt><dd id="sWt">-</dd>
-    </dl>
-  </section>
-  <section>
-    <h2>환경</h2>
-    <div class="pills" id="wxSel" role="group" aria-label="날씨">
-      <button class="pill" data-w="auto" aria-pressed="true">자동</button>
-      <button class="pill" data-w="clear">맑음</button>
-      <button class="pill" data-w="cloudy">흐림</button>
-      <button class="pill" data-w="rain">비</button>
-      <button class="pill" data-w="storm">뇌우</button>
-      <button class="pill" data-w="snow">눈</button>
-      <button class="pill" data-w="fog">안개</button>
-    </div>
-  </section>
-  <section>
-    <h2>재정 <span class="tag">샌드박스</span></h2>
-    <div class="tax"><label for="taxR">주거세</label><input id="taxR" type="range" min="0" max="20" value="9"><output id="oR">9%</output></div>
-    <div class="tax"><label for="taxC">상업세</label><input id="taxC" type="range" min="0" max="20" value="9"><output id="oC">9%</output></div>
-    <div class="tax"><label for="taxI">공업세</label><input id="taxI" type="range" min="0" max="20" value="9"><output id="oI">9%</output></div>
-    <dl class="kv" style="margin-top:8px">
-      <dt>월 세수</dt><dd id="fInc">0</dd>
-      <dt>월 유지비</dt><dd id="fExp">0</dd>
-      <dt>월 수지</dt><dd id="fNet">0</dd>
-      <dt>누적 건설비</dt><dd id="fSpent">0</dd>
-    </dl>
-    <p class="note">금액 단위 만원. 자금은 무한이고, 세율은 수요에만 영향을 줍니다.</p>
-  </section>
-  <section>
-    <h2>인구 추이</h2>
-    <canvas id="spark" width="484" height="120"></canvas>
-  </section>
-  <section>
-    <h2>지도 보기</h2>
-    <div class="pills" id="ovl" role="group" aria-label="지도 보기">
-      <button class="pill" data-o="none" aria-pressed="true">기본</button>
-      <button class="pill" data-o="lv">지가</button>
-      <button class="pill" data-o="pol">오염</button>
-      <button class="pill" data-o="police">치안</button>
-      <button class="pill" data-o="fire">소방</button>
-      <button class="pill" data-o="util">전력·수도</button>
-    </div>
+<aside id="side" class="panel closed" aria-label="도시 현황">
+  <div class="kpi"><div class="kh"><span class="lbl">인구</span><b class="num" id="sPop">0</b></div><canvas id="spark" width="460" height="90"></canvas></div>
+  <div class="kp2"><div><span class="lbl"><i class="dot" style="background:var(--zc)"></i>상업 일자리</span><b class="num" id="sJc">0</b></div><div><span class="lbl"><i class="dot" style="background:var(--zi)"></i>공업 일자리</span><b class="num" id="sJi">0</b></div></div>
+  <div class="blk"><span class="sh">수요</span>
+    <div class="dem"><b style="color:var(--zr)">R</b><div class="dtrack"><div class="fill" id="dR" style="background:var(--zr)"></div></div></div>
+    <div class="dem"><b style="color:var(--zc)">C</b><div class="dtrack"><div class="fill" id="dC" style="background:var(--zc)"></div></div></div>
+    <div class="dem"><b style="color:var(--zi)">I</b><div class="dtrack"><div class="fill" id="dI" style="background:var(--zi)"></div></div></div>
+  </div>
+  <div class="blk"><span class="sh">기반시설</span>
+    <div class="mtr" title="전력 공급"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M9 1.5 3.5 9H8l-1 5.5L12.5 7H8z" fill="#f2c94c"/></svg><div class="mt"><i id="mPw"></i></div><span class="num" id="sPw">-</span></div>
+    <div class="mtr" title="용수 공급"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5C6 5 3.8 7.4 3.8 10a4.2 4.2 0 0 0 8.4 0C12.2 7.4 10 5 8 1.5z" fill="#5fb3ff"/></svg><div class="mt"><i id="mWt" style="background:#5fb3ff"></i></div><span class="num" id="sWt">-</span></div>
+    <div class="mtr" title="평균 지가(주거)"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 13.5h11M4 13.5V7l4-3.5L12 7v6.5" fill="none" stroke="#c9a7ff" stroke-width="1.5" stroke-linejoin="round"/></svg><div class="mt"><i id="mLv" style="background:#c9a7ff"></i></div><span class="num" id="sLv">-</span></div>
+  </div>
+  <div class="blk"><span class="sh">재정</span>
+    <div class="net"><b class="num" id="fNet">0</b><span class="lbl">월 수지 · 만원</span></div>
+    <div class="fin"><span><i class="dot" style="background:var(--zr)"></i><span class="num" id="fInc">0</span></span><span><i class="dot" style="background:var(--warn)"></i><span class="num" id="fExp">0</span></span><span class="lbl">누적&nbsp;<span class="num" id="fSpent">0</span></span></div>
+    <div class="tax"><label for="taxR" style="color:var(--zr)">R</label><input id="taxR" type="range" min="0" max="20" value="9"><output id="oR">9%</output></div>
+    <div class="tax"><label for="taxC" style="color:var(--zc)">C</label><input id="taxC" type="range" min="0" max="20" value="9"><output id="oC">9%</output></div>
+    <div class="tax"><label for="taxI" style="color:var(--zi)">I</label><input id="taxI" type="range" min="0" max="20" value="9"><output id="oI">9%</output></div>
+  </div>
+  <div class="blk"><span class="sh">지도 보기</span>
+    <div class="ovg" id="ovl" role="group" aria-label="지도 보기"><button class="pill ovb" data-o="none" aria-pressed="true" title="기본"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="2.5" y="2.5" width="11" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="1.4"/></svg><span>기본</span></button><button class="pill ovb" data-o="lv" title="지가"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 13h12M4 13V9M7 13V6M10 13V8M13 13V3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg><span>지가</span></button><button class="pill ovb" data-o="pol" title="오염"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 13h10M5 13V7h2v6M9 13V4h2v9" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M10 3c1-1.5 3-1 3 .5" fill="none" stroke="currentColor" stroke-width="1.2"/></svg><span>오염</span></button><button class="pill ovb" data-o="police" title="치안"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5 13.5 4v4c0 3-2.4 5.5-5.5 6.5C4.9 13.5 2.5 11 2.5 8V4z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg><span>치안</span></button><button class="pill ovb" data-o="fire" title="소방"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 14.5c3 0 5-2 5-4.8C13 6 9.5 4.5 9 1.5 7.5 3 6 5 6.3 7 5 6.3 4.5 5 4.5 5 3.4 6.3 3 7.8 3 9.7c0 2.8 2 4.8 5 4.8z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg><span>소방</span></button><button class="pill ovb" data-o="util" title="전력·수도"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M9 1.5 3.5 9H8l-1 5.5L12.5 7H8z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg><span>전력·수도</span></button></div>
     <div class="legend" id="legend" hidden><span id="lgLo">낮음</span><i id="lgBar"></i><span id="lgHi">높음</span></div>
-  </section>
+  </div>
 </aside>
 
 <div id="palette" class="panel" hidden role="dialog" aria-label="꾸미기 팔레트">
@@ -372,6 +398,7 @@ body.photo .panel,body.photo #hud{display:none!important}
 </div>
 <div id="miniWrap" class="panel"><canvas id="mini" width="512" height="256" aria-label="미니맵"></canvas></div>
 <div id="info" class="panel" hidden></div>
+<div id="ctx" class="panel" hidden role="menu" aria-label="빠른 메뉴"></div>
 <div id="toast" role="status" hidden></div>
 <button id="photoExit" class="btn" hidden>UI 다시 보기</button>
 
@@ -2836,7 +2863,7 @@ function updateAudio(dt){const n=nightAmt(),dusk=Math.exp(-(((tod-.75)/.05)**2))
   AU.birds=AU.want==='day'&&WX.cover<.5&&(SEASON===0||SEASON===1);AU.crickets=AU.want==='night'&&WX.rain<.2&&(SEASON===1||SEASON===2);
   auT+=dt;if(!AU.on||auT<.3)return;auT=0;const t=AU.ctx.currentTime;AU.rainG.gain.setTargetAtTime((WX.rain*.06+WX.storm*.02)*AU.env,t,.8);AU.windG.gain.setTargetAtTime((WX.snow*.03+WX.storm*.025+(WX.cover>.7?.006:0))*AU.env,t,1);AU.bus.amb.gain.setTargetAtTime(.5*AU.env,t,.5);}
 function updateMoodLbl(){$('moodLbl').textContent=AU.on?'재생 중 · '+TRACKS[AU.trk].name:'음악 꺼짐';}
-function toggleMusic(){if(AU.on){auStop();}else if(!auStart())return;$('bgm').setAttribute('aria-pressed',AU.on);$('bgm2').setAttribute('aria-pressed',AU.on);$('bgm2').textContent=AU.on?'음악 끄기':'음악 켜기';updateMoodLbl();}
+function toggleMusic(){if(AU.on){auStop();}else if(!auStart())return;$('bgm').setAttribute('aria-pressed',AU.on);$('bgm2').setAttribute('aria-pressed',AU.on);updateMoodLbl();}
 
 /* ================= minimap ================= */
 const mm=document.getElementById('mini'),mmx=mm.getContext('2d'),mmImgC=mk(N,N),mmImgX=mmImgC.getContext('2d');let mmData=mmImgX.createImageData(N,N),mmDirty=true;
@@ -2917,8 +2944,8 @@ function setHudOpen(o){$('hud').classList.toggle('open',o);$('hudMore').setAttri
 $('hudMore').addEventListener('click',e=>{e.stopPropagation();setHudOpen(!$('hud').classList.contains('open'));});
 document.addEventListener('pointerdown',e=>{if($('hud').classList.contains('open')&&!$('hud').contains(e.target)&&!$('wxList').contains(e.target))setHudOpen(false);});
 ['sideToggle','menuBtn'].forEach(id=>$(id).addEventListener('click',()=>{if(isMob())setHudOpen(false);}));
-$('sideToggle').addEventListener('click',()=>{if(isMob()&&!$('side').classList.contains('closed'))setMenu(false);});
-$('menuBtn').addEventListener('click',()=>{if(isMob()&&!$('menu').hidden){$('side').classList.add('closed');$('sideToggle').setAttribute('aria-expanded','false');}});
+$('sideToggle').addEventListener('click',()=>{if(!$('side').classList.contains('closed'))setMenu(false);});
+$('menuBtn').addEventListener('click',()=>{if(!$('menu').hidden){$('side').classList.add('closed');$('sideToggle').setAttribute('aria-expanded','false');}});
 if(window.ResizeObserver){const ro=new ResizeObserver(()=>{const ds=document.documentElement.style;ds.setProperty('--tbh',Math.round($('tools').getBoundingClientRect().height)+'px');if(!$('hud').classList.contains('open'))ds.setProperty('--hudh',Math.round($('hud').getBoundingClientRect().height)+'px');});ro.observe($('tools'));ro.observe($('hud'));}
 const LEG={lv:['낮음','linear-gradient(90deg,rgb(196,64,52),rgb(232,190,70),rgb(64,170,90))','높음'],pol:['깨끗','linear-gradient(90deg,rgba(150,120,60,.2),rgb(120,60,140))','심함'],police:['없음','linear-gradient(90deg,rgba(60,120,230,.1),rgb(60,120,230))','강함'],fire:['없음','linear-gradient(90deg,rgba(235,110,40,.1),rgb(235,110,40))','강함'],util:['미연결','linear-gradient(90deg,rgb(220,70,60) 0 33%,rgb(235,190,50) 33% 66%,rgb(60,190,90) 66%)','전력+수도']};
 document.querySelectorAll('#ovl .pill').forEach(b=>b.addEventListener('click',()=>{overlay=b.dataset.o;ovDirty=true;document.querySelectorAll('#ovl .pill').forEach(p=>p.setAttribute('aria-pressed',p===b));
@@ -2933,9 +2960,9 @@ const WICON={clear:'<svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="3.4" fill=
   fog:'<svg viewBox="0 0 16 16"><g stroke="#9aa6b3" stroke-width="1.6" stroke-linecap="round"><path d="M2.5 5.5h11M1.5 8.5h13M3 11.5h10"/></g></svg>'};
 let lastWx='';function updateWxChip(){const key=WX.type+'|'+Math.round(WX.temp);if(key===lastWx)return;lastWx=key;$('wx').innerHTML=WICON[WX.type]+'<span>'+WNAME[WX.type]+' '+Math.round(WX.temp)+'°</span>';}
 function updateHUD(){$('date').textContent=sim.year+'.'+String(sim.month+1).padStart(2,'0');$('hPop').textContent=fmt(sim.pop);$('hJobs').textContent=fmt(sim.jc+sim.ji);updateWxChip();}
-function setBar(el,v){const h=Math.abs(v)*50;el.style.height=h+'%';if(v>=0){el.style.bottom='50%';el.style.top='auto';}else{el.style.top='50%';el.style.bottom='auto';}}
+function setBar(el,v){const w=Math.min(50,Math.abs(v)*50);el.style.width=w+'%';el.style.left=(v>=0?50:50-w)+'%';}
 function updatePanels(){updateHUD();setBar($('dR'),sim.dem[0]);setBar($('dC'),sim.dem[1]);setBar($('dI'),sim.dem[2]);
-  $('sPop').textContent=fmt(sim.pop);$('sJc').textContent=fmt(sim.jc);$('sJi').textContent=fmt(sim.ji);$('sLv').textContent=sim.avgLv?Math.round(sim.avgLv)+' / 255':'-';
+  $('sPop').textContent=fmt(sim.pop);$('sJc').textContent=fmt(sim.jc);$('sJi').textContent=fmt(sim.ji);$('sLv').textContent=sim.avgLv?Math.round(sim.avgLv):'-';$('mLv').style.width=(sim.avgLv?sim.avgLv/2.55:0)+'%';$('mPw').style.width=sim.pw*100+'%';$('mWt').style.width=sim.wt*100+'%';
   $('sPw').textContent=Math.round(sim.pw*100)+'%';$('sWt').textContent=Math.round(sim.wt*100)+'%';
   $('fInc').textContent=fmt(sim.inc);$('fExp').textContent=fmt(sim.exp);const net=sim.inc-sim.exp;$('fNet').textContent=(net>=0?'+':'')+fmt(net);$('fNet').style.color=net>=0?'var(--zr)':'var(--warn)';$('fSpent').textContent=fmt(sim.spent);
   drawSpark();if(sel)showInfo(sel);}
@@ -2996,11 +3023,29 @@ cv.addEventListener('pointermove',e=>{const p=ptrs.get(e.pointerId);if(p){p.x=e.
   hover=pickTile(e.clientX,e.clientY);
   if(pinch&&ptrs.size===2){const [a,b]=[...ptrs.values()],d=Math.hypot(a.x-b.x,a.y-b.y),mx=(a.x+b.x)/2,my=(a.y+b.y)/2;const w=s2w(pinch.mx,pinch.my);zoom=clamp(pinch.z*d/pinch.d,1/16,zmax());camX=w[0]-(mx-Wc/2)/zoom;camY=w[1]-(my-Hc/2)/zoom;pinch.mx=mx;pinch.my=my;pinch.z=zoom;pinch.d=d;clampCam();return;}
   if(pan){const dx=e.clientX-pan.x,dy=e.clientY-pan.y;if(Math.abs(dx)+Math.abs(dy)>4)pan.moved=true;if(pan.moved){camX=pan.cx-dx/zoom;camY=pan.cy-dy/zoom;clampCam();}return;}
+  if(drag&&(e.buttons&2)){drag=null;return;}
   if(drag){const t=pickTile(e.clientX,e.clientY,true);if(SINGLE(drag.tool))drag.a=t;drag.b=t;}});
 function endPtr(e,cancel){ptrs.delete(e.pointerId);if(pinch){if(ptrs.size<2)pinch=null;pan=null;drag=null;return;}
-  if(pan){if(!pan.moved&&!cancel&&pan.btn===0&&tool==='inspect'){const t=pickTile(e.clientX,e.clientY);showInfo(t&&sel&&t.x===sel.x&&t.y===sel.y?null:t);}pan=null;return;}
+  if(pan){if(!pan.moved&&!cancel&&pan.btn===2){const t=pickTile(e.clientX,e.clientY);if(t)ctxOpen(t,e.clientX,e.clientY);pan=null;return;}if(!pan.moved&&!cancel&&pan.btn===0&&tool==='inspect'){const t=pickTile(e.clientX,e.clientY);showInfo(t&&sel&&t.x===sel.x&&t.y===sel.y?null:t);}pan=null;return;}
   if(drag){if(!cancel){pushUndo();applyTool(drag.tool,drag.a,drag.b);dirtySave();}drag=null;}}
-cv.addEventListener('pointerup',e=>endPtr(e,false));cv.addEventListener('pointercancel',e=>endPtr(e,true));
+cv.addEventListener('pointerup',e=>endPtr(e,false));
+/* right-click quick menu: actions for the tile under the cursor */
+const CXI={info:'<circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M8 7v4.5M8 4.6v.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>',shape:'<path d="M2.5 8a5.5 5.5 0 0 1 9.4-3.9M13.5 8a5.5 5.5 0 0 1-9.4 3.9M12 1.8v2.6H9.4M4 14.2v-2.6h2.6" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>',pick:'<path d="M10.5 2.5l3 3-7 7H3.5v-3z M9 4l3 3" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>',center:'<circle cx="8" cy="8" r="2.2" fill="currentColor"/><path d="M8 1.5v3M8 11.5v3M1.5 8h3M11.5 8h3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>',del:'<path d="M3 4.5h10M6.5 4.5V3h3v1.5M4.5 4.5l.7 9h5.6l.7-9" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>',esc:'<path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>'};
+function ctxClose(){$('ctx').hidden=true;}
+function ctxOpen(t,sx,sy){const el=$('ctx'),i=idx(t.x,t.y),k=kind[i],a=lmkA[i]>=0?lmkA[i]:i,bld=k>=K.RES&&k<=K.IND&&lvl[i]&&fix[i]!==2,its=[];
+  const nm=bld?catName(k,lvl[a],vari[a]):k===K.LMK?LMKT[vari[a]].name:k===K.ROAD?'도로':k===K.PARK?'공원':KNAME[k]||(deco[i]?'숲·지형':'빈 땅');
+  its.push(['info','정보 보기']);if(bld){its.push(['shape','다른 모양으로']);its.push(['pick','같은 건물 짓기']);}if(k===K.LMK)its.push(['pick','같은 시설 짓기']);
+  its.push(['center','여기로 화면 이동']);if(k!==K.EMPTY||deco[i])its.push(['del','철거']);if(tool!=='inspect')its.push(['esc','도구 내려놓기']);
+  el.innerHTML='<div class="ch">'+nm+'</div>'+its.map(([id,l],j)=>(id==='del'?'<hr>':'')+'<button data-a="'+id+'" class="'+(id==='del'?'warn':'')+'"><svg viewBox="0 0 16 16">'+CXI[id]+'</svg>'+l+'</button>').join('');
+  el.hidden=false;const w=el.offsetWidth,h=el.offsetHeight;el.style.left=Math.min(sx+4,innerWidth-w-8)+'px';el.style.top=Math.min(sy+4,innerHeight-h-8)+'px';
+  el.querySelectorAll('button').forEach(b=>b.onclick=()=>{ctxClose();const A=b.dataset.a;
+    if(A==='info')showInfo(t);else if(A==='center')centerOn(t.x,t.y);else if(A==='esc')setTool('inspect');
+    else if(A==='del'){pushUndo();applyTool('bulldoze',t,t);dirtySave();showInfo(null);}
+    else if(A==='shape'){pushUndo();vari[a]=(vari[a]+1)%VN[k];if(isFoot(a)){const x0=a&NM,y0=a>>NS;for(let dy=0;dy<2;dy++)for(let dx=0;dx<2;dx++)touch(idx(x0+dx,y0+dy));}else touch(a);dirtySave();if(sel)showInfo(sel);}
+    else if(A==='pick'){if(k===K.LMK)setTool('lmk:'+vari[a]);else{const L=lvl[a],n=catOf(k,L).length;PAL.tab={[K.RES]:'res',[K.COM]:'com',[K.IND]:'ind'}[k];PAL.lv=L;setTool('put:b:'+k+':'+L+':'+(vari[a]%n));}toast(nm+' · 클릭해서 짓기');}});}
+document.addEventListener('pointerdown',e=>{if(!$('ctx').hidden&&!$('ctx').contains(e.target))ctxClose();},true);
+addEventListener('keydown',e=>{if(e.key==='Escape')ctxClose();});cv.addEventListener('wheel',ctxClose,{passive:true});
+$('tools').addEventListener('contextmenu',e=>{e.preventDefault();setTool('inspect');});cv.addEventListener('pointercancel',e=>endPtr(e,true));
 cv.addEventListener('pointerleave',()=>{if(!drag&&!pan)hover=null;});
 cv.addEventListener('wheel',e=>{e.preventDefault();const f=Math.exp(-clamp(e.deltaY,-120,120)*.0025);zoomAt(snapZoom(zoom*f),e.clientX,e.clientY);},{passive:false});
 const keys=new Set();let lastSpeed=1;
