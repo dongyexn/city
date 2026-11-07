@@ -732,7 +732,7 @@ function juncDeco(i){const x=i&NM,y=i>>NS,J=juncInfo(x,y),Wx=J.x1-J.x0+1,Wy=J.y1
     const D=Math.hypot(Wx,Wy);
     let hit=-1,hal=0;for(let q=0;q<2;q++){const sx=q?Wx:0,ex=q?0:Wx,dx=(ex-sx)/D,dy=Wy/D,lat=(X-sx)*(-dy)+Y*dx,al=(X-sx)*dx+Y*dy;if(Math.abs(lat)<.34&&al>.15&&al<D-.15){if(hit>=0)break;hit=q;hal=al;}}if(hit<0)return null;const ph=hal/.1-Math.floor(hal/.1);return ph>.12&&ph<.62?Wt:null;};
   const c=gsp(fn);o={c,c2:half(c),bx:0,by:SCY-32,bw:128,bh:64,emit:[],flat:1};JC.set(key,o);return o;}
-const DKC=new Map();function roadDeco(i){if(isWide(i))return wideDeco(i);if(isElev(i)&&elDn(i)){if(!elX(i))return null;const x=i&NM,y=i>>NS,m=roadMask(x,y)&(elAx(i)?10:5),tp=lvl[i]===1?1:0,k2=m*2+tp;let o=DKC.get(k2);if(!o){const c=SP.road[tp][m].c;o={c,c2:half(c),bx:0,by:SCY-32,bw:128,bh:64,emit:[],flat:1};DKC.set(k2,o);}return o;}if(isElev(i)){const x=i&NM,y=i>>NS,lv=elevH(i),t=lvl[i]===1?1:0,ax=elAx(i),pil=((ax?y:x)&1)===0,kk=6e7+ax*1000+Math.round(lv*3)*100+t*10+(pil?1:0)+elX(i)*2;let o=RDC.get(kk);if(!o){o=elevSpr(ax,lv,t,pil,elX(i));RDC.set(kk,o);}return o;}const x=i&NM,y=i>>NS,m=roadMask(x,y),t=lvl[i]===1?1:0,wv=terr[i]===TWA;if(lvl[i]===2&&!wv&&vari[i]!==120)return null;if(vari[i]===120&&(m===5||m===10)){const kk=4e7+(m===5?1:0)+t*2;let o=RDC.get(kk);if(!o){o=fbSpr(m===5,t);RDC.set(kk,o);}return o;}if(vari[i]>=100&&vari[i]<=108){if(vari[i]!==104)return null;const kk=3e7+SEASON;let o=RDC.get(kk);if(!o){o=osp((g,lg,r)=>{cyl(g,.5,.5,.08,0,3,'#cfc8b8','#bdb6a6');treeH(g,.5,.5,1.15,'zelkova',SEASON,r);for(let k=0;k<3;k++)treeH(g,.5+Math.cos(k*2.1)*.22,.5+Math.sin(k*2.1)*.22,.5,'bush',SEASON,r);},31000+SEASON);RDC.set(kk,o);}return o;}if(roadVar(x,y)===2){if(!wv)return null;const kk=2e7+t*100+m;let o=RDC.get(kk);if(!o){o=diagBridgeSpr(m,t);RDC.set(kk,o);}return o;}let key,vr=0,sp=0;
+const DKC=new Map();function roadDeco(i){if(vari[i]===VRV)return null;if(isWide(i))return wideDeco(i);if(isElev(i)&&elDn(i)){if(!elX(i))return null;const x=i&NM,y=i>>NS,m=roadMask(x,y)&(elAx(i)?10:5),tp=lvl[i]===1?1:0,k2=m*2+tp;let o=DKC.get(k2);if(!o){const c=SP.road[tp][m].c;o={c,c2:half(c),bx:0,by:SCY-32,bw:128,bh:64,emit:[],flat:1};DKC.set(k2,o);}return o;}if(isElev(i)){const x=i&NM,y=i>>NS,lv=elevH(i),t=lvl[i]===1?1:0,ax=elAx(i),pil=((ax?y:x)&1)===0,kk=6e7+ax*1000+Math.round(lv*3)*100+t*10+(pil?1:0)+elX(i)*2;let o=RDC.get(kk);if(!o){o=elevSpr(ax,lv,t,pil,elX(i));RDC.set(kk,o);}return o;}const x=i&NM,y=i>>NS,m=roadMask(x,y),t=lvl[i]===1?1:0,wv=terr[i]===TWA;if(lvl[i]===2&&!wv&&vari[i]!==120)return null;if(vari[i]===120&&(m===5||m===10)){const kk=4e7+(m===5?1:0)+t*2;let o=RDC.get(kk);if(!o){o=fbSpr(m===5,t);RDC.set(kk,o);}return o;}if(vari[i]>=100&&vari[i]<=108){if(vari[i]!==104)return null;const kk=3e7+SEASON;let o=RDC.get(kk);if(!o){o=osp((g,lg,r)=>{cyl(g,.5,.5,.08,0,3,'#cfc8b8','#bdb6a6');treeH(g,.5,.5,1.15,'zelkova',SEASON,r);for(let k=0;k<3;k++)treeH(g,.5+Math.cos(k*2.1)*.22,.5+Math.sin(k*2.1)*.22,.5,'bush',SEASON,r);},31000+SEASON);RDC.set(kk,o);}return o;}if(roadVar(x,y)===2){if(!wv)return null;const kk=2e7+t*100+m;let o=RDC.get(kk);if(!o){o=diagBridgeSpr(m,t);RDC.set(kk,o);}return o;}let key,vr=0,sp=0;
   let shp=0,bEnd=0;if(!wv&&(m===5||m===10)){const sc=(xx,yy)=>xx>=0&&yy>=0&&xx<N&&yy<N&&kind[idx(xx,yy)]===K.COM&&lvl[idx(xx,yy)]>=1;if(m===5){if(sc(x-1,y))shp|=1;if(sc(x+1,y))shp|=2;}else{if(sc(x,y-1))shp|=1;if(sc(x,y+1))shp|=2;}}
   if(wv){let run=0,pos=0;const ns=(m&5)&&!(m&10);if(ns){let a=y,b=y;while(a>0&&terr[idx(x,a-1)]===TWA&&kind[idx(x,a-1)]===K.ROAD)a--;while(b<N-1&&terr[idx(x,b+1)]===TWA&&kind[idx(x,b+1)]===K.ROAD)b++;run=b-a+1;pos=y-a;}else{let a=x,b=x;while(a>0&&terr[idx(a-1,y)]===TWA&&kind[idx(a-1,y)]===K.ROAD)a--;while(b<N-1&&terr[idx(b+1,y)]===TWA&&kind[idx(b+1,y)]===K.ROAD)b++;run=b-a+1;pos=x-a;}
     const land=(xx,yy)=>xx>=0&&yy>=0&&xx<N&&yy<N&&kind[idx(xx,yy)]===K.ROAD&&terr[idx(xx,yy)]!==TWA;let end=0;if(ns){if(pos===0&&land(x,y-1))end=1;else if(pos===run-1&&land(x,y+1))end=2;}else{if(pos===0&&land(x-1,y))end=1;else if(pos===run-1&&land(x+1,y))end=2;}
@@ -2266,7 +2266,7 @@ function objOf(i){const k=kind[i];if(lmkA[i]>=0&&k!==K.LMK){if(lmkA[i]!==i)retur
   if(k>=K.POWER&&k<=K.FIRE)return SP.svcObj[k];if(k===K.PARK)return SP.parkObj[SEASON][vari[i]%3];if(k===K.ROAD)return roadDeco(i);if(k===K.LMK)return lvl[i]===1?lmkGet(vari[i],SEASON):null;if(k===K.EMPTY&&deco[i])return decoSprite(deco[i],i);return null;}
 function objBase(i){const x=i&NM,y=i>>NS,k=kind[i];if((k===K.PARK&&fix[i]===2)||(k===K.EMPTY||k===K.ROAD||((k>=K.RES&&k<=K.IND)&&!lvl[i])))return tileAvgH(x,y)*E;return hv(x,y)*E;}
 function groundTex(i){const x=i&NM,y=i>>NS,k=kind[i],h=((x*73856093)^(y*19349663))>>>0,t=terr[i];
-  if(k===K.ROAD)return t===TWA?SP.waterM[landMask(x,y)]:roadTex(i);if(t===TWA)return SP.waterM[landMask(x,y)];
+  if(k===K.ROAD){if(vari[i]===VRV){for(const [dx,dy] of DIRS){const xx=x+dx,yy=y+dy;if(xx<0||yy<0||xx>=N||yy>=N)continue;const j=idx(xx,yy);if(kind[j]!==K.ROAD&&terr[j]!==TWA)return groundTex(j);}return SP.grass[SEASON][0];}return t===TWA?SP.waterM[landMask(x,y)]:roadTex(i);}if(t===TWA)return SP.waterM[landMask(x,y)];
   if(k===K.LMK){const id=LMKT[vari[i]].id;return id==='palace'||id==='temple'?SP.stone:id==='parking'?SP.road[0][0]:SP.svc;}
   if(fix[i]===2){if(k===K.PARK&&vari[i]>=20){const a=cxIdx(vari[i]),c=CXA[a];return 'gmzyxo'.includes(c)?SP.grass[SEASON][0]:SP.cxg[a][SEASON];}if(k===K.RES||k===K.COM)return SP.cxPave;}
   if(k===K.EMPTY&&deco[i]>=30&&SP.fg)return SP.fg[SEASON][Math.min(13,deco[i]-30)];
@@ -2348,6 +2348,7 @@ let SHTMP=null;function buildChunk(C,ci,k,L){const key=ckey(C,ci,k,L),G=chunkGeo
       const tc=(SHTMP&&SHTMP.width===w&&SHTMP.height===h)?SHTMP:(SHTMP=mk(w,h)),t=tc.getContext('2d');t.setTransform(1,0,0,1,0,0);t.clearRect(0,0,w,h);t.imageSmoothingEnabled=true;t.setTransform(sc,0,0,sc,-G.left*sc,-G.top*sc);
       for(let y=Math.max(0,G.y0-2);y<Math.min(N,G.y0+CSz+1);y++)for(let x=Math.max(0,G.x0-9);x<Math.min(N,G.x0+CSz);x++){const i=idx(x,y),o=objOf(i);if(RL[i])for(const ro of ovList(i,OVT,2))if(ro.shd)drawShd(t,ro,(x-y)*16,(x+y)*8,objBase(i));if(!o)continue;if(o.shd)drawShd(t,o,(x-y)*16,(x+y)*8,objBase(i));if(o.front&&o.front.shd)drawShd(t,o.front,(x-y)*16,(x+y)*8,objBase(i));}
       g.globalCompositeOperation=GLT?'source-over':'source-atop';g.globalAlpha=GLT?.2:.24;if(GLT){g.save();g.beginPath();for(let yy=G.y0;yy<G.y0+CSz;yy++)for(let xx=G.x0;xx<G.x0+CSz;xx++){const p=tilePts(xx,yy);g.moveTo(p[0][0],p[0][1]);g.lineTo(p[1][0],p[1][1]);g.lineTo(p[2][0],p[2][1]);g.lineTo(p[3][0],p[3][1]);g.closePath();}g.clip();}g.setTransform(1,0,0,1,0,0);g.drawImage(tc,0,0);g.setTransform(sc,0,0,sc,-G.left*sc,-G.top*sc);if(GLT)g.restore();g.globalAlpha=1;g.globalCompositeOperation='source-over';}}
+  if(C.full&&!L&&VR.on){drawVR(g,sc,-G.left*sc,-G.top*sc,G.x0-6,G.y0-6,G.x0+CSz+6,G.y0+CSz+6);g.setTransform(sc,0,0,sc,-G.left*sc,-G.top*sc);}
   if(C.full)for(let s=0;s<2*CSz-1;s++){const a=Math.max(0,s-CSz+1),b=Math.min(CSz-1,s);for(let xx=a;xx<=b;xx++){const x=G.x0+xx,y=G.y0+s-xx,i=idx(x,y),o=objOf(i);const ovs=(RL[i]||terr[i]===TWA)?ovList(i,OVT):null;if(!o&&!(ovs&&ovs.length))continue;const wx=(x-y)*16,wy=(x+y)*8,hb=objBase(i);
     if(o){if(L){litDraw(g,o,wx,wy,hb,hr);if(o.front&&o.front.lit)drawSpr(g,o.front,wx,wy,hb,'lit',hr);}else{drawSpr(g,o,wx,wy,hb,'c',hr);if(o.front)drawSpr(g,o.front,wx,wy,hb,'c',hr);}}
     if(ovs)for(const ro of ovs){if(L){if(ro.lit)drawSpr(g,ro,wx,wy,hb,'lit',hr);}else drawSpr(g,ro,wx,wy,hb,'c',hr);}}}
@@ -2560,7 +2561,7 @@ function agentPos(a,ped){const t=a.t;if(ped){const h1=t<.5,T=h1?[a.x,a.y]:[a.nx,
     else if(isWide(ti)&&wideJ(tx,ty)){const J=juncInfo(tx,ty),xa=J.x0-.22,xb=J.x1+1.22,ya=J.y0-.22,yb=J.y1+1.22;if(Math.abs(out[2])>=Math.abs(out[3]))out[1]=(out[1]-ya<yb-out[1])?ya:yb;else out[0]=(out[0]-xa<xb-out[0])?xa:xb;}}}return out;}
 function agH(p){const x=Math.floor(p[0]),y=Math.floor(p[1]);let h=surfH(p[0],p[1])*E;if(x>=0&&y>=0&&x<N&&y<N){const i=idx(x,y);if(isElev(i)){const ax=elAx(i),mv=Math.abs(p[2])>Math.abs(p[3])?0:1;if(mv===ax){const SG=elDn(i)?-DEP:ELH;const fx=ax?p[1]-y:p[0]-x,dir=ax?Math.sign(p[3]):Math.sign(p[2]);const h0=elevH(i),nx=ax?x:x+(fx>.5?1:-1),ny=ax?y+(fx>.5?1:-1):y,nh=(nx>=0&&ny>=0&&nx<N&&ny<N&&isElev(idx(nx,ny))&&elAx(idx(nx,ny))===ax&&elDn(idx(nx,ny))===elDn(i))?elevH(idx(nx,ny)):0,w=Math.abs(fx-.5);h+=SG*(h0*(1-w)+nh*w)+(SG>0?.5:0);return h;}}if(terr[i]===TWA&&kind[i]===K.ROAD){const e=bEnd(i),f=e?(isWide(i)?wInfo(i).ax:roadMask(x,y)===5?1:0)?p[1]-y:p[0]-x:0;h+=(e===1?Math.min(1,f*1.6):e===2?Math.min(1,(1-f)*1.6):1)*9/SR;}else if(terr[i]===TWA)h+=9/SR;}return h;}
 const SPMUL=[0,1,1.5,2.2];
-function updateAgents(dt){if(spawnDirty)buildSpawn();const mult=SPMUL[sim.speed],d=dt*mult;viewBox();
+function updateAgents(dt){if(VR.on){cars=[];peds=[];return;}if(spawnDirty)buildSpawn();const mult=SPMUL[sim.speed],d=dt*mult;viewBox();
   const RH=rhythm(),tc=Math.min(Math.round((MEMLOW?240:340)*Math.min(1,RH[0])),Math.round(sim.pop/70*RH[0])),tp=Math.min(Math.round((MEMLOW?320:460)*Math.min(1,RH[1])),Math.round(sim.pop/50*RH[1]));
   if(mult&&zoom>=3){cars=cars.filter(a=>inView(a.x,a.y,14)||Math.random()>.04);peds=peds.filter(a=>inView(a.x,a.y,10)||Math.random()>.05);}
   if(mult){for(let n=0;n<3&&cars.length<tc;n++){const a=spawnAgent(false);if(a)cars.push(a);else break;}for(let n=0;n<3&&peds.length<tp;n++){const a=spawnAgent(true);if(a)peds.push(a);else break;}}
@@ -2692,6 +2693,101 @@ function drawDynShadows(g,S,ox,oy,vl,vr,vt,vb){const amt=shAmt();if(amt<.05)retu
   const out=vl<SHD.wl||vr>SHD.wr||vt<SHD.wt||vb>SHD.wb,stale=SHD.S!==S||SHD.tq!==tq||(SHD.v!==BHV&&frameNo-SHD.last>20);
   if(!SHD.cv||out||stale){SHD.tq=tq;SHD.v=BHV;SHD.last=frameNo;buildDynShadows(S,vl,vr,vt,vb);}
   g.save();g.setTransform(1,0,0,1,0,0);g.globalAlpha=.5*amt;g.imageSmoothingEnabled=true;g.drawImage(SHD.cv,SHD.wl*S+ox,SHD.wt*S+oy,SHD.cv.width/SHD.res,SHD.cv.height/SHD.res);g.restore();}
+/* ===================== VECTOR ROADS (B안) =====================
+   Roads are polylines in tile space (x,y floats), drawn as strokes through the iso affine transform.
+   Tiles under a road are marked kind=ROAD, vari=VRV so occupancy/access keep working, but the tile road art is suppressed. */
+const VRV=240;let VR={on:false,edges:[],ver:0,centers:[],vill:[],tpl:''};
+const VCLS={/* w: asphalt width (tiles), sw: sidewalk each side, lanes */
+  5:{w:2.0,sw:.28,ln:8,col:'#4a4d53',name:'고속'},4:{w:1.55,sw:.26,ln:6,col:'#4b4e54',name:'순환'},3:{w:1.2,sw:.26,ln:4,col:'#4c4f55',name:'간선'},
+  2:{w:.85,sw:.22,ln:2,col:'#50535a',name:'집산'},1:{w:.55,sw:.2,ln:2,col:'#55585e',name:'생활'},0:{w:.36,sw:.0,ln:1,col:'#6a6a68',name:'골목'}};
+const isVR=i=>kind[i]===K.ROAD&&vari[i]===VRV;
+/* ---- min-heap ---- */
+function HeapQ(){const k=[],v=[];return{push(p,x){k.push(p);v.push(x);let i=k.length-1;while(i>0){const q=(i-1)>>1;if(k[q]<=k[i])break;[k[q],k[i]]=[k[i],k[q]];[v[q],v[i]]=[v[i],v[q]];i=q;}},
+  pop(){const r=v[0],lk=k.pop(),lv=v.pop();if(k.length){k[0]=lk;v[0]=lv;let i=0;for(;;){const a=2*i+1,b=a+1;let m=i;if(a<k.length&&k[a]<k[m])m=a;if(b<k.length&&k[b]<k[m])m=b;if(m===i)break;[k[m],k[i]]=[k[i],k[m]];[v[m],v[i]]=[v[i],v[m]];i=m;}}return r;},get size(){return k.length;},topK(){return k[0];}};}
+/* 8-connected least-cost path on a tile cost grid */
+function vPath(cost,a,b){const D=new Float64Array(NN).fill(Infinity),P=new Int32Array(NN).fill(-1),q=HeapQ(),s=idx(a[0],a[1]),t=idx(b[0],b[1]);D[s]=0;q.push(0,s);
+  const DX=[1,-1,0,0,1,1,-1,-1],DY=[0,0,1,-1,1,-1,1,-1],DL=[1,1,1,1,1.414,1.414,1.414,1.414];
+  while(q.size){const dk=q.topK(),i=q.pop();if(dk>D[i])continue;if(i===t)break;const x=i&NM,y=i>>NS;
+    for(let k=0;k<8;k++){const xx=x+DX[k],yy=y+DY[k];if(xx<1||yy<1||xx>=N-1||yy>=N-1)continue;const j=idx(xx,yy),c=cost[j];if(!(c<1e8))continue;const nd=dk+(c+cost[i])*.5*DL[k];if(nd<D[j]){D[j]=nd;P[j]=i;q.push(nd,j);}}}
+  if(P[t]<0&&s!==t)return null;const out=[];for(let i=t;i>=0;i=P[i]){out.push([(i&NM)+.5,(i>>NS)+.5]);if(i===s)break;}return out.reverse();}
+function vSmooth(p,it){let q=p;for(let n=0;n<(it||3);n++){const r=[q[0]];for(let i=0;i<q.length-1;i++){const a=q[i],b=q[i+1];r.push([a[0]*.75+b[0]*.25,a[1]*.75+b[1]*.25],[a[0]*.25+b[0]*.75,a[1]*.25+b[1]*.75]);}r.push(q[q.length-1]);q=r;}return q;}
+function vResample(p,st){const out=[p[0]];let acc=0;for(let i=1;i<p.length;i++){const a=out[out.length-1],b=p[i],d=Math.hypot(b[0]-a[0],b[1]-a[1]);if(d>=st||i===p.length-1)out.push(b);}return out;}
+/* ---- generator ---- */
+function genVRoads(seed){const r=mulberry(seed*31+7);VR={on:true,edges:[],ver:VR.ver+1,centers:[],vill:[],tpl:''};
+  const hh=(x,y)=>tileAvgH(x,y),land=i=>terr[i]!==TWA,cost=new Float32Array(NN),slope=new Float32Array(NN);
+  for(let y=1;y<N-1;y++)for(let x=1;x<N-1;x++){const i=idx(x,y),s=Math.max(Math.abs(hv(x+1,y)-hv(x,y)),Math.abs(hv(x,y+1)-hv(x,y)),Math.abs(hv(x+1,y+1)-hv(x,y)));slope[i]=s;}
+  for(let i=0;i<NN;i++){const x=i&NM,y=i>>NS;cost[i]=OCEAN[i]?1e9:terr[i]===TWA?14:1+slope[i]*9+Math.max(0,hh(x,y)-3)*.6;}
+  /* flat-area score (integral image) */
+  const W1=N+1,IB=new Float32Array(W1*W1);for(let y=0;y<N;y++){let row=0;for(let x=0;x<N;x++){const i=idx(x,y);row+=(land(i)&&slope[i]<=1&&hh(x,y)<=3)?1:0;IB[(y+1)*W1+x+1]=IB[y*W1+x+1]+row;}}
+  const box=(x,y,R)=>{const x0=Math.max(0,x-R),y0=Math.max(0,y-R),x1=Math.min(N,x+R+1),y1=Math.min(N,y+R+1);return(IB[y1*W1+x1]-IB[y0*W1+x1]-IB[y1*W1+x0]+IB[y0*W1+x0])/((x1-x0)*(y1-y0));};
+  const cDist=new Float32Array(NN).fill(1e9);{const q=[];for(let i=0;i<NN;i++)if(OCEAN[i]){cDist[i]=0;q.push(i);}for(let h=0;h<q.length;h++){const i=q[h],x=i&NM,y=i>>NS;for(const [dx,dy] of DIRS){const xx=x+dx,yy=y+dy;if(xx<0||yy<0||xx>=N||yy>=N)continue;const j=idx(xx,yy);if(cDist[j]>cDist[i]+1){cDist[j]=cDist[i]+1;q.push(j);}}}}
+  const pick=(sc,ok)=>{let b=null,bs=-1e9;for(let t=0;t<5000;t++){const x=4+((r()*(N-8))|0),y=4+((r()*(N-8))|0),i=idx(x,y);if(!land(i)||!ok(x,y,i))continue;const s=sc(x,y,i);if(s>bs){bs=s;b=[x,y];}}return b;};
+  const dt=pick((x,y,i)=>box(x,y,12)*100-Math.min(Math.abs(distR[i]-8),20)*1.2-Math.abs(cDist[i]-22)*.3,(x,y,i)=>cDist[i]>10&&box(x,y,6)>.7);
+  const C=[dt];for(let k=0;k<4;k++){const c=pick((x,y)=>{const dm=Math.min(...C.map(q=>Math.hypot(q[0]-x,q[1]-y)));return box(x,y,9)*100-Math.abs(dm-34)*2.2+r()*4;},(x,y,i)=>cDist[i]>6&&Math.min(...C.map(q=>Math.hypot(q[0]-x,q[1]-y)))>26&&box(x,y,5)>.6);if(c)C.push(c);}
+  const V=[];for(let k=0;k<7;k++){const c=pick((x,y,i)=>-Math.abs(cDist[i]-4)*3+Math.min(60,Math.min(...C.concat(V).map(q=>Math.hypot(q[0]-x,q[1]-y))))+r()*6,(x,y,i)=>cDist[i]>2&&cDist[i]<9&&slope[i]<=1&&Math.min(...C.concat(V).map(q=>Math.hypot(q[0]-x,q[1]-y)))>28);if(c)V.push(c);}
+  VR.centers=C;VR.vill=V;
+  const RDT=new Uint8Array(NN);const mark=(p,cls)=>{for(const [x,y] of p){const i=idx(Math.floor(x),Math.floor(y));if(RDT[i]<cls)RDT[i]=cls;}};
+  const add=(a,b,cls,reuse)=>{const cc=new Float32Array(cost);for(let i=0;i<NN;i++)if(RDT[i]>=2)cc[i]*=reuse||.35;const p=vPath(cc,a,b);if(!p||p.length<2)return null;const q=vResample(vSmooth(p,3),.5);VR.edges.push({cls,pts:q});mark(q,cls);return q;};
+  for(const c of C.slice(1))add(dt,c,3);
+  for(const v of V){let b=null,bd=1e9;for(let i=0;i<NN;i++)if(RDT[i]>=2){const d=Math.hypot((i&NM)-v[0],(i>>NS)-v[1]);if(d<bd){bd=d;b=[i&NM,i>>NS];}}if(b)add(b,v,3);}
+  /* ring road through waypoints around downtown */
+  {const ds=C.slice(1).map(c=>Math.hypot(c[0]-dt[0],c[1]-dt[1])).sort((a,b)=>a-b),R=(ds[ds.length>>1]||36)*.55,wp=[];
+    for(let k=0;k<10;k++){const a=k/10*6.283;let best=null,bc=1e9;for(let t=0;t<8;t++){const rr=R*(.8+t*.06),x=Math.round(dt[0]+Math.cos(a)*rr),y=Math.round(dt[1]+Math.sin(a)*rr);if(x<2||y<2||x>=N-2||y>=N-2)continue;const i=idx(x,y);if(!land(i))continue;if(cost[i]<bc){bc=cost[i];best=[x,y];}}if(best)wp.push(best);}
+    for(let k=0;k<wp.length;k++)add(wp[k],wp[(k+1)%wp.length],4,.6);}
+  /* urban mask */
+  const UR=new Float32Array(NN);for(let i=0;i<NN;i++){const x=i&NM,y=i>>NS;let m=9;C.forEach((c,k)=>{m=Math.min(m,Math.hypot(x-c[0],y-c[1])/(k?24:32)*(1+(fbm(x/20,y/20,seed+71,2)-.5)*.5));});UR[i]=land(i)&&!OCEAN[i]?m:9;}
+  /* riverside road along the river bank inside the urban area */
+  {const band=new Uint8Array(NN);for(let i=0;i<NN;i++)if(land(i)&&UR[i]<1&&distR[i]>1.6&&distR[i]<3.2&&slope[i]<=1)band[i]=1;
+    const seen=new Uint8Array(NN);for(let s0=0;s0<NN;s0++){if(!band[s0]||seen[s0])continue;const q=[s0];seen[s0]=1;for(let h=0;h<q.length;h++){const i=q[h],x=i&NM,y=i>>NS;for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){const xx=x+dx,yy=y+dy;if(xx<0||yy<0||xx>=N||yy>=N)continue;const j=idx(xx,yy);if(band[j]&&!seen[j]){seen[j]=1;q.push(j);}}}
+      if(q.length<24)continue;const far=(o)=>{let b=o,bd=-1;for(const i of q){const d=Math.hypot((i&NM)-(o&NM),(i>>NS)-(o>>NS));if(d>bd){bd=d;b=i;}}return b;};const A=far(q[0]),B=far(A);
+      const cc=new Float32Array(NN).fill(1e9);for(const i of q)cc[i]=1;for(let i=0;i<NN;i++)if(cc[i]>1&&land(i)&&!OCEAN[i])cc[i]=30;const p=vPath(cc,[A&NM,A>>NS],[B&NM,B>>NS]);if(p&&p.length>8){const qq=vResample(vSmooth(p,3),.5);VR.edges.push({cls:2,pts:qq});mark(qq,2);}}}
+  /* orientation field: tangent of the nearest major road */
+  const ANG=new Float32Array(NN).fill(NaN);for(const e of VR.edges){const p=e.pts;for(let k=0;k<p.length;k++){const a=p[Math.max(0,k-3)],b=p[Math.min(p.length-1,k+3)];ANG[idx(Math.floor(p[k][0]),Math.floor(p[k][1]))]=Math.atan2(b[1]-a[1],b[0]-a[0]);}}
+  {const q=[];for(let i=0;i<NN;i++)if(ANG[i]===ANG[i])q.push(i);for(let h=0;h<q.length;h++){const i=q[h],x=i&NM,y=i>>NS;for(const [dx,dy] of DIRS){const xx=x+dx,yy=y+dy;if(xx<0||yy<0||xx>=N||yy>=N)continue;const j=idx(xx,yy);if(ANG[j]!==ANG[j]){ANG[j]=ANG[i];q.push(j);}}}}
+  /* local streets: streamlines along / across the field, kept ~4.5 tiles apart */
+  const OCC=new Uint8Array(NN);for(let i=0;i<NN;i++)if(RDT[i])OCC[i]=1;
+  const near=(x,y,R2)=>{for(let dy=-R2;dy<=R2;dy++)for(let dx=-R2;dx<=R2;dx++){if(dx*dx+dy*dy>R2*R2)continue;const xx=x+dx,yy=y+dy;if(xx<0||yy<0||xx>=N||yy>=N)continue;if(OCC[idx(xx,yy)])return true;}return false;};
+  const okT=(x,y)=>{if(x<1||y<1||x>=N-1||y>=N-1)return false;const i=idx(x|0,y|0);return land(i)&&UR[i]<1&&slope[i]<=2;};
+  const trace=(x,y,a0)=>{const pts=[[x,y]];let a=a0;for(let st=0;st<120;st++){const f=ANG[idx(x|0,y|0)];if(f===f){let best=a,bd=9;for(let q=0;q<4;q++){const c=f+q*Math.PI/2,dd=Math.abs(Math.atan2(Math.sin(c-a),Math.cos(c-a)));if(dd<bd){bd=dd;best=c;}}a=best;}
+      const nx=x+Math.cos(a)*.6,ny=y+Math.sin(a)*.6;if(!okT(nx,ny))break;x=nx;y=ny;pts.push([x,y]);const i=idx(x|0,y|0);if(st>2&&RDT[i])break;if(st>4&&OCC[i]===2)break;}return pts;};
+  const cand=[];for(let i=0;i<NN;i++)if(UR[i]<1&&land(i)&&!RDT[i]&&slope[i]<=1)cand.push(i);for(let k=cand.length-1;k>0;k--){const j=(r()*(k+1))|0;[cand[k],cand[j]]=[cand[j],cand[k]];}
+  for(const i of cand){const x=i&NM,y=i>>NS;if(near(x,y,4))continue;const f=ANG[i]===ANG[i]?ANG[i]:0;for(const a of [f,f+Math.PI/2])for(const s of [0,Math.PI]){const p=trace(x+.5,y+.5,a+s);if(p.length<5)continue;const q=vResample(p,.5);const cls=UR[i]<.35?2:1;VR.edges.push({cls,pts:q});for(const [px,py] of q){const j=idx(px|0,py|0);if(!OCC[j])OCC[j]=2;}}}
+  /* rasterize: road tiles under the asphalt */
+  for(const e of VR.edges){const W=VCLS[e.cls].w*.5+.3;for(const [px,py] of e.pts){for(let y=Math.floor(py-W);y<=py+W;y++)for(let x=Math.floor(px-W);x<=px+W;x++){if(x<0||y<0||x>=N||y>=N)continue;if(Math.hypot(x+.5-px,y+.5-py)>W+.2)continue;const i=idx(x,y);if(OCEAN[i])continue;clearTile(i);kind[i]=K.ROAD;lvl[i]=0;vari[i]=VRV;deco[i]=0;fix[i]=0;touch(i);}}}
+  /* lots: develop tiles next to roads by distance to the centres */
+  const RD=new Uint8Array(NN).fill(9);{const q=[];for(let i=0;i<NN;i++)if(kind[i]===K.ROAD){RD[i]=0;q.push(i);}for(let h=0;h<q.length;h++){const i=q[h];if(RD[i]>=4)continue;const x=i&NM,y=i>>NS;for(const [dx,dy] of DIRS){const xx=x+dx,yy=y+dy;if(xx<0||yy<0||xx>=N||yy>=N)continue;const j=idx(xx,yy);if(RD[j]>RD[i]+1){RD[j]=RD[i]+1;q.push(j);}}}}
+  for(let y=1;y<N-1;y+=2)for(let x=1;x<N-1;x+=2){const i=idx(x,y);if(UR[i]>=1)continue;const t4=[idx(x,y),idx(x+1,y),idx(x,y+1),idx(x+1,y+1)];if(!t4.every(j=>!kind[j]&&land(j)&&slope[j]<=1&&RD[j]<=3&&RD[j]>=1))continue;
+    const d=Math.min(...C.map((c,k)=>Math.hypot(x-c[0],y-c[1])/(k?24:32)));const q=r();
+    if(d<.3&&q<.55){makeFoot(x,y,K.COM,q<.25?5:4,(r()*VN[K.COM])|0,1);continue;}if(d<.55&&q<.35){makeFoot(x,y,r()<.5?K.COM:K.RES,3,(r()*255)|0,1);continue;}
+    for(const j of t4){const u=r();if(u<.12)continue;kind[j]=d<.45?(u<.5?K.COM:K.RES):(u<.15?K.COM:K.RES);lvl[j]=d<.45?2:1+((r()*2)|0);vari[j]=(r()*255)|0;deco[j]=0;touch(j);}}
+  /* trees in left-over urban ground */
+  for(let i=0;i<NN;i++)if(UR[i]<1&&!kind[i]&&land(i)&&!deco[i]&&r()<.25)deco[i]=1+((r()*8)|0);
+  compsDirty=true;return dt;}
+/* ---- rendering: strokes in tile space through the iso affine ---- */
+function vOffset(p,d){const out=[];for(let k=0;k<p.length;k++){const a=p[Math.max(0,k-1)],b=p[Math.min(p.length-1,k+1)],dx=b[0]-a[0],dy=b[1]-a[1],l=Math.hypot(dx,dy)||1;out.push([p[k][0]-dy/l*d,p[k][1]+dx/l*d]);}return out;}
+function vStroke(g,p,S,ox,oy,w,col,dash){g.strokeStyle=col;g.lineWidth=w;g.setLineDash(dash||[]);
+  /* draw in short runs so each run can sit at its own ground height */
+  const RUN=6;for(let s=0;s<p.length-1;s+=RUN){const e=Math.min(p.length-1,s+RUN),m=p[(s+e)>>1],hz=hv(m[0]|0,m[1]|0)*E;g.setTransform(16*S,8*S,-16*S,8*S,ox,oy-hz*S);g.beginPath();g.moveTo(p[s][0],p[s][1]);for(let k=s+1;k<=e;k++)g.lineTo(p[k][0],p[k][1]);g.stroke();}}
+function drawVR(g,S,ox,oy,bx0,by0,bx1,by1){if(!VR.on||!VR.edges.length)return;g.save();g.lineCap='round';g.lineJoin='round';
+  const vis=VR.edges.filter(e=>{for(let k=0;k<e.pts.length;k+=4){const [x,y]=e.pts[k];if(x>bx0&&x<bx1&&y>by0&&y<by1)return true;}return false;}).sort((a,b)=>a.cls-b.cls);
+  for(const e of vis){const c=VCLS[e.cls];if(c.sw)vStroke(g,e.pts,S,ox,oy,c.w+c.sw*2,'#c9c3b6');}
+  for(const e of vis){const c=VCLS[e.cls];if(c.sw)vStroke(g,e.pts,S,ox,oy,c.w+.06,'#a9a49a');}
+  for(const e of vis){const c=VCLS[e.cls];vStroke(g,e.pts,S,ox,oy,c.w,c.col);}
+  if(S>=.5)for(const e of vis){const c=VCLS[e.cls];if(e.cls>=3){vStroke(g,vOffset(e.pts,.03),S,ox,oy,.035,'#e9c94a');vStroke(g,vOffset(e.pts,-.03),S,ox,oy,.035,'#e9c94a');
+      const lw=c.w/c.ln;for(let k=1;k<c.ln/2;k++){vStroke(g,vOffset(e.pts,k*lw),S,ox,oy,.03,'rgba(240,240,236,.85)',[.35,.35]);vStroke(g,vOffset(e.pts,-k*lw),S,ox,oy,.03,'rgba(240,240,236,.85)',[.35,.35]);}
+      vStroke(g,vOffset(e.pts,c.w*.5-.05),S,ox,oy,.03,'rgba(240,240,236,.7)');vStroke(g,vOffset(e.pts,-c.w*.5+.05),S,ox,oy,.03,'rgba(240,240,236,.7)');}
+    else if(e.cls===2)vStroke(g,e.pts,S,ox,oy,.035,'#e9c94a');else if(e.cls===1)vStroke(g,e.pts,S,ox,oy,.03,'rgba(240,240,236,.75)',[.3,.3]);}
+  g.restore();}
+/* near view: one cached layer re-rendered when zoom changes or the view leaves the margin */
+const VRC={cv:null,S:0,v:-1,wl:0,wt:0,wr:0,wb:0};
+function drawVRNear(g,S,ox,oy,vl,vr,vt,vb){if(!VR.on)return;const out=vl<VRC.wl||vr>VRC.wr||vt<VRC.wt||vb>VRC.wb;
+  if(!VRC.cv||VRC.S!==S||VRC.v!==VR.ver||out){const mw=(vr-vl)*.35,mh=(vb-vt)*.35,wl=vl-mw,wr=vr+mw,wt=vt-mh,wb=vb+mh,cw=Math.ceil((wr-wl)*S),ch=Math.ceil((wb-wt)*S);
+    if(!VRC.cv||VRC.cv.width!==cw||VRC.cv.height!==ch)VRC.cv=mk(cw,ch);const t=VRC.cv.getContext('2d');t.setTransform(1,0,0,1,0,0);t.clearRect(0,0,cw,ch);
+    const w2t2=(wx,wy)=>[(wx/16+wy/8)/2,(wy/8-wx/16)/2],c4=[w2t2(wl,wt),w2t2(wr,wt),w2t2(wl,wb),w2t2(wr,wb)];
+    drawVR(t,S,-wl*S,-wt*S,Math.min(...c4.map(c=>c[0]))-3,Math.min(...c4.map(c=>c[1]))-3,Math.max(...c4.map(c=>c[0]))+3,Math.max(...c4.map(c=>c[1]))+3);Object.assign(VRC,{S,v:VR.ver,wl,wt,wr,wb});}
+  g.save();g.setTransform(1,0,0,1,0,0);g.drawImage(VRC.cv,VRC.wl*S+ox,VRC.wt*S+oy);g.restore();}
+
+var VMODE=true;
 var HQON=false;const FRONTS=[];
 const RQ=[],TB=new Map();function renderNear(S,ox,oy,vl,vr,vt,vb,dt,deadline,n){HQON=S/SR>1.3&&!FX.perf&&!PIXART;
   const k=clamp(lodBase(S),0,2);
@@ -2706,6 +2802,7 @@ const RQ=[],TB=new Map();function renderNear(S,ox,oy,vl,vr,vt,vb,dt,deadline,n){
   if(BOATS.length)boatDraw((fx,fy,o,i)=>{const s2=Math.floor(fx)+Math.floor(fy),wx=(fx-fy)*16,wy=(fx+fy-1)*8;if(wx<vl-40||wx>vr+40||wy<vt-40||wy>vb+40)return;let b=TB.get(s2);if(!b){b=[];TB.set(s2,b);}b.push([o,wx,wy,objBase(i)-2]);});
   g.imageSmoothingEnabled=!(PIXART&&S/SR>=.99);const list=[];
   for(let s=rg.s0;s<=rg.s1;s++)for(let d=rg.d0;d<=rg.d1;d++){if((s+d)&1)continue;const x=(s+d)>>1,y=(s-d)>>1;if(x<0||y<0||x>=N||y>=N)continue;const i=idx(x,y),o=objOf(i);if(!o||!o.flat)continue;const wx=(x-y)*16,wy=(x+y)*8,hb=objBase(i);if(wy-hb+16<vt-2||wy-hb-16>vb)continue;drawSpr(g,o,wx,wy,hb,'c',halfR);}
+  drawVRNear(g,S,ox,oy,vl,vr,vt,vb);g.setTransform(S,0,0,S,ox,oy);
   if(GLT&&FX.shadow&&!FX.perf){drawDynShadows(g,S,ox,oy,vl,vr,vt,vb);g.setTransform(S,0,0,S,ox,oy);}
   for(let s=rg.s0;s<=rg.s1;s++){{const b0=buckets.get(s);if(b0)for(const it of b0)if(it[5])drawVeh(g,it[0],it[2],it[3],it[4],S);}for(let d=rg.d0;d<=rg.d1;d++){if((s+d)&1)continue;const x=(s+d)>>1,y=(s-d)>>1;if(x<0||y<0||x>=N||y>=N)continue;const i=idx(x,y),o=objOf(i);if(RL[i]||(terr[i]===TWA&&kind[i]===K.ROAD))RQ.push(i);const pz=S/dpr>=PROPZ&&!FX.perf,kk=kind[i];if(pz&&kk!==K.RES&&kk!==K.COM&&terr[i]!==TWA)drawProps(g,x,y,i);if(!o||o.flat)continue;
       const wx=(x-y)*16,wy=(x+y)*8,hb=objBase(i);if(wy-hb+16<vt-2||wy-TOPM-hb+o.by/SR>vb)continue;if(o.isFront){FRONTS.push([o,wx,wy,hb]);continue;}if(o.front)FRONTS.push([o.front,wx,wy,hb]);drawSpr(g,o,wx,wy,hb,'c',halfR);if(pz&&(kk===K.RES||kk===K.COM))drawProps(g,x,y,i);if(o.emit.length&&lvl[i])drawSmoke(g,o,wx,wy,hb,(i*.6180339)%1);list.push([0,o,wx,wy,hb]);if(S>=4&&kind[i]===K.PARK)drawWalkers(g,x,y,i,S);}
@@ -3549,9 +3646,9 @@ function genCity(seed){const r=mulberry(seed*13+5),SAVE=ROADL,DIR=[[1,0],[-1,0],
   compsDirty=true;ROADL=SAVE;return[Math.round(cx),Math.round(cy)];}
 function newCity(seed,blank){Object.assign(sim,{day:0,month:0,year:2027,speed:1,tax:[9,9,9],dem:[.7,.4,.6],pop:0,jc:0,ji:0,inc:0,exp:0,spent:0,hist:[],pw:0,wt:0,avgLv:0,name:'뉴타운',seed});
   RL=new Uint8Array(NN);STN=new Uint8Array(NN);RLINES=[];TRAINS=[];BOATS=[];RLC.clear();BOVC.clear();ROADVER++;
-  genMap(seed);let c;if(blank==='rand'){c=genCity(seed);}else if(blank){const p=findSpot(20);c=[p[0]+10,p[1]+10];}else{c=starter();}
+  genMap(seed);let c;VR.on=false;if(blank==='rand'&&VMODE){c=genVRoads(seed);}else if(blank==='rand'){c=genCity(seed);}else if(blank){const p=findSpot(20);c=[p[0]+10,p[1]+10];}else{c=starter();}
   recomputeComps();fields();
-  if(!blank||blank==='rand'){growForce=true;for(let m=0;m<(blank?8:30);m++)for(let d=0;d<30;d++)tick(true);growForce=false;}
+  if(!VR.on&&(!blank||blank==='rand')){growForce=true;for(let m=0;m<(blank?8:30);m++)for(let d=0;d<30;d++)tick(true);growForce=false;}
   zoom=2;centerOn(c[0],c[1]);afterLoad();}
 
 /* ================= loop ================= */
