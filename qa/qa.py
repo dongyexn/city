@@ -2,7 +2,7 @@
 import asyncio,sys,json,os
 from playwright.async_api import async_playwright
 from PIL import Image,ImageDraw,ImageFont
-D=os.path.dirname(os.path.abspath(__file__))
+D=os.path.dirname(os.path.abspath(__file__));os.makedirs(os.path.join(D,'out'),exist_ok=True);O=os.path.join(D,'out')
 CHECK=r"""
 (()=>{const R={};const DIR=[[1,0],[-1,0],[0,1],[0,-1]],rd=(x,y)=>x>=0&&y>=0&&x<N&&y<N&&kind[idx(x,y)]===K.ROAD;
  /* 1. rail: pillars/decks off the median, rail tiles off road */
@@ -42,17 +42,17 @@ async def main():
     fp=[f for f in ['/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc','/usr/share/fonts/opentype/noto/NotoSansCJK-DemiLight.ttc'] if os.path.exists(f)]
     font=ImageFont.truetype(fp[0],26) if fp else ImageFont.load_default()
     async with async_playwright() as p:
-        b=await p.chromium.launch(executable_path='/usr/bin/google-chrome',args=['--no-sandbox','--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader'])
+        b=await p.chromium.launch(args=['--no-sandbox','--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader'])
         pg=await b.new_page(viewport={'width':1200,'height':800});errs=[]
         pg.on('pageerror',lambda e:errs.append('PAGEERR '+str(e)[:300]));pg.on('console',lambda m:errs.append(m.text[:200]) if m.type=='error' and 'ERR_TUNNEL' not in m.text else None)
-        await pg.goto('file:///home/claude/'+os.environ.get('PAGE','dbg.html'));await pg.wait_for_function("document.getElementById('loading').hidden",timeout=400000)
+        await pg.goto('file://'+os.path.join(os.path.dirname(D),'build','dbg.html'));await pg.wait_for_function("document.getElementById('loading').hidden",timeout=400000)
         for sd in seeds:
             await pg.evaluate('__pc.ev('+json.dumps("newCity(%d,'rand');todMode='auto';1"%sd)+')');await pg.wait_for_timeout(1500)
             r=json.loads(await pg.evaluate('__pc.ev('+json.dumps(CHECK)+')'))
             shots=[];perf={}
             for name,js in SCN:
                 await pg.evaluate('__pc.ev('+json.dumps("todMode='auto';tod=.42;"+js+"1")+')');await pg.wait_for_timeout(3500)
-                f=f'{D}/qa_{sd}_{name}.png';await pg.screenshot(path=f);shots.append((name,f))
+                f=f'{O}/qa_{sd}_{name}.png';await pg.screenshot(path=f);shots.append((name,f))
                 if name in ('overview','downtown','oldtown'):perf[name]=json.loads(await pg.evaluate(PERF))
             r['perf']=perf;rep[sd]=r
             ims=[];W,H=600,400
@@ -60,8 +60,8 @@ async def main():
                 im=Image.open(f).resize((W,H));d=ImageDraw.Draw(im);d.rectangle((0,0,len(name)*15+24,36),fill=(15,16,20));d.text((10,2),name,font=font,fill=(255,255,255));ims.append(im)
             sheet=Image.new('RGB',(W*2,H*4),(10,10,12))
             for k,im in enumerate(ims):sheet.paste(im,((k%2)*W,(k//2)*H))
-            sheet.save(f'{D}/qa_{sd}.png')
+            sheet.save(f'{O}/qa_{sd}.png')
         rep['errors']=errs[:10]
         await b.close()
-    json.dump(rep,open(f'{D}/qa_report.json','w'),ensure_ascii=False,indent=1);print(json.dumps(rep,ensure_ascii=False))
+    json.dump(rep,open(f'{O}/qa_report.json','w'),ensure_ascii=False,indent=1);print(json.dumps(rep,ensure_ascii=False))
 asyncio.run(main())

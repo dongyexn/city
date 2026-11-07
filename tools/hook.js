@@ -1,0 +1,1 @@
+window.__pc={centerOn:(x,y)=>centerOn(x,y),roads:()=>{let n=0;for(let i=0;i<NN;i++)if(kind[i]===K.ROAD)n++;return n;},water:()=>{for(let i=0;i<NN;i++)if(terr[i]===TWA&&WD[(i>>NS)*HN+(i&NM)]>3)return[i&NM,i>>NS];},zoom:z=>{zoom=z;},glt:()=>GLT,road:(a,b,c,d)=>{pushUndo();applyTool('road',{x:a,y:b},{x:c,y:d});},cam:()=>[camX,camY],ev:c=>eval(c)};
