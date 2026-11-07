@@ -2552,7 +2552,7 @@ function pedTrav(Tx,Ty,Fx,Fy,Xx,Xy,u,sd){const cx=Tx+.5,cy=Ty+.5,ix=Tx-Fx,iy=Ty-
   if(a>=0&&b>=0){const fw=(b-a+4)%4,bw=(a-b+4)%4,st=fw<=bw?1:-1,n=Math.min(fw,bw);let k=a;pts.push([cx+PSQ[k][0],cy+PSQ[k][1]]);for(let j=0;j<n;j++){k=(k+st+4)%4;pts.push([cx+PSQ[k][0],cy+PSQ[k][1]]);}}
   pts.push(X);let L=0;const ls=[];for(let k=1;k<pts.length;k++){const l=Math.hypot(pts[k][0]-pts[k-1][0],pts[k][1]-pts[k-1][1]);ls.push(l);L+=l;}
   let d=u*L;for(let k=0;k<ls.length;k++){if(d<=ls[k]||k===ls.length-1){const f=ls[k]?Math.min(1,d/ls[k]):0,A=pts[k],B=pts[k+1],l=ls[k]||1;return[A[0]+(B[0]-A[0])*f,A[1]+(B[1]-A[1])*f,(B[0]-A[0])/l,(B[1]-A[1])/l];}d-=ls[k];}return[X[0],X[1],ox,oy];}
-function agentPos(a,ped){const t=a.t;if(ped){const h1=t<.5,T=h1?[a.x,a.y]:[a.nx,a.ny],F=h1?[a.px,a.py]:[a.x,a.y],X=h1?[a.nx,a.ny]:[a.n2x,a.n2y],u=h1?t+.5:t-.5;
+function agentPos(a,ped){if(a.vr)return vrPos(a,ped);const t=a.t;if(ped){const h1=t<.5,T=h1?[a.x,a.y]:[a.nx,a.ny],F=h1?[a.px,a.py]:[a.x,a.y],X=h1?[a.nx,a.ny]:[a.n2x,a.n2y],u=h1?t+.5:t-.5;
     if(isX(T[0],T[1]))return pedTrav(T[0],T[1],F[0],F[1],X[0],X[1],u,a.side);}
   const r=t<.5?trav(a.x,a.y,a.px,a.py,a.nx,a.ny,t+.5):trav(a.nx,a.ny,a.x,a.y,a.n2x,a.n2y,t-.5),o=ped?.42*a.side:(lvl[idx(a.x,a.y)]===1?.2:.17);const out=[r[0]-r[3]*o,r[1]+r[2]*o,r[2],r[3]];
   if(ped){const tx=Math.floor(r[0]),ty=Math.floor(r[1]);if(tx>=0&&ty>=0&&tx<N&&ty<N){const ti=idx(tx,ty);if(!isWide(ti)&&kind[ti]===K.ROAD&&!isElev(ti)){const m=roadMask(tx,ty),fx=out[0]-tx,fy=out[1]-ty;if(m===5||m===1||m===4)out[0]=tx+(fx<.5?.07:.93);else if(m===10||m===2||m===8)out[1]=ty+(fy<.5?.07:.93);}
@@ -2561,7 +2561,7 @@ function agentPos(a,ped){const t=a.t;if(ped){const h1=t<.5,T=h1?[a.x,a.y]:[a.nx,
     else if(isWide(ti)&&wideJ(tx,ty)){const J=juncInfo(tx,ty),xa=J.x0-.22,xb=J.x1+1.22,ya=J.y0-.22,yb=J.y1+1.22;if(Math.abs(out[2])>=Math.abs(out[3]))out[1]=(out[1]-ya<yb-out[1])?ya:yb;else out[0]=(out[0]-xa<xb-out[0])?xa:xb;}}}return out;}
 function agH(p){const x=Math.floor(p[0]),y=Math.floor(p[1]);let h=surfH(p[0],p[1])*E;if(x>=0&&y>=0&&x<N&&y<N){const i=idx(x,y);if(isElev(i)){const ax=elAx(i),mv=Math.abs(p[2])>Math.abs(p[3])?0:1;if(mv===ax){const SG=elDn(i)?-DEP:ELH;const fx=ax?p[1]-y:p[0]-x,dir=ax?Math.sign(p[3]):Math.sign(p[2]);const h0=elevH(i),nx=ax?x:x+(fx>.5?1:-1),ny=ax?y+(fx>.5?1:-1):y,nh=(nx>=0&&ny>=0&&nx<N&&ny<N&&isElev(idx(nx,ny))&&elAx(idx(nx,ny))===ax&&elDn(idx(nx,ny))===elDn(i))?elevH(idx(nx,ny)):0,w=Math.abs(fx-.5);h+=SG*(h0*(1-w)+nh*w)+(SG>0?.5:0);return h;}}if(terr[i]===TWA&&kind[i]===K.ROAD){const e=bEnd(i),f=e?(isWide(i)?wInfo(i).ax:roadMask(x,y)===5?1:0)?p[1]-y:p[0]-x:0;h+=(e===1?Math.min(1,f*1.6):e===2?Math.min(1,(1-f)*1.6):1)*9/SR;}else if(terr[i]===TWA)h+=9/SR;}return h;}
 const SPMUL=[0,1,1.5,2.2];
-function updateAgents(dt){if(VR.on){cars=[];peds=[];return;}if(spawnDirty)buildSpawn();const mult=SPMUL[sim.speed],d=dt*mult;viewBox();
+function updateAgents(dt){if(VR.on){vrUpdate(dt);return;}if(spawnDirty)buildSpawn();const mult=SPMUL[sim.speed],d=dt*mult;viewBox();
   const RH=rhythm(),tc=Math.min(Math.round((MEMLOW?240:340)*Math.min(1,RH[0])),Math.round(sim.pop/70*RH[0])),tp=Math.min(Math.round((MEMLOW?320:460)*Math.min(1,RH[1])),Math.round(sim.pop/50*RH[1]));
   if(mult&&zoom>=3){cars=cars.filter(a=>inView(a.x,a.y,14)||Math.random()>.04);peds=peds.filter(a=>inView(a.x,a.y,10)||Math.random()>.05);}
   if(mult){for(let n=0;n<3&&cars.length<tc;n++){const a=spawnAgent(false);if(a)cars.push(a);else break;}for(let n=0;n<3&&peds.length<tp;n++){const a=spawnAgent(true);if(a)peds.push(a);else break;}}
@@ -2818,6 +2818,35 @@ function drawVRNodes(g,S,ox,oy,bx0,by0,bx1,by1){if(!VR.nodes)return;for(const n 
     for(let t=-w/2+.06;t<w/2-.04;t+=.13){const c0=[n.x+ux*d0+nx*t,n.y+uy*d0+ny*t],q=[c0,[c0[0]+nx*.065,c0[1]+ny*.065],[c0[0]+nx*.065+ux*L,c0[1]+ny*.065+uy*L],[c0[0]+ux*L,c0[1]+uy*L]];vQuad(g,S,ox,oy,q,'rgba(244,244,240,.92)');}
     /* stop line on the inbound half */
     if(a.cls>=2&&n.major){const d1=d0+L+.12,q=[[n.x+ux*d1,n.y+uy*d1],[n.x+ux*d1+nx*w/2,n.y+uy*d1+ny*w/2],[n.x+ux*(d1+.05)+nx*w/2,n.y+uy*(d1+.05)+ny*w/2],[n.x+ux*(d1+.05),n.y+uy*(d1+.05)]];vQuad(g,S,ox,oy,q,'rgba(244,244,240,.9)');}}}}
+/* ---- traffic on the vector network: cars keep right in their lane, follow the car ahead, obey junction signals; people walk the sidewalks ---- */
+function vLinks(){/* attachments: for each edge, point index -> node, and each node's exits */
+  for(const e of VR.edges)e.att=new Map();
+  VR.nodes.forEach((n,ni)=>{n.ex=[];n.ph0=n.arms.length?n.arms[0].a:0;const seen=new Set();VR.edges.forEach((e,ei)=>{if(!n.arms.some(a=>a.e===ei))return;let bk=-1,bd=9;e.pts.forEach((p,k)=>{const d=Math.hypot(p[0]-n.x,p[1]-n.y);if(d<bd){bd=d;bk=k;}});if(bk<0||bd>1.6||seen.has(ei))return;seen.add(ei);e.att.set(bk,ni);
+    if(bk<e.pts.length-2)n.ex.push({e:ei,k:bk,dir:1});if(bk>1)n.ex.push({e:ei,k:bk,dir:-1});});});}
+function vDirAng(e,k,dir){const p=e.pts,j=Math.max(0,Math.min(p.length-1,k+dir*2)),a=p[k];return Math.atan2(p[j][1]-a[1],p[j][0]-a[0]);}
+function vGreen(n,ang){/* two-phase signal per junction: the arms within 45° of the phase axis go */const t=(animT*.9+n.x*.37+n.y*.11)%11,ph=t<4.5?0:t<5.5?-1:t<10?1:-1;if(ph<0)return false;const ax=n.ph0+(ph?Math.PI/2:0),d=Math.abs(Math.sin(ang-ax));return d<.7;}
+function vSpawn(ped){const E=VR.edges.filter(e=>ped?(e.cls>=1&&e.cls<=3):e.cls>=1);if(!E.length)return null;let e=null,s0=0;
+  if(zoom>=1.2&&Math.random()<.85)for(let t=0;t<30&&!e;t++){const c=E[(Math.random()*E.length)|0],k=(Math.random()*c.pts.length)|0,p=c.pts[k];if(inView(p[0]|0,p[1]|0,4)){e=c;s0=k;}}
+  if(!e){e=E[(Math.random()*E.length)|0];s0=Math.random()*(e.pts.length-1);}const ei=VR.edges.indexOf(e);
+  return{vr:1,e:ei,s:s0,dir:Math.random()<.5?1:-1,v:0,sp:ped?.35+Math.random()*.25:1.3+Math.random()*.9,c:(Math.random()*64)|0,lane:Math.random(),side:Math.random()<.5?1:-1,ph:Math.random()*6,last:-1,t:0,x:0,y:0,nx:0,ny:0};}
+function vrPos(a,ped){const e=VR.edges[a.e],p=e.pts,n=p.length-1,s=Math.max(0,Math.min(n-1e-6,a.s)),k=Math.floor(s),f=s-k,A=p[k],B=p[Math.min(n,k+1)];let dx=(B[0]-A[0])*a.dir,dy=(B[1]-A[1])*a.dir;const l=Math.hypot(dx,dy)||1;dx/=l;dy/=l;
+  const c=VCLS[e.cls],off=ped?(c.w*.5+c.sw*.5)*a.side:(e.cls>=3?c.w*(.12+.26*Math.floor(a.lane*c.ln/2)/(c.ln/2)):c.w*.24);/* right-hand traffic: offset to the right of travel */
+  const x=A[0]+(B[0]-A[0])*f+(ped?-dy*off:-dy*off),y=A[1]+(B[1]-A[1])*f+(ped?dx*off:dx*off);a.x=x|0;a.y=y|0;return[x,y,dx,dy];}
+function vrUpdate(dt){if(!VR.edges.length)return;if(!VR.linked){vLinks();VR.linked=1;cars=[];peds=[];}const sp=SPMUL[sim.speed],d=dt*sp;
+  const tc=MEMLOW?140:240,tp=MEMLOW?180:320;viewBox();if(zoom>=1.2&&sp){cars=cars.filter(a=>inView(a.x,a.y,10)||Math.random()>.05);peds=peds.filter(a=>inView(a.x,a.y,8)||Math.random()>.06);}for(let k=0;k<6&&cars.length<tc;k++){const a=vSpawn(false);if(a)cars.push(a);}for(let k=0;k<6&&peds.length<tp;k++){const a=vSpawn(true);if(a)peds.push(a);}if(!d)return;
+  /* followers: per edge and direction, sorted positions */
+  const B=new Map();for(const a of cars){const kk=a.e*2+(a.dir>0?1:0);let L=B.get(kk);if(!L)B.set(kk,L=[]);L.push(a);}
+  const step=(a,ped)=>{const e=VR.edges[a.e],n=e.pts.length-1;let v=a.sp;
+    if(!ped){const L=B.get(a.e*2+(a.dir>0?1:0));if(L)for(const o of L){if(o===a)continue;const g=(o.s-a.s)*a.dir;if(g>0&&g<2.6)v=Math.min(v,Math.max(0,(g-1.1)*1.4));}}
+    /* signals at the next major junction */
+    for(const [k,ni] of e.att){const g=(k-a.s)*a.dir;if(g<=0||g>(ped?1.2:2.6))continue;const nd=VR.nodes[ni];if(!nd.major)continue;if(!vGreen(nd,vDirAng(e,Math.round(a.s),a.dir))){if(ped)v=0;else v=Math.min(v,Math.max(0,(g-1)*1.6));}break;}
+    a.v=a.v+(v-a.v)*Math.min(1,dt*(v<a.v?6:1.5));const ds=a.v*d*2;/* 2 points per tile */const s0=a.s;a.s+=ds*a.dir;if(ped)a.ph+=d*8;
+    /* passing a junction point: maybe turn */
+    for(const [k,ni] of e.att){if(k===a.last)continue;if(!((s0-k)*a.dir<=0&&(a.s-k)*a.dir>=0))continue;const nd=VR.nodes[ni],end=k<=1||k>=n-1;if(!end&&Math.random()<.65)continue;
+      const opts=nd.ex.filter(x=>!(x.e===a.e&&x.dir===-a.dir));if(!opts.length)continue;const o=opts[(Math.random()*opts.length)|0];a.e=o.e;a.s=o.k;a.dir=o.dir;a.last=o.k;return true;}
+    if(a.s<=0||a.s>=n){/* dead end: turn around */a.dir=-a.dir;a.s=Math.max(0,Math.min(n,a.s));a.last=-1;}
+    return true;};
+  for(const a of cars)step(a,false);for(const a of peds)step(a,true);}
 /* ---- rendering: strokes in tile space through the iso affine ---- */
 function vOffset(p,d){const out=[];for(let k=0;k<p.length;k++){const a=p[Math.max(0,k-1)],b=p[Math.min(p.length-1,k+1)],dx=b[0]-a[0],dy=b[1]-a[1],l=Math.hypot(dx,dy)||1;out.push([p[k][0]-dy/l*d,p[k][1]+dx/l*d]);}return out;}
 function vStroke(g,p,S,ox,oy,w,col,dash){g.strokeStyle=col;g.lineWidth=w;g.setLineDash(dash||[]);
