@@ -1,7 +1,7 @@
 (()=>{'use strict';
 /* ================= constants & state ================= */
 /* 도트 화풍: read before any sprite is drawn; toggling it in settings reloads the page */
-var PIXNAT=0;var PIXART=(()=>{try{const f=JSON.parse(localStorage.getItem('pixelcity.fx')||'{}');return f.pix!==false;}catch(e){return true;}})();
+var PIXNAT=0;var PIXART=(()=>{try{const f=JSON.parse(localStorage.getItem('pixelcity.fx')||'{}');return f.pix===true;}catch(e){return false;}})();
 function pixFX(c,ot){if(!PIXART)return;ot=ot||(PIXNAT?1:2);const OF=PIXNAT?.86:.66,OB=PIXNAT?.88:.7;const w=c.width,h=c.height;if(!w||!h)return;const x=c.getContext('2d',{willReadFrequently:true}),im=x.getImageData(0,0,w,h),d=im.data,a=new Uint8Array(w*h);for(let i=0;i<w*h;i++)a[i]=d[i*4+3]>110?1:0;
   const L=14;
   for(let y=0;y<h;y++)for(let X=0;X<w;X++){const i=y*w+X,o=i*4;if(!a[i]){d[o+3]=0;continue;}d[o+3]=255;let e=false;
@@ -2472,7 +2472,7 @@ function drawC(ctx,e,G,S,ox,oy){const dx=Math.round(G.left*S+ox),dy=Math.round(G
 /* ================= canvas & camera ================= */
 const cv=document.getElementById('view');let gl=null;try{const go={alpha:false,antialias:false,depth:false,stencil:false,premultipliedAlpha:false};gl=cv.getContext('webgl2',go)||cv.getContext('webgl',go);}catch(err){gl=null;}
 const scn=gl?mk(1,1):cv,g=scn.getContext('2d');let dpr=1,Wc=0,Hc=0;const lbuf=mk(1,1),lctx=lbuf.getContext('2d');
-let SEASYNC=null;const FX={post:true,tilt:true,shadow:true,grow:false,season:-1,perf:false,pix:true};try{Object.assign(FX,JSON.parse(localStorage.getItem('pixelcity.fx')||'{}'));}catch(err){}
+let SEASYNC=null;const FX={post:true,tilt:true,shadow:true,grow:false,season:-1,perf:false,pix:false};try{Object.assign(FX,JSON.parse(localStorage.getItem('pixelcity.fx')||'{}'));}catch(err){}
 let camX=0,camY=2048,zoom=2,tool='inspect',hover=null,drag=null,pan=null,pinch=null,overlay='none',ovDirty=true,todMode='auto',tod=.4,animT=0;
 let DPRCAP=2,slowT=0,slowT2=0,LOADT=0;function resize(){dpr=PIXART?.5:Math.min(DPRCAP,window.devicePixelRatio||1)*(FX.perf?.72:1);document.body.classList.toggle('pix',!!PIXART);Wc=innerWidth;Hc=innerHeight;cv.width=Math.round(Wc*dpr);cv.height=Math.round(Hc*dpr);if(scn!==cv){scn.width=cv.width;scn.height=cv.height;}lbuf.width=cv.width;lbuf.height=cv.height;}
 addEventListener('resize',resize);resize();
