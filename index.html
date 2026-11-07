@@ -498,13 +498,13 @@ function cropC(src,b){const c=mk(b[2],b[3]);c.getContext('2d').drawImage(src,-b[
 function half(src){const c=mk(Math.ceil(src.width/2),Math.ceil(src.height/2)),x=c.getContext('2d');x.imageSmoothingEnabled=true;x.imageSmoothingQuality='high';x.drawImage(src,0,0,c.width,c.height);return c;}
 let PSC=1,SNOWG=null;var CURFAC=null,DROPOK=0,GCELLS=[];
 function finSnow(o,sn,b){const c=cropC(sn,b),x=c.getContext('2d');x.globalCompositeOperation='destination-in';x.drawImage(o.c,0,0);o.sn2=half(c);o.sn=o.sn2;}
-function oszpS(draw,seed,sz,ds,noShadow){ds=ds||1;const ps=sz/ds,W2=SW*sz,c=mk(W2,SOH),g=c.getContext('2d'),l=mk(W2,SOH),lg=l.getContext('2d'),sn=mk(W2,SOH),r=mulberry(seed),st={lit:false,emit:[],noShadow,sn:true};
+function oszpS(draw,seed,sz,ds,noShadow){ds=ds||1;const ps=sz/ds,W2=SW*sz,c=mk(W2,SOH),g=c.getContext('2d',{willReadFrequently:true}),l=mk(W2,SOH),lg=l.getContext('2d',{willReadFrequently:true}),sn=mk(W2,SOH),r=mulberry(seed),st={lit:false,emit:[],noShadow,sn:true};
   OX=W2/2;OY=SCY-32-(sz-1)*64;PUV=ps;RX=RX0*ps;RY=RY0*ps;SNOWG=sn.getContext('2d');MAING=g;
   draw(g,lg,r,st);PUV=1;RX=RX0;RY=RY0;SNOWG=null;MAING=null;OX=SCX;OY=SCY-32;const ox=(sz-1)*64;
   const b=quantizeCrop(c,st.lit?l:null);const o={bx:b[0]-ox,by:b[1],bw:b[2],bh:b[3],emit:st.emit.map(e=>[e[0]-ox,e[1],e[2],e[3]])};o.c=cropC(c,b);o.c2=half(o.c);
   if(st.lit){const s2=mk(b[2],b[3]),sx=s2.getContext('2d');sx.drawImage(o.c,0,0);sx.globalCompositeOperation='source-in';sx.fillStyle='#000';sx.fillRect(0,0,b[2],b[3]);sx.globalCompositeOperation='source-over';sx.drawImage(cropC(l,b),0,0);o.lit2=half(s2);o.lit=o.lit2;}
   if(!noShadow&&!st.noShadow)makeShadow(o,sz);if(st.sn)finSnow(o,sn,b);o.fs=sz;if(DROPOK){o.rg={draw,seed,sz,ps,z:1,b,fac:CURFAC};if(!window.__NODROP)o.c=null;}return o;}
-function osp(draw,seed,hc){hc=hc||SOH;const dy=SOH-hc,c=mk(SW,hc),g=c.getContext('2d'),l=mk(SW,hc),lg=l.getContext('2d'),sn=mk(SW,hc),r=mulberry(seed),st={lit:false,emit:[]};OX=SCX;OY=SCY-32-dy;SNOWG=sn.getContext('2d');MAING=g;draw(g,lg,r,st);SNOWG=null;MAING=null;
+function osp(draw,seed,hc){hc=hc||SOH;const dy=SOH-hc,c=mk(SW,hc),g=c.getContext('2d',{willReadFrequently:true}),l=mk(SW,hc),lg=l.getContext('2d',{willReadFrequently:true}),sn=mk(SW,hc),r=mulberry(seed),st={lit:false,emit:[]};OX=SCX;OY=SCY-32-dy;SNOWG=sn.getContext('2d');MAING=g;draw(g,lg,r,st);SNOWG=null;MAING=null;
   const b=quantizeCrop(c,st.lit?l:null);const o={bx:b[0],by:b[1]+dy,bw:b[2],bh:b[3],emit:dy?st.emit.map(e=>[e[0],e[1]+dy,e[2],e[3]]):st.emit};o.c=cropC(c,b);o.c2=half(o.c);
   if(st.lit){const s=mk(b[2],b[3]),sx=s.getContext('2d');sx.drawImage(o.c,0,0);sx.globalCompositeOperation='source-in';sx.fillStyle='#000';sx.fillRect(0,0,b[2],b[3]);sx.globalCompositeOperation='source-over';sx.drawImage(cropC(l,b),0,0);o.lit2=half(s);o.lit=o.lit2;}
   if(!st.noShadow)makeShadow(o);finSnow(o,sn,b);if(DROPOK){o.rg={draw,seed,sz:1,ps:1,z:0,b,fac:CURFAC};if(!window.__NODROP)o.c=null;}
@@ -3195,7 +3195,7 @@ function newCity(seed,blank){Object.assign(sim,{day:0,month:0,year:2027,speed:1,
 
 /* ================= loop ================= */
 let last=performance.now(),simAcc=0,hudT=0;
-function frame(now){const dtm=Math.min(100,now-last);last=now;const dt=dtm/1000;
+let LASTR=0;function frame(now){{const ck=camX+','+camY+','+zoom,idle=ck===RCAM.k&&RCAM.n>20&&!keys.size;if(now-LASTR<(idle?31:15)){requestAnimationFrame(frame);return;}LASTR=now;}const dtm=Math.min(100,now-last);last=now;const dt=dtm/1000;
   if(!document.hidden){if(dpr>1&&now-LOADT>8000){slowT=dtm>42?slowT+dtm:Math.max(0,slowT-dtm*.5);if(slowT>4000){DPRCAP=DPRCAP>1.5?1.5:1;slowT=0;resize();}}else if(!FX.perf&&!FX.perfAsked){slowT2=dtm>45?slowT2+dtm:Math.max(0,slowT2-dtm*.5);if(slowT2>6000){FX.perfAsked=true;FX.perf=true;resize();syncFxUI&&syncFxUI();toast('화면이 느려 성능 모드를 켰습니다 · 메뉴 > 그래픽에서 끌 수 있습니다');}}}
   if(keys.size){const sp=700*dt/zoom;if(keys.has('ArrowLeft'))camX-=sp;if(keys.has('ArrowRight'))camX+=sp;if(keys.has('ArrowUp'))camY-=sp;if(keys.has('ArrowDown'))camY+=sp;clampCam();}
   if(sim.speed>0){lastSpeed=sim.speed;simAcc+=dtm;const iv=[0,1100,450,160][sim.speed];let n=0;while(simAcc>=iv&&n<8){tick(false);simAcc-=iv;n++;}if(n>=8)simAcc=0;
