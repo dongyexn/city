@@ -2910,7 +2910,7 @@ in vec2 aG;in float aH;in float aK;in vec3 aD;uniform vec2 uCam,uRes;uniform flo
 void main(){vec2 w=vec2((aG.x-aG.y)*16.,(aG.x+aG.y)*8.-aH*6.);vec2 p=(w-uCam)*uS+uRes*.5;gl_Position=vec4(p.x/uRes.x*2.-1.,1.-p.y/uRes.y*2.,0.,1.);vG=aG;vK=aK;vD=aD;}`;
 const TFS=`#version 300 es
 precision highp float;precision highp sampler2DArray;
-in vec2 vG;in float vK;in vec3 vD;uniform sampler2DArray uAt;uniform sampler2D uTi,uWd,uNz,uRn,uSd,uFo;uniform float uT,uN,uSea,uQ;uniform vec3 uSky,uL;uniform vec3 uGr[4];uniform vec3 uFl[3];out vec4 o;
+in vec2 vG;in float vK;in vec3 vD;uniform sampler2DArray uAt;uniform sampler2D uTi,uWd,uNz,uRn,uSd,uFo;uniform float uT,uN,uSea,uQ,uCl,uWet;uniform vec3 uSky,uL;uniform vec3 uGr[4];uniform vec3 uFl[3];out vec4 o;
 float vn(vec2 p){return texture(uNz,(p+.5)/128.).r;}
 vec4 rn(vec2 c){return texelFetch(uRn,ivec2(mod(c,256.)),0);}
 vec3 grassP(vec2 p,float mf,float fd){
@@ -2919,7 +2919,7 @@ vec3 grassP(vec2 p,float mf,float fd){
   vec3 cf=mix(uFl[0],uFl[1],smoothstep(.3,.8,a));cf=mix(cf,uFl[1],smoothstep(.5,.82,b)*.5);cf=mix(cf,uFl[2],smoothstep(.58,.9,c)*.38);cf=mix(cf,vec3(.36,.29,.2),smoothstep(.76,.9,dd)*.5);
   float n2=vn(p*1.3+vec2(9.,2.)),w=smoothstep(.3,.7,fd+(n2-.5)*.45);vec3 col=mix(cg,cf,w);
   if(mf<.08)return col;float m=min(1.,mf),d1=vn(p*1.9+vec2(4.2,1.7)),d2=vn(p*4.3+vec2(2.5,8.1)),d3=vn(p*9.7+vec2(6.,3.));
-  float k=(d1-.5)*.1+(d2-.5)*.08+(d3-.5)*.06-smoothstep(.6,.8,d2)*.09*w;return col*(1.+k*m);}
+  float k=(d1-.5)*.16+(d2-.5)*.12+(d3-.5)*.1-smoothstep(.6,.8,d2)*.09*w;float bl=vn(vec2(p.x*14.,p.y*3.5)+vec2(p.y*2.,0.));k+=(bl-.5)*.07;return col*(1.+k*m);}
 vec3 sandP(vec2 p,float e,float mf0){float mf=clamp(mf0,0.,1.),n1=vn(p*3.1+vec2(1.,5.)),n2=vn(p*8.3+vec2(7.,2.));vec3 dry=vec3(.76,.7,.54)*(1.-(n1-.5)*.12*mf-(n2-.5)*.07*mf),wet=vec3(.5,.46,.37)*(1.-(n1-.5)*.1*mf);
   vec3 c=mix(wet,dry,smoothstep(.1,.42,e));float pb=smoothstep(.7,.8,vn(p*5.7+vec2(3.,3.)));return mix(c,vec3(.62,.61,.58),pb*.4*mf);}
 void main(){
@@ -2933,15 +2933,28 @@ void main(){
   float r0=emb?.5:.5+(vn(vG*.31+vec2(9.,3.))-.5)*.36+wnz*.06;bool isW=(fl&4)!=0;if(elig)isW=sd<r0;float dl=sd-r0;
   if(isW){float d=max(r0-sd,wv.r*12.75-.35),fd=clamp(d/4.5,0.,1.),t=uT;fd=max(fd,clamp(d*.9,0.,.8));float e=d;
     if(!emb&&e<.07){vec3 c=sandP(vG,e+.05,mf);c*=1.+clamp(L*1.55,-.42,.36)*1.1;o=vec4(c,1.);return;}
-    vec3 c=mix(vec3(.40,.64,.62),vec3(.12,.33,.47),fd);c=mix(vec3(.58,.62,.5),c,clamp(smoothstep(.05,.7,e)*.7+.3*fd+(emb?.3:0.),0.,1.));
-    vec2 p=vG;vec2 gr=vec2(0);
-    vec2 k1=vec2(1.3,.7),k2=vec2(-.5,1.9),k3=vec2(2.7,-1.1),k4=vec2(.9,3.3),k5=vec2(-3.1,2.2);
+    vec2 p=vG;bool wi=uSea>2.5;
+    vec3 sh0=wi?vec3(.42,.6,.62):vec3(.33,.68,.66),mid=wi?vec3(.2,.4,.5):vec3(.13,.46,.56),dp=wi?vec3(.1,.23,.34):vec3(.05,.23,.37);
+    vec3 c=mix(sh0,mid,smoothstep(0.,.35,fd));c=mix(c,dp,smoothstep(.35,1.,fd));
+    float n1=vn(p*.7+vec2(t*.09,t*.04)),n2=vn(p*1.9-vec2(t*.06,-t*.11)),n3=vn(p*4.7+vec2(t*.23,-t*.17));
+    c*=1.+(n1-.5)*.12*fd;
+    c=mix(vec3(.56,.6,.5),c,clamp(smoothstep(.05,.7,e)*.7+.3*fd+(emb?.3:0.),0.,1.));
+    vec2 gr=vec2(0);vec2 k1=vec2(1.3,.7),k2=vec2(-.5,1.9),k3=vec2(2.7,-1.1),k4=vec2(.9,3.3),k5=vec2(-3.1,2.2);
     gr+=k1*cos(dot(p,k1)*2.1+t*1.1)*.05;gr+=k2*cos(dot(p,k2)*2.3+t*1.4)*.045;gr+=k3*cos(dot(p,k3)*2.+t*-1.9)*.03;gr+=k4*cos(dot(p,k4)*2.4+t*2.3)*.02;gr+=k5*cos(dot(p,k5)*3.1+t*2.9)*.014;
-    vec3 wn=normalize(vec3(-gr*.8,1.)),V=normalize(vec3(.55,.55,.62));float fr=.08+.45*pow(1.-max(dot(wn,V),0.),3.);
-    c=mix(c,uSky,fr*(.35+.65*fd));vec3 R=reflect(-uL,wn);float sp=pow(max(dot(R,V),0.),140.)*(1.-uN)*(.3+.7*fd);c+=vec3(1.,.96,.88)*sp*.55;
+    gr+=vec2(n2-.5,n3-.5)*.1;
+    float ca=pow(1.-abs(vn(p*2.6+vec2(t*.21,t*.13))-vn(p*3.3-vec2(t*.16,-t*.1))),7.);c+=vec3(.55,.7,.6)*ca*.2*(1.-fd)*(1.-uN)*(emb?.3:1.);
+    vec3 wn=normalize(vec3(-gr*.8,1.)),V=normalize(vec3(.55,.55,.62));float fr=.06+.5*pow(1.-max(dot(wn,V),0.),3.);
+    vec3 sky=mix(uSky*1.08,uSky*.78+vec3(.02,.04,.06),clamp(.5+gr.y*2.,0.,1.));c=mix(c,sky,fr*(.3+.7*fd));
+    vec3 Rf=reflect(-uL,wn);float sp=pow(max(dot(Rf,V),0.),420.)*(1.-uN)*(.3+.7*fd)*(1.-uCl*.7);c+=vec3(1.,.96,.88)*min(sp,1.)*.45;
+    vec2 gq=p*11.+vec2(t*.9,t*.4);vec4 hg=rn(floor(gq));float gl2=step(.996,hg.r)*smoothstep(.18,.0,length(fract(gq)-.5))*smoothstep(.0,.5,sin(t*6.+hg.g*30.))*(1.-uN)*(1.-uCl)*(.2+.8*fd);c+=vec3(1.,.97,.9)*gl2*.5;
+    c+=vec3(1.,.82,.55)*uN*smoothstep(.62,.9,n2)*.06*(1.-fd*.5);c*=1.-uN*.18;
+    if(uWet>.05){vec2 q=p*2.6,cl=floor(q),f=fract(q)-.5;vec4 h=rn(cl+vec2(7.,3.));float ph=fract(t*.9+h.r),rr=length(f-(h.gb-.5)*.5);c+=vec3(.75,.82,.88)*smoothstep(.035,0.,abs(rr-ph*.42))*(1.-ph)*.35*uWet;}
+    if(wi){float ice=smoothstep(.22,.04,fd)*(.55+.25*n3);c=mix(c,vec3(.84,.89,.92),ice*.6);}
     float wave=.05*sin(t*1.25+p.x*.9+p.y*.6)+.03*sin(t*2.1-p.x*1.7+p.y*1.1);
     float fo=emb?smoothstep(.14,.02,d)*.4:smoothstep(.26,.1,e+wave)*smoothstep(.0,.1,e+wave);fo+=(emb?0.:1.)*smoothstep(.6,.15,e+(vn(p*3.2+vec2(t*.13,t*.09))-.5)*.5+wave*2.)*.2;
-    c=mix(c,vec3(.92,.95,.95),clamp(fo,0.,1.)*.75);o=vec4(c,1.);return;}
+    float lap=.22+.08*sin(t*1.1+p.x*.6+p.y*.45);fo+=(emb?0.:1.)*smoothstep(.035,0.,abs(e-lap))*.45*smoothstep(.75,.3,n3);
+    c=mix(c,vec3(.93,.96,.96),clamp(fo,0.,1.)*.78);
+    float cs=vn(p*.035+vec2(t*.012,t*.006));c*=1.-smoothstep(.52,.75,cs)*.16*uCl;o=vec4(c,1.);return;}
   vec2 f=fract(vG);if((fl&64)!=0){vec4 h=rn(vec2(ti)+vec2(31.,17.));int rt=int(h.r*4.);if(rt==1)f=vec2(1.-f.y,f.x);else if(rt==2)f=1.-f;else if(rt==3)f=vec2(f.y,1.-f.x);if(h.g>.5)f=f.yx;}
   vec3 c;if((fl&8)!=0||(fl&4)!=0)c=grassP(vG,mf,texture(uFo,vG/${N}.).r);else c=textureGrad(uAt,vec3(f,lay),gx,gy).rgb;
   if(elig&&dl<2.4){if(emb){if(dl<.16){vec2 q=vec2((vG.x-vG.y)*8.,(vG.x+vG.y)*12.);vec2 qi=floor(vec2(q.x+floor(q.y)*.5,q.y));vec4 h=rn(qi);vec3 st=vec3(.66,.64,.6)*(.9+h.r*.16);vec2 qf=fract(vec2(q.x+floor(q.y)*.5,q.y));vec2 qw=fwidth(q)+1e-4;st*=mix(.8,1.,smoothstep(.0,.08+qw.x,qf.x)*smoothstep(.0,.1+qw.y,qf.y)*smoothstep(1.,.97-qw.x,qf.x));st*=mix(.7,1.,smoothstep(0.,.16,dl));c=dl>.13?mix(st,c,(dl-.13)/.03):st;}}
@@ -2949,7 +2962,9 @@ void main(){
   float lap=vD.z;
   float sh=clamp(L*1.55-lap*.07,-.42,.36);
   if((fl&1)!=0){sh+=(vn(vG*.31)-.5)*.13;if((fl&2)!=0){float tn=(vn(vG*.11+3.)*.6+vn(vG*.27+7.)*.4-.5)*2.4;c*=vec3(1.+tn*.07,1.+tn*.04,1.-tn*.06);}}
-  c*=1.+sh*1.1;o=vec4(c,1.);}`;
+  c*=1.+sh*1.1;
+  if(((fl&8)!=0||(fl&4)!=0)&&uSea<1.5&&mf>.35){vec2 q=vG*9.;vec4 h=rn(floor(q)+vec2(13.,5.));float fs=step(.982,h.r)*smoothstep(.22,.05,length(fract(q)-.5-(h.gb-.5)*.5));vec3 fc=h.g<.3?vec3(.98,.85,.9):h.g<.55?vec3(.98,.88,.35):h.g<.8?vec3(.97,.97,.95):vec3(.75,.6,.95);c=mix(c,fc,fs*min(1.,mf-.35)*(uSea<.5?1.:.6));}
+  float cs=vn(vG*.035+vec2(uT*.012,uT*.006));c*=1.-smoothstep(.52,.75,cs)*.2*uCl;o=vec4(c,1.);}`;
 function glAtlas(){const S=ATS,L=TEXLIST.length,tx=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D_ARRAY,tx);gl.texStorage3D(gl.TEXTURE_2D_ARRAY,Math.log2(S)+1,gl.RGBA8,S,S,L);gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,false);gl.pixelStorei(gl.UNPACK_ALIGNMENT,1);let c=null,x=null;
   for(const t of TEXLIST){let d=t.sq;if(!d){if(!c){c=mk(S,S);x=c.getContext('2d',{willReadFrequently:true});x.imageSmoothingEnabled=true;}x.setTransform(1,0,0,1,0,0);x.clearRect(0,0,S,S);for(const sc of [1.1,1]){x.setTransform(sc*S/128,-sc*S/128,sc*S/64,sc*S/64,S/2-S*sc,S/2);x.drawImage(t.c,0,0);}
       d=new Uint8Array(x.getImageData(0,0,S,S).data.buffer);for(let q=3;q<d.length;q+=4)d[q]=255;}
@@ -3001,7 +3016,7 @@ function glTerrain(w,h){glUpdate();{const k=[camX,camY,zoom,dpr,w,h,Math.round(n
   const P=GT.prog,u=P.u;gl.useProgram(P.p);gl.uniform2f(u.uCam,camX,camY);gl.uniform2f(u.uRes,w,h);gl.uniform1f(u.uS,zoom*dpr);gl.uniform1f(u.uT,performance.now()/1000);gl.uniform1f(u.uN,nightAmt());
   gl.uniform3f(u.uSky,SKYC.b[0]/255*.92,SKYC.b[1]/255*.95,SKYC.b[2]/255);gl.uniform3f(u.uL,LIGHT[0],LIGHT[1],LIGHT[2]);
   const bind=(unit,target,tx,name)=>{gl.activeTexture(gl.TEXTURE0+unit);gl.bindTexture(target,tx);if(u[name])gl.uniform1i(u[name],unit);};
-  bind(0,gl.TEXTURE_2D_ARRAY,GT.at,'uAt');bind(1,gl.TEXTURE_2D,GT.ti,'uTi');bind(2,gl.TEXTURE_2D,GT.hg,'uHg');bind(3,gl.TEXTURE_2D,GT.wd,'uWd');bind(4,gl.TEXTURE_2D,GT.nz,'uNz');bind(5,gl.TEXTURE_2D,GT.rn,'uRn');bind(6,gl.TEXTURE_2D,GT.sd,'uSd');bind(7,gl.TEXTURE_2D,GT.fo,'uFo');gl.uniform1f(u.uSea,SEASON);gl.uniform1f(u.uQ,FX.perf?0.:1.);{const G=GRASS[SEASON],dry=mix(G[0],SEASON===3?-.05:.12).map((v,i)=>i===2?v*.78:v),A=new Float32Array(12);[G[0],G[1],G[2],dry].forEach((cc,j)=>{const h=typeof cc==='string'?hex(cc):cc;A[j*3]=h[0]/255;A[j*3+1]=h[1]/255;A[j*3+2]=h[2]/255;});gl.uniform3fv(u['uGr[0]'],A);const FL=[['#4f6e3a','#425e30','#5d7c44'],['#3f5e30','#344f28','#4a6a38'],['#6a5a34','#5a4a2a','#7a6a40'],['#6a6650','#5a5642','#7a7660']][SEASON],B=new Float32Array(9);FL.forEach((cc,j)=>{const h=hex(cc);B[j*3]=h[0]/255;B[j*3+1]=h[1]/255;B[j*3+2]=h[2]/255;});gl.uniform3fv(u['uFl[0]'],B);}
+  bind(0,gl.TEXTURE_2D_ARRAY,GT.at,'uAt');bind(1,gl.TEXTURE_2D,GT.ti,'uTi');bind(2,gl.TEXTURE_2D,GT.hg,'uHg');bind(3,gl.TEXTURE_2D,GT.wd,'uWd');bind(4,gl.TEXTURE_2D,GT.nz,'uNz');bind(5,gl.TEXTURE_2D,GT.rn,'uRn');bind(6,gl.TEXTURE_2D,GT.sd,'uSd');bind(7,gl.TEXTURE_2D,GT.fo,'uFo');gl.uniform1f(u.uSea,SEASON);if(u.uCl)gl.uniform1f(u.uCl,Math.min(1,WX.cover*1.2));if(u.uWet)gl.uniform1f(u.uWet,WX.rain);gl.uniform1f(u.uQ,FX.perf?0.:1.);{const G=GRASS[SEASON],dry=mix(G[0],SEASON===3?-.05:.12).map((v,i)=>i===2?v*.78:v),A=new Float32Array(12);[G[0],G[1],G[2],dry].forEach((cc,j)=>{const h=typeof cc==='string'?hex(cc):cc;A[j*3]=h[0]/255;A[j*3+1]=h[1]/255;A[j*3+2]=h[2]/255;});gl.uniform3fv(u['uGr[0]'],A);const FL=[['#4f6e3a','#425e30','#5d7c44'],['#3f5e30','#344f28','#4a6a38'],['#6a5a34','#5a4a2a','#7a6a40'],['#6a6650','#5a5642','#7a7660']][SEASON],B=new Float32Array(9);FL.forEach((cc,j)=>{const h=hex(cc);B[j*3]=h[0]/255;B[j*3+1]=h[1]/255;B[j*3+2]=h[2]/255;});gl.uniform3fv(u['uFl[0]'],B);}
   gl.bindVertexArray(GT.vao);glDrawVis(w,h);gl.bindVertexArray(null);gl.activeTexture(gl.TEXTURE0);}
 function glDrawVis(w,h){const S=zoom*dpr,hw=w/2/S+40,hh=h/2/S+40,s0=Math.max(0,Math.floor((camY-hh)/8)-2),s1=Math.min(2*N-2,Math.ceil((camY+hh+HMAX*6)/8)+2),d0=Math.floor((camX-hw)/16)-2,d1=Math.ceil((camX+hw)/16)+2;
   if(!GT.so||s1<s0){gl.drawElements(gl.TRIANGLES,GT.cnt,gl.UNSIGNED_INT,0);return;}const nd=s1-s0+1;
