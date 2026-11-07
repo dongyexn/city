@@ -503,28 +503,18 @@ function oszpS(draw,seed,sz,ds,noShadow){ds=ds||1;const ps=sz/ds,W2=SW*sz,c=mk(W
   draw(g,lg,r,st);PUV=1;RX=RX0;RY=RY0;SNOWG=null;MAING=null;OX=SCX;OY=SCY-32;const ox=(sz-1)*64;
   const b=quantizeCrop(c,st.lit?l:null);const o={bx:b[0]-ox,by:b[1],bw:b[2],bh:b[3],emit:st.emit.map(e=>[e[0]-ox,e[1],e[2],e[3]])};o.c=cropC(c,b);o.c2=half(o.c);
   if(st.lit){const s2=mk(b[2],b[3]),sx=s2.getContext('2d');sx.drawImage(o.c,0,0);sx.globalCompositeOperation='source-in';sx.fillStyle='#000';sx.fillRect(0,0,b[2],b[3]);sx.globalCompositeOperation='source-over';sx.drawImage(cropC(l,b),0,0);o.lit2=half(s2);o.lit=o.lit2;}
-  if(!noShadow&&!st.noShadow)makeShadow(o,sz);if(st.sn)finSnow(o,sn,b);o.fs=sz;if(DROPOK){o.rg={draw,seed,sz,ps,z:1,b,fac:CURFAC};if(!window.__NODROP)o.c=null;}return atl(o);}
+  if(!noShadow&&!st.noShadow)makeShadow(o,sz);if(st.sn)finSnow(o,sn,b);o.fs=sz;if(DROPOK){o.rg={draw,seed,sz,ps,z:1,b,fac:CURFAC};if(!window.__NODROP)o.c=null;}return o;}
 function osp(draw,seed,hc){hc=hc||SOH;const dy=SOH-hc,c=mk(SW,hc),g=c.getContext('2d',{willReadFrequently:true}),l=mk(SW,hc),lg=l.getContext('2d',{willReadFrequently:true}),sn=mk(SW,hc),r=mulberry(seed),st={lit:false,emit:[]};OX=SCX;OY=SCY-32-dy;SNOWG=sn.getContext('2d');MAING=g;draw(g,lg,r,st);SNOWG=null;MAING=null;
   const b=quantizeCrop(c,st.lit?l:null);const o={bx:b[0],by:b[1]+dy,bw:b[2],bh:b[3],emit:dy?st.emit.map(e=>[e[0],e[1]+dy,e[2],e[3]]):st.emit};o.c=cropC(c,b);o.c2=half(o.c);
   if(st.lit){const s=mk(b[2],b[3]),sx=s.getContext('2d');sx.drawImage(o.c,0,0);sx.globalCompositeOperation='source-in';sx.fillStyle='#000';sx.fillRect(0,0,b[2],b[3]);sx.globalCompositeOperation='source-over';sx.drawImage(cropC(l,b),0,0);o.lit2=half(s);o.lit=o.lit2;}
   if(!st.noShadow)makeShadow(o);finSnow(o,sn,b);if(DROPOK){o.rg={draw,seed,sz:1,ps:1,z:0,b,fac:CURFAC};if(!window.__NODROP)o.c=null;}
-  return atl(o);}
+  return o;}
 const SHK=.82,SHC=.42;
 function makeShadow(o,fs){const src=o.c2,w=src.width,h=src.height,B=(SCY-((fs||1)-1)*32-o.by)/2;
   const cs=[[0,0],[w,0],[0,h],[w,h]].map(([x,y])=>[x+SHK*(B-y),B+SHC*(B-y)]);const mnx=Math.min(...cs.map(c=>c[0])),mxx=Math.max(...cs.map(c=>c[0])),mny=Math.min(...cs.map(c=>c[1])),mxy=Math.max(...cs.map(c=>c[1]));
   const c=mk(Math.ceil(mxx-mnx)+2,Math.ceil(mxy-mny)+2),x=c.getContext('2d');x.imageSmoothingEnabled=true;x.setTransform(1,0,-SHK,-SHC,SHK*B-mnx,(1+SHC)*B-mny);if('filter' in x)x.filter='blur(1.2px)';x.drawImage(src,0,0);x.filter='none';x.setTransform(1,0,0,1,0,0);x.globalCompositeOperation='source-in';x.fillStyle='#000';x.fillRect(0,0,c.width,c.height);
   o.shd={c,dx:mnx*2,dy:mny*2};}
-function drawShd(ctx,o,wx,wy,hb){const s=o.shd;if(!s)return;blit(ctx,s.c,wx-16+(o.bx+s.dx)/SR,wy-TOPM+(o.by+s.dy)/SR-hb,s.c.width*2/SR,s.c.height*2/SR);}
-/* sprite atlas: Chrome keeps small canvases off the GPU, so drawing one re-uploads it every time; finished sprite images are packed into 2048px pages */
-const ATL={pages:[],P:2048};
-function atlasPut(src){if(!src||src.cv||MEMLOW)return src;const w=src.width,h=src.height,P=ATL.P;if(w>P/2||h>P/2||w*h<16)return src;const hc=Math.ceil((h+2)/16)*16;
-  let pg=null,sh=null,bh=1e9;for(const p of ATL.pages)for(const q of p.sh)if(q.h>=hc&&q.h<=hc*1.3+16&&q.h<bh&&q.x+w+2<=P){bh=q.h;sh=q;pg=p;}
-  if(!sh)for(const p of ATL.pages)if(p.y+hc<=P){pg=p;break;}
-  if(!pg){pg={cv:mk(P,P),y:0,sh:[]};pg.g=pg.cv.getContext('2d');ATL.pages.push(pg);}
-  if(!sh){sh={y:pg.y,h:hc,x:0};pg.sh.push(sh);pg.y+=hc;}
-  const x=sh.x+1,y=sh.y+1;pg.g.drawImage(src,x,y);sh.x+=w+2;return{cv:pg.cv,x,y,width:w,height:h};}
-function blit(ctx,im,dx,dy,dw,dh){if(im.cv)ctx.drawImage(im.cv,im.x,im.y,im.width,im.height,dx,dy,dw,dh);else ctx.drawImage(im,dx,dy,dw,dh);}
-function atl(o){o.c2=atlasPut(o.c2);if(o.lit2){o.lit2=atlasPut(o.lit2);o.lit=o.lit2;}if(o.sn2){o.sn2=atlasPut(o.sn2);o.sn=o.sn2;}if(o.shd)o.shd.c=atlasPut(o.shd.c);if(o.c&&!o.rg)o.c=atlasPut(o.c);return o;}
+function drawShd(ctx,o,wx,wy,hb){const s=o.shd;if(!s)return;ctx.drawImage(s.c,wx-16+(o.bx+s.dx)/SR,wy-TOPM+(o.by+s.dy)/SR-hb,s.c.width*2/SR,s.c.height*2/SR);}
 const GQ=2,ATS=128;let LASTHI=null;
 function gsp(fn){const Q=GQ,W=128,Hh=64,HW=W*Q,HH=Hh*Q,hd=new Uint8ClampedArray(HW*HH*4),kk=64*Q/1.118;
   for(let py=0;py<HH;py++)for(let px=0;px<HW;px++){const wx=(px+.5-64*Q)/(64*Q),wy=(py+.5)/(32*Q);let fx=(wx+wy)/2,fy=(wy-wx)/2;const m=Math.min(fx,fy,1-fx,1-fy);if(m*kk<-3.2)continue;
@@ -1242,9 +1232,9 @@ function vehSprite(vt,ci,hd){const key=vt*10000+ci*100+hd;let o=VSPR.get(key);if
       if(vt===2){vPrism(g,oct(-.02,.02,w*.35,.004,.004),T.ch,T.ch+1.4,1,'#fff3d0',null,R2);}
       if(vt===1){vPrism(g,[[c0+.02,-w*.75],[c1-.03,-w*.75],[c1-.03,-w*.65],[c0+.02,-w*.65]],T.ch,T.ch+.5,1,'#2a2e33',null,R2);vPrism(g,[[c0+.02,w*.65],[c1-.03,w*.65],[c1-.03,w*.75],[c0+.02,w*.75]],T.ch,T.ch+.5,1,'#2a2e33',null,R2);}}
     const fr=R2(L+.002,0),bk=R2(-L-.002,0);for(const s2 of [-1,1]){const q=R2(L-.004,w*.72*s2),p=P(q[0],q[1],T.h1-.8);g.fillStyle='#fff8e2';g.fillRect(p[0]-.9,p[1]-.5,1.8,1.1);const q2=R2(-L+.004,w*.72*s2),p2=P(q2[0],q2[1],T.h1-.6);g.fillStyle='#c8241e';g.fillRect(p2[0]-.9,p2[1]-.5,1.8,1.1);}}
-  OX=SCX;OY=SCY-32;o={c,w:CW,h:CH,ox:CW/2,oy:CH*.62};o.c=atlasPut(o.c);VSPR.set(key,o);return o;}
+  OX=SCX;OY=SCY-32;o={c,w:CW,h:CH,ox:CW/2,oy:CH*.62};VSPR.set(key,o);return o;}
 function vehType(a){if(a.vt!==undefined)return a.vt;const r=Math.random();a.vt=a.bus?3:r<.08?2:r<.3?1:r<.38?4:r<.48?5:0;a.vci=(Math.random()*16)|0;return a.vt;}
-function drawVeh(g,a,wx,wy,p,S){const vt=vehType(a);let ang=Math.atan2(p[3],p[2]);if(!isFinite(ang))ang=0;const hd=((Math.round(ang/(Math.PI*2)*16)%16)+16)%16;const o=vehSprite(vt,vt===3?(a.c%4):a.vci,hd);blit(g,o.c,wx-o.ox/SR,wy-o.oy/SR,o.w/SR,o.h/SR);}
+function drawVeh(g,a,wx,wy,p,S){const vt=vehType(a);let ang=Math.atan2(p[3],p[2]);if(!isFinite(ang))ang=0;const hd=((Math.round(ang/(Math.PI*2)*16)%16)+16)%16;const o=vehSprite(vt,vt===3?(a.c%4):a.vci,hd);g.drawImage(o.c,wx-o.ox/SR,wy-o.oy/SR,o.w/SR,o.h/SR);}
 /* traffic: signals and following */
 const sigPhase=(x,y)=>(Math.floor((animT*.9+hsh(x>>1,y>>1,331)*20)/9))&1;
 let OCC=new Map();
@@ -2366,7 +2356,7 @@ function regenC(o){const R=o.rg;if(!R||o.c)return;const W2=SW*R.sz,c=mk(W2,SOH),
 const fullC=o=>{if(!o.c)regenC(o);return o.c||o.c2;};
 function regenTick(budget){const t0=performance.now();for(const o of REG.q){REG.q.delete(o);regenC(o);if(performance.now()-t0>budget)break;}const cap=MEMLOW?48e6:180e6;
   if(REG.bytes>cap){const arr=[...REG.list].sort((a,b)=>(a.lu||0)-(b.lu||0));for(const o of arr){if(REG.bytes<=cap*.75)break;if((o.lu||0)>=frameNo-2)continue;REG.bytes-=o.c.width*o.c.height*4;o.c=null;REG.list.delete(o);}}}
-function drawSpr(ctx,o,wx,wy,hb,w,halfRes){let cv;if(w==='c'&&o.rg){if(halfRes)cv=o.c2;else if(o.c){cv=o.c;o.lu=frameNo;}else{REG.q.add(o);cv=o.c2;}}else cv=halfRes?o[w+'2']:o[w];if(!cv)return;blit(ctx,cv,wx-16+o.bx/SR,wy-TOPM+o.by/SR-hb,o.bw/SR,o.bh/SR);if(w==='c'&&SNQ>0&&o.sn){const a0=ctx.globalAlpha;ctx.globalAlpha=a0*SNQ*.9;blit(ctx,halfRes?o.sn2:o.sn,wx-16+o.bx/SR,wy-TOPM+o.by/SR-hb,o.bw/SR,o.bh/SR);ctx.globalAlpha=a0;}}
+function drawSpr(ctx,o,wx,wy,hb,w,halfRes){let cv;if(w==='c'&&o.rg){if(halfRes)cv=o.c2;else if(o.c){cv=o.c;o.lu=frameNo;}else{REG.q.add(o);cv=o.c2;}}else cv=halfRes?o[w+'2']:o[w];if(!cv)return;ctx.drawImage(cv,wx-16+o.bx/SR,wy-TOPM+o.by/SR-hb,o.bw/SR,o.bh/SR);if(w==='c'&&SNQ>0&&o.sn){const a0=ctx.globalAlpha;ctx.globalAlpha=a0*SNQ*.9;ctx.drawImage(halfRes?o.sn2:o.sn,wx-16+o.bx/SR,wy-TOPM+o.by/SR-hb,o.bw/SR,o.bh/SR);ctx.globalAlpha=a0;}}
 
 /* ================= chunk cache ================= */
 const cache=new Map();let cacheBytes=0,frameNo=0;
@@ -2385,7 +2375,7 @@ function getChunk(C,ci,k,L,deadline,maxK){const e=cache.get(ckey(C,ci,k,L));if(e
   if(performance.now()<deadline)return buildChunk(C,ci,k,L);
   if(e){e.used=frameNo;return e;}
   for(let kk=k+1;kk<=maxK;kk++){const f=cache.get(ckey(C,ci,kk,L));if(f){f.used=frameNo;return f;}}return null;}
-function evict(){const CAP=MEMLOW?96e6:240e6;if(cacheBytes<=CAP)return;const arr=[...cache.entries()].filter(([,e])=>e.used!==frameNo).sort((a,b)=>a[1].used-b[1].used);
+function evict(){const CAP=MEMLOW?96e6:150e6;if(cacheBytes<=CAP)return;const arr=[...cache.entries()].filter(([,e])=>e.used!==frameNo).sort((a,b)=>a[1].used-b[1].used);
   for(const [key,e] of arr){if(cacheBytes<=CAP*.75)break;cache.delete(key);cacheBytes-=e.bytes;}}
 function drawC(ctx,e,G,S,ox,oy){const dx=Math.round(G.left*S+ox),dy=Math.round(G.top*S+oy),dx2=Math.round((G.left+e.C.CW)*S+ox),dy2=Math.round((G.top+e.C.CH)*S+oy);
   ctx.imageSmoothingEnabled=true;ctx.drawImage(e.cv,dx,dy,dx2-dx,dy2-dy);}
@@ -2542,7 +2532,7 @@ function render(dt){frameNo++;const W=scn.width,Hh=scn.height,S=zoom*dpr,ox=W/2-
   const ck=camX+','+camY+','+zoom;if(ck!==RCAM.k){RCAM.k=ck;RCAM.n=0;}else RCAM.n++;const vl=camX-W/2/S,vr=camX+W/2/S,vt=camY-Hh/2/S,vb=camY+Hh/2/S,deadline=performance.now()+(frameNo<30?40:RCAM.n>12?45:RCAM.n>4?20:8);const near=zoom>=NEARZ;
   const nA=nightAmt();let res=null,vis=[];
   if(near){res=renderNear(S,ox,oy,vl,vr,vt,vb,dt,deadline,nA);if(S>=1.6&&!GLT)drawGlints(S,ox,oy,vl,vr,vt,vb,dt);}
-  else{const k=clamp(lodBase(S),2,6);for(const ci of FC.order){const G=chunkGeom(FC,ci);if(G.left>vr||G.left+FC.CW<vl||G.top>vb||G.top+FC.CH<vt)continue;vis.push([ci,G]);const e=getChunk(FC,ci,k,false,deadline,6);if(e)drawC(g,e,G,S,ox,oy);}
+  else{const k=clamp(Math.ceil(Math.log2(4/S)-.05),2,6);for(const ci of FC.order){const G=chunkGeom(FC,ci);if(G.left>vr||G.left+FC.CW<vl||G.top>vb||G.top+FC.CH<vt)continue;vis.push([ci,G]);const e=getChunk(FC,ci,k,false,deadline,6);if(e)drawC(g,e,G,S,ox,oy);}
     if(overlay!=='none'){if(ovDirty){buildOverlay();ovDirty=false;}const Gs=overlay==='util'?1:CG;g.setTransform(16*Gs*S,8*Gs*S,-16*Gs*S,8*Gs*S,ox,oy);g.imageSmoothingEnabled=overlay!=='util';g.globalAlpha=overlay==='util'?.75:.62;g.drawImage(overlay==='util'?ovT:ovC,0,0);g.globalAlpha=1;g.setTransform(1,0,0,1,0,0);}}
   if(WX.snowCover>.01){g.fillStyle='rgba(240,245,250,'+(WX.snowCover*.28).toFixed(3)+')';g.fillRect(0,0,W,Hh);}
   if(WX.cover>.05){g.setTransform(S,0,0,S,ox,oy);for(const c of clouds){if(c.x+c.r<vl||c.x-c.r>vr||c.y+c.r<vt||c.y-c.r>vb)continue;const gr=g.createRadialGradient(c.x,c.y,0,c.x,c.y,c.r);const a=(.16*WXA*1.4*Math.min(1,WX.cover*1.4)).toFixed(3);gr.addColorStop(0,'rgba(15,25,40,'+a+')');gr.addColorStop(1,'rgba(15,25,40,0)');g.fillStyle=gr;g.fillRect(c.x-c.r,c.y-c.r,c.r*2,c.r*2);}g.setTransform(1,0,0,1,0,0);}
@@ -2550,7 +2540,7 @@ function render(dt){frameNo++;const W=scn.width,Hh=scn.height,S=zoom*dpr,ox=W/2-
   const gray=(WX.cover*.2+WX.rain*.08)*WXA*1.3;if(gray>.01){g.fillStyle='rgba(60,72,88,'+gray.toFixed(3)+')';g.fillRect(0,0,W,Hh);}
   if(dusk>.02){g.fillStyle='rgba(255,128,60,'+(dusk*.14*(1-WX.cover*.6)).toFixed(3)+')';g.fillRect(0,0,W,Hh);}
   if(nA>.01){g.fillStyle='rgba(12,18,50,'+(.62*nA).toFixed(3)+')';g.fillRect(0,0,W,Hh);
-    const kL=near?0:clamp(lodBase(S),2,6);
+    const kL=near?0:clamp(Math.ceil(Math.log2(4/S)-.05),2,6);
     if(near||kL<=3){lctx.setTransform(1,0,0,1,0,0);lctx.globalCompositeOperation='source-over';if(GLT)lctx.clearRect(0,0,W,Hh);else{lctx.fillStyle='#000';lctx.fillRect(0,0,W,Hh);}
       if(near)lightsNear(S,ox,oy,res);else for(const [ci,G] of vis){const e=getChunk(FC,ci,kL,true,deadline+4,3);if(e)drawC(lctx,e,G,S,ox,oy);}
       g.globalCompositeOperation='lighter';g.globalAlpha=nA;g.drawImage(lbuf,0,0);g.globalAlpha=1;g.globalCompositeOperation='source-over';}}
@@ -2846,9 +2836,9 @@ const TOOLS=[{g:'기본',id:'inspect',label:'조회·이동',key:'Q'},{id:'palet
   {g:'시설',id:'power',label:'발전소',key:'4'},{id:'water',label:'정수장',key:'5'},{id:'police',label:'경찰서',key:'6'},{id:'fire',label:'소방서',key:'7'},
   {g:'지형·꾸미기',id:'up',label:'땅 올리기',key:'U'},{id:'down',label:'땅 내리기',key:'J'},{id:'pktool',label:'큰 공원',key:''},{id:'park',label:'공원 1칸',key:'8'},{id:'tree',label:'나무',key:'T'},{id:'lake',label:'물',key:'9'},{id:'stream',label:'하천',key:''},{id:'land',label:'땅 메우기',key:'0'},
   {g:'공공·랜드마크',id:'lmk:0',label:'학교',key:''},{id:'lmk:1',label:'공영주차장',key:''},{id:'lmk:2',label:'전통시장',key:''},{id:'lmk:3',label:'사찰',key:''},{id:'lmk:4',label:'궁궐',key:''},{id:'lmk:5',label:'경기장',key:''},{id:'lmk:6',label:'전망타워',key:''},{id:'lmk:7',label:'지하철 출입구',key:''}];
-function iconSpr(gt,o){const c=mk(64,72),x=c.getContext('2d');x.imageSmoothingEnabled=true;x.drawImage(groundSprite(gt,0),0,72-GSH/2,64,GSH/2);const sc=Math.min(62/o.bw,66/o.bh);blit(x,o.c2||fullC(o),32-o.bw*sc/2,70-o.bh*sc,o.bw*sc,o.bh*sc);return c.toDataURL();}
+function iconSpr(gt,o){const c=mk(64,72),x=c.getContext('2d');x.imageSmoothingEnabled=true;x.drawImage(groundSprite(gt,0),0,72-GSH/2,64,GSH/2);const sc=Math.min(62/o.bw,66/o.bh);x.drawImage(o.c2||fullC(o),32-o.bw*sc/2,70-o.bh*sc,o.bw*sc,o.bh*sc);return c.toDataURL();}
 function icon(gt,obj,extra,shape){const c=mk(64,72),x=c.getContext('2d');x.imageSmoothingEnabled=true;const gs=groundSprite(gt,shape||0);x.drawImage(gs,0,72-GSH/2,64,GSH/2);
-  if(obj){const top=SCY+32-144;blit(x,fullC(obj),obj.bx/2,(obj.by-top)/2,obj.bw/2,obj.bh/2);}if(extra)extra(x);return c.toDataURL();}
+  if(obj){const top=SCY+32-144;x.drawImage(fullC(obj),obj.bx/2,(obj.by-top)/2,obj.bw/2,obj.bh/2);}if(extra)extra(x);return c.toDataURL();}
 function buildTools(){const nav=$('tools');const S=SEASON;const ic={
   inspect:icon(SP.grass[S][0],null,x=>{x.strokeStyle='#1f5fd1';x.lineWidth=4;x.beginPath();x.arc(28,26,11,0,7);x.stroke();x.beginPath();x.moveTo(36,34);x.lineTo(46,44);x.stroke();}),
   bulldoze:icon(SP.dirt,null,x=>{x.fillStyle='#6e6a63';x.fillRect(20,46,8,6);x.fillRect(34,50,10,6);x.fillStyle='#8f8a82';x.fillRect(26,42,10,8);}),
@@ -2948,7 +2938,7 @@ const PAL={tab:'res',lv:3,open:false,cx:1},PALTABS=[['cx','아파트 단지'],['
 const LVN={res:['','단독주택','빌라','저층 아파트','판상형','고층'],com:['','가게','근린상가','오피스','업무 타워','초고층'],ind:['','소공장','공장·창고','산업단지','석유화학','석유화학']};
 const NATS=[[-1,'숲 무작위'],[9,'소나무 숲'],[10,'참나무 숲'],[11,'혼효림'],[12,'숲(보통)'],[13,'성긴 소나무'],[14,'성긴 참나무'],[1,'느티·참나무'],[2,'소나무+참나무'],[3,'소나무'],[4,'혼합 수목'],[5,'벚나무'],[6,'잣나무'],[7,'은행+관목'],[8,'느티+관목'],[18,'풀숲'],[19,'들꽃'],[20,'관목 초지'],[21,'초지+나무'],[15,'바위'],[16,'바위 능선'],[17,'비닐하우스'],[0,'자연물 지우기']];
 const thumbC=new Map();
-function thumb(o){if(!o)return'';let u=thumbC.get(o);if(u)return u;const c=mk(72,84),x=c.getContext('2d');x.imageSmoothingEnabled=true;const sc=Math.min(66/o.bw,80/o.bh,.55);blit(x,o.c2||fullC(o),36-o.bw*sc/2,82-o.bh*sc,o.bw*sc,o.bh*sc);u=c.toDataURL();thumbC.set(o,u);return u;}
+function thumb(o){if(!o)return'';let u=thumbC.get(o);if(u)return u;const c=mk(72,84),x=c.getContext('2d');x.imageSmoothingEnabled=true;const sc=Math.min(66/o.bw,80/o.bh,.55);x.drawImage(o.c2||fullC(o),36-o.bw*sc/2,82-o.bh*sc,o.bw*sc,o.bh*sc);u=c.toDataURL();thumbC.set(o,u);return u;}
 function palItems(){const t=PAL.tab;
   if(t==='res'||t==='com'||t==='ind'){const k={res:K.RES,com:K.COM,ind:K.IND}[t],L=PAL.lv,a=SP.bld[k][L];const ca=catOf(k,L);return[{id:'put:b:'+k+':'+L+':-1',o:a[0],label:'무작위'}].concat(a.map((o,v)=>({id:'put:b:'+k+':'+L+':'+v,o,label:ca[v].n+' '+(ca[v].s+1)})));}
   if(t==='cx')return CXFIT.map((F,k)=>({id:'cxf:'+k,o:SP.cxb[CXT[F.t].slot[0][0]],label:'땅 맞춤 · '+F.name})).concat(CXT.map((T,k)=>({id:'cx:'+k,o:SP.cxb[T.slot[0][0]],label:T.name+' '+(T.w*2)+'×'+(T.h*2)})));
