@@ -2711,6 +2711,7 @@ function vPath(cost,a,b){const D=new Float64Array(NN).fill(Infinity),P=new Int32
     for(let k=0;k<8;k++){const xx=x+DX[k],yy=y+DY[k];if(xx<1||yy<1||xx>=N-1||yy>=N-1)continue;const j=idx(xx,yy),c=cost[j];if(!(c<1e8))continue;const nd=dk+(c+cost[i])*.5*DL[k];if(nd<D[j]){D[j]=nd;P[j]=i;q.push(nd,j);}}}
   if(P[t]<0&&s!==t)return null;const out=[];for(let i=t;i>=0;i=P[i]){out.push([(i&NM)+.5,(i>>NS)+.5]);if(i===s)break;}return out.reverse();}
 function vSmooth(p,it){let q=p;for(let n=0;n<(it||3);n++){const r=[q[0]];for(let i=0;i<q.length-1;i++){const a=q[i],b=q[i+1];r.push([a[0]*.75+b[0]*.25,a[1]*.75+b[1]*.25],[a[0]*.25+b[0]*.75,a[1]*.25+b[1]*.75]);}r.push(q[q.length-1]);q=r;}return q;}
+function vDP(p,eps){if(p.length<3)return p;const a=p[0],b=p[p.length-1],dx=b[0]-a[0],dy=b[1]-a[1],L=Math.hypot(dx,dy)||1;let mi=0,md=0;for(let i=1;i<p.length-1;i++){const d=Math.abs((p[i][0]-a[0])*dy-(p[i][1]-a[1])*dx)/L;if(d>md){md=d;mi=i;}}if(md<eps)return [a,b];return vDP(p.slice(0,mi+1),eps).slice(0,-1).concat(vDP(p.slice(mi),eps));}
 function vResample(p,st){const out=[p[0]];let acc=0;for(let i=1;i<p.length;i++){const a=out[out.length-1],b=p[i],d=Math.hypot(b[0]-a[0],b[1]-a[1]);if(d>=st||i===p.length-1)out.push(b);}return out;}
 /* ---- generator ---- */
 function genVRoads(seed){const r=mulberry(seed*31+7);VR={on:true,edges:[],ver:VR.ver+1,centers:[],vill:[],tpl:''};
@@ -2727,7 +2728,9 @@ function genVRoads(seed){const r=mulberry(seed*31+7);VR={on:true,edges:[],ver:VR
   const V=[];for(let k=0;k<7;k++){const c=pick((x,y,i)=>-Math.abs(cDist[i]-4)*3+Math.min(60,Math.min(...C.concat(V).map(q=>Math.hypot(q[0]-x,q[1]-y))))+r()*6,(x,y,i)=>cDist[i]>2&&cDist[i]<9&&slope[i]<=1&&Math.min(...C.concat(V).map(q=>Math.hypot(q[0]-x,q[1]-y)))>28);if(c)V.push(c);}
   VR.centers=C;VR.vill=V;
   const RDT=new Uint8Array(NN);const mark=(p,cls)=>{for(const [x,y] of p){const i=idx(Math.floor(x),Math.floor(y));if(RDT[i]<cls)RDT[i]=cls;}};
-  const add=(a,b,cls,reuse)=>{const cc=new Float32Array(cost);for(let i=0;i<NN;i++)if(RDT[i]>=2)cc[i]*=reuse||.35;const p=vPath(cc,a,b);if(!p||p.length<2)return null;const q=vResample(vSmooth(p,3),.5);VR.edges.push({cls,pts:q});mark(q,cls);return q;};
+  const add=(a,b,cls,reuse)=>{const cc=new Float32Array(cost);for(let i=0;i<NN;i++){if(RDT[i]>=2){cc[i]*=reuse||.35;continue;}if(RDT[i])continue;const x=i&NM,y=i>>NS;let nb=0;for(let dy=-2;dy<=2&&!nb;dy++)for(let dx=-2;dx<=2;dx++){const xx=x+dx,yy=y+dy;if(xx>=0&&yy>=0&&xx<N&&yy<N&&RDT[idx(xx,yy)]>=2){nb=1;break;}}if(nb)cc[i]*=4;}const p=vPath(cc,a,b);if(!p||p.length<2)return null;
+    /* split into the stretches that are new; shared stretches already exist as another edge (each new stretch keeps one tile of overlap so it joins) */
+    const on=p.map(([x,y])=>RDT[idx(x|0,y|0)]>0);let s0=-1;for(let k=0;k<=p.length;k++){const nw=k<p.length&&!on[k];if(nw&&s0<0)s0=Math.max(0,k-1);if(!nw&&s0>=0){const e=Math.min(p.length-1,k);if(e-s0>=2){const q=vResample(vSmooth(vDP(p.slice(s0,e+1),.9),4),.5);VR.edges.push({cls,pts:q});mark(q,cls);}s0=-1;}}return p;};
   for(const c of C.slice(1))add(dt,c,3);
   for(const v of V){let b=null,bd=1e9;for(let i=0;i<NN;i++)if(RDT[i]>=2){const d=Math.hypot((i&NM)-v[0],(i>>NS)-v[1]);if(d<bd){bd=d;b=[i&NM,i>>NS];}}if(b)add(b,v,3);}
   /* ring road through waypoints around downtown */
@@ -2760,9 +2763,36 @@ function genVRoads(seed){const r=mulberry(seed*31+7);VR={on:true,edges:[],ver:VR
     const d=Math.min(...C.map((c,k)=>Math.hypot(x-c[0],y-c[1])/(k?24:32)));const q=r();
     if(d<.3&&q<.55){makeFoot(x,y,K.COM,q<.25?5:4,(r()*VN[K.COM])|0,1);continue;}if(d<.55&&q<.35){makeFoot(x,y,r()<.5?K.COM:K.RES,3,(r()*255)|0,1);continue;}
     for(const j of t4){const u=r();if(u<.12)continue;kind[j]=d<.45?(u<.5?K.COM:K.RES):(u<.15?K.COM:K.RES);lvl[j]=d<.45?2:1+((r()*2)|0);vari[j]=(r()*255)|0;deco[j]=0;touch(j);}}
+  /* second pass: single lots on the remaining street frontage (fills the gaps the 2x2 pass leaves along bent roads) */
+  for(let i=0;i<NN;i++){if(UR[i]>=1||kind[i]||!land(i)||slope[i]>1||RD[i]<1||RD[i]>2)continue;const x=i&NM,y=i>>NS,d=Math.min(...C.map((c,k)=>Math.hypot(x-c[0],y-c[1])/(k?24:32))),u=r();if(u<.15)continue;
+    kind[i]=d<.4?(u<.55?K.COM:K.RES):(u<.2?K.COM:K.RES);lvl[i]=d<.4?2:1+((r()*2)|0);vari[i]=(r()*255)|0;deco[i]=0;touch(i);}
+  vNodes();
   /* trees in left-over urban ground */
   for(let i=0;i<NN;i++)if(UR[i]<1&&!kind[i]&&land(i)&&!deco[i]&&r()<.25)deco[i]=1+((r()*8)|0);
   compsDirty=true;return dt;}
+
+/* ---- junctions: where a street ends on another road, or two major roads cross ---- */
+function vNodes(){const G=new Map(),key=(x,y)=>(y|0)*N+(x|0);VR.edges.forEach((e,ei)=>e.pts.forEach((p,k)=>{const kk=key(p[0],p[1]);let a=G.get(kk);if(!a)G.set(kk,a=[]);a.push([ei,k]);}));
+  const near=(x,y,R,skip)=>{let best=null,bd=R;for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){const a=G.get(key(x+dx,y+dy));if(!a)continue;for(const [ei,k] of a){if(ei===skip)continue;const p=VR.edges[ei].pts[k],d=Math.hypot(p[0]-x,p[1]-y);if(d<bd){bd=d;best=[ei,k];}}}return best;};
+  const nodes=[],addNode=(x,y,arms)=>{for(const n of nodes)if(Math.hypot(n.x-x,n.y-y)<1.4){for(const a of arms)if(!n.arms.some(b=>b.e===a.e&&Math.abs(Math.atan2(Math.sin(b.a-a.a),Math.cos(b.a-a.a)))<.6))n.arms.push(a);return;}nodes.push({x,y,arms:arms.slice()});};
+  const dirAt=(e,k,sg)=>{const p=e.pts,j=Math.max(0,Math.min(p.length-1,k+sg*3)),a=p[k],b=p[j];return Math.atan2(b[1]-a[1],b[0]-a[0]);};
+  VR.edges.forEach((e,ei)=>{for(const end of [0,e.pts.length-1]){const p=e.pts[end],h=near(p[0],p[1],VCLS[e.cls].w*.5+1.1,ei);if(!h)continue;const o=VR.edges[h[0]],q=o.pts[h[1]];
+      const arms=[{e:ei,a:dirAt(e,end,end?-1:1),cls:e.cls}];if(h[1]>2)arms.push({e:h[0],a:dirAt(o,h[1],-1),cls:o.cls});if(h[1]<o.pts.length-3)arms.push({e:h[0],a:dirAt(o,h[1],1),cls:o.cls});addNode(q[0],q[1],arms);}});
+  /* major crossings */
+  VR.edges.forEach((e,ei)=>{if(e.cls<2)return;e.pts.forEach((p,k)=>{if(k<2||k>e.pts.length-3)return;const h=near(p[0],p[1],.45,ei);if(!h)return;const o=VR.edges[h[0]];if(o.cls<2||h[1]<2||h[1]>o.pts.length-3)return;{const a1=dirAt(e,k,1),a2=dirAt(o,h[1],1),dd=Math.abs(Math.sin(a1-a2));if(dd<.55)return;}
+    addNode(p[0],p[1],[{e:ei,a:dirAt(e,k,1),cls:e.cls},{e:ei,a:dirAt(e,k,-1),cls:e.cls},{e:h[0],a:dirAt(o,h[1],1),cls:o.cls},{e:h[0],a:dirAt(o,h[1],-1),cls:o.cls}]);});});
+  for(const n of nodes){n.cls=Math.max(...n.arms.map(a=>a.cls));n.R=Math.max(...n.arms.map(a=>VCLS[a.cls].w))*.5+.12;const maj=new Set(n.arms.filter(a=>a.cls>=2).map(a=>a.e));n.major=maj.size>=2;for(const a of n.arms)a.xw=n.major||a.cls<n.cls;}
+  VR.nodes=nodes;
+  /* mark points near junctions: lane markings stop there */
+  VR.edges.forEach((e,ei)=>{e.cut=e.pts.map(p=>{for(const n of nodes){if(!n.major&&!n.arms.some(a=>a.e===ei&&a.cls<n.cls))continue;const d=Math.hypot(p[0]-n.x,p[1]-n.y);if(d<n.R+.55)return 1;}return 0;});});}
+function vStrokeCut(g,p,cut,S,ox,oy,w,col,dash){let s=-1;for(let k=0;k<=p.length;k++){const ok=k<p.length&&!cut[k];if(ok&&s<0)s=k;if(!ok&&s>=0){if(k-s>=2)vStroke(g,p.slice(s,k),S,ox,oy,w,col,dash);s=-1;}}}
+function vQuad(g,S,ox,oy,P4,col){const m=P4[0],hz=hv(m[0]|0,m[1]|0)*E;g.setTransform(16*S,8*S,-16*S,8*S,ox,oy-hz*S);g.fillStyle=col;g.beginPath();g.moveTo(P4[0][0],P4[0][1]);for(let k=1;k<4;k++)g.lineTo(P4[k][0],P4[k][1]);g.closePath();g.fill();}
+function drawVRNodes(g,S,ox,oy,bx0,by0,bx1,by1){if(!VR.nodes)return;for(const n of VR.nodes){if(n.x<bx0||n.x>bx1||n.y<by0||n.y>by1||n.cls<2||n.arms.length<3)continue;
+  for(const a of n.arms){if(a.cls<1||!a.xw)continue;const w=VCLS[a.cls].w,ux=Math.cos(a.a),uy=Math.sin(a.a),nx=-uy,ny=ux,d0=n.R+.1,L=.3;
+    /* zebra crosswalk across the arm */
+    for(let t=-w/2+.06;t<w/2-.04;t+=.13){const c0=[n.x+ux*d0+nx*t,n.y+uy*d0+ny*t],q=[c0,[c0[0]+nx*.065,c0[1]+ny*.065],[c0[0]+nx*.065+ux*L,c0[1]+ny*.065+uy*L],[c0[0]+ux*L,c0[1]+uy*L]];vQuad(g,S,ox,oy,q,'rgba(244,244,240,.92)');}
+    /* stop line on the inbound half */
+    if(a.cls>=2&&n.major){const d1=d0+L+.12,q=[[n.x+ux*d1,n.y+uy*d1],[n.x+ux*d1+nx*w/2,n.y+uy*d1+ny*w/2],[n.x+ux*(d1+.05)+nx*w/2,n.y+uy*(d1+.05)+ny*w/2],[n.x+ux*(d1+.05),n.y+uy*(d1+.05)]];vQuad(g,S,ox,oy,q,'rgba(244,244,240,.9)');}}}}
 /* ---- rendering: strokes in tile space through the iso affine ---- */
 function vOffset(p,d){const out=[];for(let k=0;k<p.length;k++){const a=p[Math.max(0,k-1)],b=p[Math.min(p.length-1,k+1)],dx=b[0]-a[0],dy=b[1]-a[1],l=Math.hypot(dx,dy)||1;out.push([p[k][0]-dy/l*d,p[k][1]+dx/l*d]);}return out;}
 function vStroke(g,p,S,ox,oy,w,col,dash){g.strokeStyle=col;g.lineWidth=w;g.setLineDash(dash||[]);
@@ -2773,10 +2803,11 @@ function drawVR(g,S,ox,oy,bx0,by0,bx1,by1){if(!VR.on||!VR.edges.length)return;g.
   for(const e of vis){const c=VCLS[e.cls];if(c.sw)vStroke(g,e.pts,S,ox,oy,c.w+c.sw*2,'#c9c3b6');}
   for(const e of vis){const c=VCLS[e.cls];if(c.sw)vStroke(g,e.pts,S,ox,oy,c.w+.06,'#a9a49a');}
   for(const e of vis){const c=VCLS[e.cls];vStroke(g,e.pts,S,ox,oy,c.w,c.col);}
-  if(S>=.5)for(const e of vis){const c=VCLS[e.cls];if(e.cls>=3){vStroke(g,vOffset(e.pts,.03),S,ox,oy,.035,'#e9c94a');vStroke(g,vOffset(e.pts,-.03),S,ox,oy,.035,'#e9c94a');
-      const lw=c.w/c.ln;for(let k=1;k<c.ln/2;k++){vStroke(g,vOffset(e.pts,k*lw),S,ox,oy,.03,'rgba(240,240,236,.85)',[.35,.35]);vStroke(g,vOffset(e.pts,-k*lw),S,ox,oy,.03,'rgba(240,240,236,.85)',[.35,.35]);}
-      vStroke(g,vOffset(e.pts,c.w*.5-.05),S,ox,oy,.03,'rgba(240,240,236,.7)');vStroke(g,vOffset(e.pts,-c.w*.5+.05),S,ox,oy,.03,'rgba(240,240,236,.7)');}
-    else if(e.cls===2)vStroke(g,e.pts,S,ox,oy,.035,'#e9c94a');else if(e.cls===1)vStroke(g,e.pts,S,ox,oy,.03,'rgba(240,240,236,.75)',[.3,.3]);}
+  if(S>=.5){for(const e of vis){const c=VCLS[e.cls],X=e.cut||e.pts.map(()=>0),T=(d,w,col,dash)=>vStrokeCut(g,d===0?e.pts:vOffset(e.pts,d),X,S,ox,oy,w,col,dash);
+      if(e.cls>=3){T(.03,.035,'#e9c94a');T(-.03,.035,'#e9c94a');const lw=c.w/c.ln;for(let k=1;k<c.ln/2;k++){T(k*lw,.03,'rgba(240,240,236,.85)',[.35,.35]);T(-k*lw,.03,'rgba(240,240,236,.85)',[.35,.35]);}
+        T(c.w*.5-.05,.03,'rgba(240,240,236,.7)');T(-c.w*.5+.05,.03,'rgba(240,240,236,.7)');}
+      else if(e.cls===2)T(0,.035,'#e9c94a');else if(e.cls===1)T(0,.03,'rgba(240,240,236,.75)',[.3,.3]);}
+    drawVRNodes(g,S,ox,oy,bx0,by0,bx1,by1);}
   g.restore();}
 /* near view: one cached layer re-rendered when zoom changes or the view leaves the margin */
 const VRC={cv:null,S:0,v:-1,wl:0,wt:0,wr:0,wb:0};
