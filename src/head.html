@@ -136,6 +136,8 @@ body.photo .panel,body.photo #hud{display:none!important}
 #palette .note{margin:0}
 [hidden]{display:none!important}
 #loading{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:var(--bg);color:var(--on-map);font-family:var(--f-display);font-size:22px;z-index:50}
+#hud .ddi{width:13px;height:13px;opacity:.7;margin-right:4px;flex:none}
+@media (max-width:1480px){.hwx .lbl{display:none}.hwx #wxAmt{width:64px}.hwx{gap:6px}}
 @media (max-width:900px){
   .hwx .lbl,.hstats .lbl{display:none}
   #wxAmt{width:60px}
@@ -307,7 +309,8 @@ kbd{font:600 10px var(--f-body);background:var(--chip-on);border-radius:5px;padd
     </div>
   </div>
   <div class="hgrp mx hwx">
-    <span class="lbl">날씨</span><button class="ddBtn" id="wxBtn" aria-haspopup="listbox" aria-expanded="false" aria-controls="wxList"><span id="wxLbl">자동</span><svg viewBox="0 0 12 12"><path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <span class="lbl">날씨</span><button class="ddBtn" id="wxBtn" aria-haspopup="listbox" aria-expanded="false" aria-controls="wxList"><svg class="ddi" viewBox="0 0 16 16" aria-hidden="true"><path d="M4.5 12.5h7a3 3 0 0 0 .3-6 4 4 0 0 0-7.6 1A2.5 2.5 0 0 0 4.5 12.5z" fill="currentColor"/></svg><span id="wxLbl">자동</span><svg viewBox="0 0 12 12"><path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <span class="lbl">계절</span><button class="ddBtn" id="seaBtn" aria-haspopup="listbox" aria-expanded="false" aria-controls="seaList"><svg class="ddi" viewBox="0 0 16 16" aria-hidden="true"><path d="M13.5 2.5C7 2.5 3 5.5 3 10c0 1.6.7 2.8 1.6 3.5C5.5 9 8.5 6.5 11 5.5 8.3 7.3 6.4 10 5.7 14c4.7.2 8-3.3 7.8-11.5z" fill="currentColor"/></svg><span id="seaLbl">흐름</span><svg viewBox="0 0 12 12"><path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
     <label class="amt" title="날씨 효과 세기"><span class="lbl">세기</span><input id="wxAmt" type="range" min="0" max="100" value="55" aria-label="날씨 효과 세기"></label>
   </div>
   <div class="hgrp mx hundo">
@@ -324,6 +327,9 @@ kbd{font:600 10px var(--f-body);background:var(--chip-on);border-radius:5px;padd
   </div>
 </header>
 
+<div id="seaList" class="panel ddList" role="listbox" aria-label="계절 선택" hidden>
+  <button role="option" data-s="-1">흐름</button><button role="option" data-s="0">봄</button><button role="option" data-s="1">여름</button><button role="option" data-s="2">가을</button><button role="option" data-s="3">겨울</button>
+</div>
 <div id="wxList" class="panel ddList" role="listbox" aria-label="날씨 선택" hidden>
   <button role="option" data-w="auto">자동</button><button role="option" data-w="clear">맑음</button><button role="option" data-w="cloudy">흐림</button><button role="option" data-w="rain">비</button><button role="option" data-w="storm">뇌우</button><button role="option" data-w="snow">눈</button><button role="option" data-w="fog">안개</button>
 </div>
