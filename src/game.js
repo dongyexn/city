@@ -3512,15 +3512,16 @@ function genCity(seed){const r=mulberry(seed*13+5),SAVE=ROADL,DIR=[[1,0],[-1,0],
    const sv=[K.POWER,K.WATER,K.POLICE,K.FIRE,K.POWER,K.WATER,K.POLICE,K.FIRE,K.POWER,K.WATER,K.POLICE,K.FIRE];let si=0;const cs=cells.slice().sort(()=>r()-.5);for(let pass=0;pass<4&&si<sv.length;pass++)for(const c of cs){if(si>=sv.length)break;for(let t=0;t<40;t++){const x=c.x0+((r()*(c.x1-c.x0))|0),y=c.y0+((r()*(c.y1-c.y0))|0),i=idx(x,y);if(!((kind[i]===K.RES||kind[i]===K.COM||kind[i]===K.IND)&&lvl[i]&&lvl[i]<=2)||lmkA[i]>=0||fix[i]===2||!accM(x,y))continue;kind[i]=sv[si++];lvl[i]=1;fix[i]=1;touch(i);break;}}}
   genOutskirts(r,cx,cy,R,dN,seed);
   /* outskirts pieces (읍 streets, facility and village roads) that missed the network get a connector over open land */
-  {const {lab,comps,main}=roadLab();if(main>=0){const MC=90,dist=new Int32Array(NN*4),prev=new Int32Array(NN*4),order=comps.map((c,k)=>k).filter(k=>k!==main&&comps[k].length>=3).sort((a,b)=>comps[b].length-comps[a].length);
+  /* wat: second pass after the water tidy, longer reach and straight bridges allowed (no turns or side roads on water) */
+  const link=(MC,wat)=>{const {lab,comps,main}=roadLab();if(main>=0){const dist=new Int32Array(NN*4),prev=new Int32Array(NN*4),order=comps.map((c,k)=>k).filter(k=>k!==main&&comps[k].length>=3).sort((a,b)=>comps[b].length-comps[a].length);
     for(const k of order){if(lab[comps[k][0]]===main)continue;dist.fill(1e9);const B=[];for(let c=0;c<=MC;c++)B.push([]);for(const i of comps[k])for(let d=0;d<4;d++){const s0=i*4+d;dist[s0]=0;prev[s0]=-1;B[0].push(s0);}
-      let hit=-1;for(let c=0;c<=MC&&hit<0;c++){const bk=B[c];for(let h=0;h<bk.length&&hit<0;h++){const s0=bk[h];if(dist[s0]!==c)continue;const i=s0>>2,d=s0&3,x=i&NM,y=i>>NS,fromRoad=kind[i]===K.ROAD;
-        for(let nd=0;nd<4;nd++){const xx=x+DIR[nd][0],yy=y+DIR[nd][1];if(!inMap(xx,yy))continue;const j=idx(xx,yy);if(kind[j]===K.ROAD){if(!fromRoad&&lab[j]===main){hit=s0;break;}continue;}
-          if(kind[j]||terr[j]===TWA||deco[j]>=30||hh(xx,yy)>3)continue;let rn=0;for(const [ex,ey] of DIR){const ax=xx+ex,ay=yy+ey;if((ax!==x||ay!==y)&&isRd(ax,ay))rn++;}
-          const cost=c+1+(!fromRoad&&nd!==d?3:0)+(hh(xx,yy)>2?2:0)+rn*3;if(cost>MC)continue;const t=j*4+nd;if(cost<dist[t]){dist[t]=cost;prev[t]=s0;B[cost].push(t);}}}}
+      let hit=-1;for(let c=0;c<=MC&&hit<0;c++){const bk=B[c];for(let h=0;h<bk.length&&hit<0;h++){const s0=bk[h];if(dist[s0]!==c)continue;const i=s0>>2,d=s0&3,x=i&NM,y=i>>NS,fromRoad=kind[i]===K.ROAD,onW=!fromRoad&&terr[i]===TWA;if(wat&&fromRoad&&terr[i]===TWA)continue;
+        for(let nd=0;nd<4;nd++){if(onW&&nd!==d)continue;const xx=x+DIR[nd][0],yy=y+DIR[nd][1];if(!inMap(xx,yy))continue;const j=idx(xx,yy);if(kind[j]===K.ROAD){if(!fromRoad&&lab[j]===main&&!(wat&&terr[j]===TWA)){hit=s0;break;}continue;}
+          if(kind[j]||(terr[j]===TWA&&!wat)||deco[j]>=30||hh(xx,yy)>(wat?5:3))continue;let rn=0,rw=0;for(const [ex,ey] of DIR){const ax=xx+ex,ay=yy+ey;if((ax!==x||ay!==y)&&isRd(ax,ay)){rn++;if(terr[idx(ax,ay)]===TWA)rw++;}}if(wat&&(rw||(terr[j]===TWA&&rn)))continue;
+          const cost=c+1+(terr[j]===TWA?1:0)+(hh(xx,yy)>3?3:0)+(!fromRoad&&nd!==d?3:0)+(hh(xx,yy)>2?2:0)+rn*3;if(cost>MC)continue;const t=j*4+nd;if(cost<dist[t]){dist[t]=cost;prev[t]=s0;B[cost].push(t);}}}}
       if(hit<0)continue;const path=[];for(let s0=hit;s0>=0;s0=prev[s0]){const i=s0>>2;if(kind[i]===K.ROAD)break;path.push(i);}
       let st=0;const P=path.map(i=>[i&NM,i>>NS]);for(let q=1;q<=P.length;q++){const turn=q<P.length&&q>=2&&((P[q][0]-P[q-1][0])!==(P[q-1][0]-P[q-2][0])||(P[q][1]-P[q-1][1])!==(P[q-1][1]-P[q-2][1]));if(q===P.length||turn){RD(2,{x:P[st][0],y:P[st][1]},{x:P[q-1][0],y:P[q-1][1]});st=q-1;}}
-      for(const i of comps[k])lab[i]=main;for(const i of path)lab[i]=main;}}}
+      for(const i of comps[k])lab[i]=main;for(const i of path)lab[i]=main;}}};link(90,0);
   /* de-clump: a 2x2 block of narrow road becomes an L by dropping a corner that has no road beyond the block */
   for(let it=0;it<30;it++){let ch=0;for(let y=1;y<N-2;y++)for(let x=1;x<N-2;x++){const q=[[x,y],[x+1,y],[x,y+1],[x+1,y+1]];if(!q.every(([a,b])=>{const j=idx(a,b);return kind[j]===K.ROAD&&!isWide(j)&&!(vari[j]>=100&&vari[j]<=137)&&!isElev(j);}))continue;
     for(const [a,b] of q){if([[a-1,b],[a+1,b],[a,b-1],[a,b+1]].some(([u,v])=>(u<x||u>x+1||v<y||v>y+1)&&isRd(u,v)))continue;const j=idx(a,b);kind[j]=K.EMPTY;lvl[j]=0;vari[j]=0;touchN2(j);ch++;break;}}if(!ch)break;}
@@ -3538,6 +3539,8 @@ function genCity(seed){const r=mulberry(seed*13+5),SAVE=ROADL,DIR=[[1,0],[-1,0],
      if(best){RD(2,best.a,best.b);for(const i of c)lab[i]=mi;return;}
      /* still unreachable and serving nothing (a lone road through the woods): remove it */
      const serves=c.some(i=>{const x=i&NM,y=i>>NS;return DIR.some(([dx,dy])=>{const xx=x+dx,yy=y+dy;if(xx<0||yy<0||xx>=N||yy>=N)return false;const k2=kind[idx(xx,yy)];return k2&&k2!==K.ROAD&&k2!==K.PARK;});});if(!serves)for(const i of c){clearTile(i);touch(i);}});tidyW();}
+  /* road islands the straight link above could not reach (a district whose arterial was skipped, a national road cut at a diagonal river crossing) */
+  link(220,1);
   /* 노거수: a few very large old trees — village 당산나무, riverside willows, park landmarks */
   {const GT=[],ok=i=>{const x=i&NM,y=i>>NS;return kind[i]===K.EMPTY&&terr[i]===TG&&isFlat(x,y)&&!RSV[i]&&(deco[i]===0||deco[i]>=18&&deco[i]<=21||deco[i]<=8)&&!GT.some(j=>Math.hypot((j&NM)-x,(j>>NS)-y)<14);};
    for(const c of cells){if(c.t!=='vil'&&!(c.t==='gen'&&r()<.3))continue;for(let k=0;k<30;k++){const x=c.x0+((r()*(c.x1-c.x0+1))|0),y=c.y0+((r()*(c.y1-c.y0+1))|0),i=idx(x,y);if(ok(i)){deco[i]=23;GT.push(i);touch(i);break;}}}
