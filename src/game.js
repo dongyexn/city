@@ -2665,15 +2665,18 @@ function railTool(t,a,b){if(!a||!b)return;
 function railBulldoze(cells){let ch=false;for(const [x,y] of cells){const i=idx(x,y);if(RL[i]){RL[i]=0;STN[i]=0;touch(i);ch=true;}}if(ch)rebuildRailLines();}
 /* 역세권: shops and offices crowd the blocks around a station */
 /* station building beside the road at a station: 역사(2x2) or 복합역사(4x4), entrance on the sidewalk */
-function stationBldg(x0,y0,r){const i0=idx(x0,y0);let ax=-1;for(const L of RLINES)if((RL[i0]>>L.line)&1){ax=L.ax;break;}if(ax<0)return false;
-  const at=(t,o)=>ax?[x0+o,y0+t]:[x0+t,y0+o];
-  for(let dt=-3;dt<=3;dt++){const [cx,cy]=at(dt,0),ci=idx(cx,cy);if(inMap(cx,cy)&&kind[ci]===K.LMK&&lmkA[ci]>=0&&(LMKT[vari[lmkA[ci]]]?.id||'').startsWith('rstn'))return false;}
-  for(const big of (r()<.4?[1,0]:[0])){const tid=LMKT.findIndex(t=>t.id===(big?'rstnx':'rstn')),sz=LMKT[tid].sz;
-  for(const sd of [1,-1]){/* road half-width beside the track: the narrowest column, so a cross street at the station does not push the building down that street */let o=99;for(let dt=-6;dt<=6;dt++){const [cx,cy]=at(dt,0);if(!inMap(cx,cy)||kind[idx(cx,cy)]!==K.ROAD)continue;let q=0;while(Math.abs(q)<12){const [x,y]=at(dt,q+sd);if(!inMap(x,y)||kind[idx(x,y)]!==K.ROAD)break;q+=sd;}if(q&&Math.abs(q)<Math.abs(o))o=q;}if(o===99)continue;const e=o+sd;
+function stationBldg(x0,y0,r){const i0=idx(x0,y0),axs=[];for(const L of RLINES)if((RL[i0]>>L.line)&1&&!axs.includes(L.ax))axs.push(L.ax);if(!axs.length)return false;
+  /* one building per station, also where two lines cross (stationArea runs once per line) */
+  for(let dy=-7;dy<=7;dy++)for(let dx=-7;dx<=7;dx++){const cx=x0+dx,cy=y0+dy;if(!inMap(cx,cy))continue;const ci=idx(cx,cy);if(kind[ci]===K.LMK&&lmkA[ci]>=0&&(LMKT[vari[lmkA[ci]]]?.id||'').startsWith('rstn'))return false;}
+  /* a crossing station tries both lines' axes; when a chunk edge runs right behind the sidewalk the building steps back one tile */
+  const bigs=r()<.4?[1,0]:[0];for(const back of [0,1])for(const ax of axs){const at=(t,o)=>ax?[x0+o,y0+t]:[x0+t,y0+o];
+  for(const big of bigs){const tid=LMKT.findIndex(t=>t.id===(big?'rstnx':'rstn')),sz=LMKT[tid].sz;
+  for(const sd of [1,-1]){/* road half-width beside the track: the narrowest column, so a cross street at the station does not push the building down that street */let o=99;for(let dt=-6;dt<=6;dt++){const [cx,cy]=at(dt,0);if(!inMap(cx,cy)||kind[idx(cx,cy)]!==K.ROAD)continue;let q=0;while(Math.abs(q)<12){const [x,y]=at(dt,q+sd);if(!inMap(x,y)||kind[idx(x,y)]!==K.ROAD)break;q+=sd;}if(q&&Math.abs(q)<Math.abs(o))o=q;}if(o===99)continue;const e=o+sd*(1+back);
     for(const off of [0,-1,1,-2,2,-3,3,-4,4,-5,5,-6,6]){const t0=off-(sz>>1),oA=Math.min(e,e+sd*(sz-1)),xa=ax?x0+oA:x0+t0,ya=ax?y0+t0:y0+oA;
       if((xa>>4)!==((xa+sz-1)>>4)||(ya>>4)!==((ya+sz-1)>>4))continue;let ok=true;
       for(let y=ya;y<ya+sz&&ok;y++)for(let x=xa;x<xa+sz;x++){if(!inMap(x,y)){ok=false;break;}const j=idx(x,y);if(kind[j]===K.ROAD||kind[j]===K.LMK||terr[j]===TWA||RL[j]||tileAvgH(x,y)>3){ok=false;break;}}
-      if(!ok)continue;for(let y=ya;y<ya+sz;y++)for(let x=xa;x<xa+sz;x++){const j=idx(x,y);clearTile(j);deco[j]=0;touch(j);}placeLmk(tid,xa+((sz-1)>>1),ya+((sz-1)>>1),1);return true;}}}
+      if(!ok)continue;for(let y=ya;y<ya+sz;y++)for(let x=xa;x<xa+sz;x++){const j=idx(x,y);clearTile(j);deco[j]=0;touch(j);}if(back)for(let t=t0;t<t0+sz;t++){const [x,y]=at(t,o+sd);if(inMap(x,y)){const j=idx(x,y);if(kind[j]!==K.ROAD&&kind[j]!==K.LMK&&!RL[j]&&terr[j]!==TWA){clearTile(j);deco[j]=0;touch(j);}}}
+      placeLmk(tid,xa+((sz-1)>>1),ya+((sz-1)>>1),1);return true;}}}}
   return false;}
 function stationArea(x0,y0,r){stationBldg(x0,y0,r);const ok1=i=>{const k=kind[i];return (k===K.RES||k===K.COM)&&lvl[i]&&lvl[i]<=2&&!isFoot(i)&&fix[i]!==2&&lmkA[i]<0&&!RL[i];};
   for(let dy=-6;dy<=6;dy+=2)for(let dx=-6;dx<=6;dx+=2){const x=(x0+dx)&~1,y=(y0+dy)&~1,d=Math.hypot(x+1-x0,y+1-y0);if(d>4||!inMap(x+1,y+1))continue;const t4=[idx(x,y),idx(x+1,y),idx(x,y+1),idx(x+1,y+1)];if(t4.every(ok1)&&isFlat(x,y)&&r()<.7){for(const i of t4){kind[i]=K.EMPTY;lvl[i]=0;}makeFoot(x,y,K.COM,r()<.3?4:3,(r()*VN[K.COM])|0,1);for(const i of t4)touch(i);}}
@@ -3011,7 +3014,7 @@ const PROPZ=5;
    - casts are rasterised into one half-resolution canvas covering the view plus a margin, and only re-rasterised when
      zoom, the sun (quantised ~7 game-minutes), the map, or a pan beyond the margin changes; every other frame is one drawImage ===== */
 const SHD={cv:null,S:0,tq:-1,v:-1,wl:0,wt:0,wr:0,wb:0,last:0,res:.5};
-function bhAt(i){let h=BHD[i];if(h===h)return h;const a=lmkA[i],o=(a>=0&&a!==i)?objOf(a):objOf(i);h=0;if(o&&!o.flat&&o.by!==undefined){h=Math.max(0,(SCY-o.by)/SR-8);if(kind[i]===K.EMPTY||kind[i]===K.PARK)h*=.7;}BHD[i]=h;return h;}
+function bhAt(i){let h=BHD[i];if(h===h)return h;const a=lmkA[i],o=(a>=0&&a!==i)?objOf(a):objOf(i);h=0;if(o&&!o.flat&&o.by!==undefined&&o.bh>2){/* empty sprite crops to a 2x2 at by=0: no height, else a huge crown-shadow disc */h=Math.max(0,(SCY-o.by)/SR-8);if(kind[i]===K.EMPTY||kind[i]===K.PARK)h*=.7;}BHD[i]=h;return h;}
 function sunVec(){const day=clamp((tod-.22)/.56,0,1),az=day*Math.PI,el=Math.sin(az),gx=Math.cos(az)*.9-.2,gy=.5+.2*el,l=Math.hypot(gx,gy);return[gx/l,gy/l,Math.max(.22,el*1.05)];}
 function shAmt(){return (1-nightAmt())*(1-Math.min(1,WX.cover*1.2)*.65);}
 function buildDynShadows(S,vl,vr,vt,vb){const mw=(vr-vl)*.3,mh=(vb-vt)*.3,wl=vl-mw,wr=vr+mw,wt=vt-mh,wb=vb+mh,res=SHD.res,cw=Math.ceil((wr-wl)*S*res),ch=Math.ceil((wb-wt)*S*res);
@@ -3019,7 +3022,7 @@ function buildDynShadows(S,vl,vr,vt,vb){const mw=(vr-vl)*.3,mh=(vb-vt)*.3,wl=vl-
   t.setTransform(S*res,0,0,S*res,-wl*S*res,-wt*S*res);t.fillStyle='#1a2440';const [sx,sy,te]=sunVec(),ex=(sx-sy)*16,ey=(sx+sy)*8,rg=visRange(wl,wr,wt,wb,TOPM+ELEV),pad=Math.ceil(16/te)+2;
   t.beginPath();const FP=new Path2D(),c=[[0,0],[0,0],[0,0],[0,0]];for(let s=rg.s0-pad*2;s<=rg.s1;s++)for(let d=rg.d0-pad;d<=rg.d1+pad;d++){if((s+d)&1)continue;const x=(s+d)>>1,y=(s-d)>>1;if(x<0||y<0||x>=N||y>=N)continue;const i=idx(x,y);if(kind[i]===K.ROAD)continue;/* road tiles carry lamps/signals, not crowns: their height made big blue discs */const hp=bhAt(i);if(hp<3)continue;
     const L=Math.min(14,hp/22.6/te),gz=hv(x,y)*E,dx=ex*L,dy=ey*L;
-    if(kind[i]===K.EMPTY||kind[i]===K.PARK||!lvl[i]){/* foliage: soft round crown shadow, offset by the crown's height */const cx0=(x-y)*16,cy0=(x+y+1)*8-gz,rr=Math.min(11,2+hp*.12),f=Math.min(.5,rr*.9/Math.max(1,Math.hypot(dx,dy)));const qx=cx0+dx*f,qy=cy0+dy*f;FP.moveTo(qx+rr,qy);FP.ellipse(qx,qy,rr,rr*.5,0,0,6.283);continue;}
+    if(kind[i]===K.EMPTY||kind[i]===K.PARK||!lvl[i]){/* foliage: soft round crown shadow, offset by the crown's height; park complexes (plazas, pools, groves drawn off tile centres) bake their own */if(kind[i]===K.PARK&&fix[i]===2&&lmkA[i]>=0)continue;const cx0=(x-y)*16,cy0=(x+y+1)*8-gz,rr=Math.min(11,2+hp*.12),f=Math.min(.5,rr*.9/Math.max(1,Math.hypot(dx,dy)));const qx=cx0+dx*f,qy=cy0+dy*f;FP.moveTo(qx+rr,qy);FP.ellipse(qx,qy,rr,rr*.5,0,0,6.283);continue;}
     const ins=.06;
     /* footprint diamond swept along the sun: the convex hull of 8 points is a hexagon, emitted directly */
     const ax=(x+ins-(y+ins))*16,ay=(x+y+2*ins)*8-gz,bx=(x+1-ins-(y+ins))*16,by=(x+y+1)*8-gz,cx2=(x+1-ins-(y+1-ins))*16,cy2=(x+y+2-2*ins)*8-gz,dx2=(x+ins-(y+1-ins))*16,dy2=by;
