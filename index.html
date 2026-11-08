@@ -4403,6 +4403,13 @@ function genCity(seed){const r=mulberry(seed*13+5),SAVE=ROADL,DIR=[[1,0],[-1,0],
      const serves=c.some(i=>{const x=i&NM,y=i>>NS;return DIR.some(([dx,dy])=>{const xx=x+dx,yy=y+dy;if(xx<0||yy<0||xx>=N||yy>=N)return false;const k2=kind[idx(xx,yy)];return k2&&k2!==K.ROAD&&k2!==K.PARK;});});if(!serves)for(const i of c){clearTile(i);touch(i);}});tidyW();}
   /* road islands the straight link above could not reach (a district whose arterial was skipped, a national road cut at a diagonal river crossing) */
   link(220,1);
+  /* 끊긴 대로: a wide road that stops in the open runs straight on, same width, to the next road across it (≤40 tiles, straight bridge allowed) */
+  for(let i=0;i<NN;i++){if(!isWide(i)||wInfo(i).p!==0)continue;const x=i&NM,y=i>>NS,s=wideState(x,y);if(s!==4&&s!==5)continue;
+    const ax=wInfo(i).ax,L0=lvl[i],W=RC[L0].W,sg=s===4?-1:1,at=(t,k)=>ax?[x+k,y+sg*t]:[x+sg*t,y+k];
+    let ok=true;for(let k=1;k<W;k++){const [xx,yy]=at(0,k);if(!inMap(xx,yy)||!isWide(idx(xx,yy))||lvl[idx(xx,yy)]!==L0){ok=false;break;}const [fx,fy]=at(1,k);if(isRd(fx,fy)){ok=false;break;}}if(!ok)continue;
+    let hit=-1,wet=0;for(let t=1;t<=40&&ok;t++){let rd=0;for(let k=0;k<W;k++){const [xx,yy]=at(t,k);if(xx<3||yy<3||xx>=N-3||yy>=N-3){ok=false;break;}const j=idx(xx,yy);if(kind[j]===K.ROAD){rd++;if(terr[j]===TWA||isElev(j))ok=false;continue;}if(kind[j]||RSV[j]||deco[j]>=30||(terr[j]!==TWA&&hh(xx,yy)>3)){ok=false;break;}if(terr[j]===TWA)wet++;}
+      if(!ok||(rd&&rd<W)){ok=false;break;}if(rd===W){hit=t;break;}for(const k of [-1,W])if(isRd(...at(t,k)))ok=false;}
+    if(hit<2||wet>14*W)continue;const off=(W-1)>>1,[ax0,ay0]=at(0,off),[bx,by]=at(hit-1,off);RD(RC[L0].L,{x:ax0,y:ay0},{x:bx,y:by});}
   /* 노거수: a few very large old trees — village 당산나무, riverside willows, park landmarks */
   {const GT=[],ok=i=>{const x=i&NM,y=i>>NS;return kind[i]===K.EMPTY&&terr[i]===TG&&isFlat(x,y)&&!RSV[i]&&(deco[i]===0||deco[i]>=18&&deco[i]<=21||deco[i]<=8)&&!GT.some(j=>Math.hypot((j&NM)-x,(j>>NS)-y)<14);};
    for(const c of cells){if(c.t!=='vil'&&!(c.t==='gen'&&r()<.3))continue;for(let k=0;k<30;k++){const x=c.x0+((r()*(c.x1-c.x0+1))|0),y=c.y0+((r()*(c.y1-c.y0+1))|0),i=idx(x,y);if(ok(i)){deco[i]=23;GT.push(i);touch(i);break;}}}
@@ -4417,6 +4424,16 @@ function genCity(seed){const r=mulberry(seed*13+5),SAVE=ROADL,DIR=[[1,0],[-1,0],
   {const dist=new Uint8Array(NN).fill(99),q=[];for(let i=0;i<NN;i++)if(kind[i]===K.ROAD){dist[i]=0;q.push(i);}for(let h=0;h<q.length;h++){const i=q[h];if(dist[i]>=6)continue;const x=i&NM,y=i>>NS;for(const [dx,dy] of DIR){const xx=x+dx,yy=y+dy;if(xx<0||yy<0||xx>=N||yy>=N)continue;const j=idx(xx,yy);if(dist[j]>dist[i]+1){dist[j]=dist[i]+1;q.push(j);}}}
    for(let i=0;i<NN;i++){const k=kind[i];if(k<K.RES||k>K.IND||dist[i]<=4||fix[i]===2||isFoot(i))continue;clearTile(i);touch(i);}}
   genRail(cx,cy,seed);
+  /* …one that still ends (rail viaducts excepted): rows that serve nothing are dropped (a bridge or boulevard to nowhere); what is left back to its last junction becomes a two-lane access road */
+  {const srv=j=>{const k=kind[j];return (k>=K.RES&&k<=K.IND&&lvl[j])||k===K.LMK||(k>=K.POWER&&k<=K.PARK)||isFoot(j)||(deco[j]>=40&&deco[j]<=42);};
+   for(let i=0;i<NN;i++){if(!isWide(i)||wInfo(i).p!==0)continue;const x=i&NM,y=i>>NS,s=wideState(x,y);if(s!==4&&s!==5)continue;
+    const ax=wInfo(i).ax,L0=lvl[i],W=RC[L0].W,sg=s===4?-1:1,dx=ax?0:sg,dy=ax?sg:0,off=(W-1)>>1;
+    const row=(a,b)=>{const o=[];for(let k=0;k<W;k++)o.push(ax?[a+k,b]:[a,b+k]);return o;},isW=([a,b])=>inMap(a,b)&&isWide(idx(a,b))&&lvl[idx(a,b)]===L0&&wInfo(idx(a,b)).ax===ax;
+    for(let t=1;t<4;t++){let any=false;for(const q of row(x+dx*t,y+dy*t))if(isW(q)&&!RL[idx(q[0],q[1])]){const j=idx(q[0],q[1]);clearTile(j);touchN2(j);any=true;}if(!any)break;}/* ragged lane ends past the last full row */
+    const rows=[];let cx=x,cy=y,n=0;for(;n<160;n++){const R=row(cx,cy);if(!R.every(isW)||R.some(([a,b])=>wideJ(a,b)||RL[idx(a,b)]))break;rows.push(R);cx-=dx;cy-=dy;}if(!rows.length||n>=160)continue;
+    const served=R=>R.some(([a,b])=>{for(let ey=-4;ey<=4;ey++)for(let ex=-4;ex<=4;ex++){if(Math.abs(ex)+Math.abs(ey)>4||!inMap(a+ex,b+ey))continue;if(srv(idx(a+ex,b+ey)))return true;}return false;});/* a lot within street reach */let cut=0;while(cut<rows.length&&!served(rows[cut]))cut++;
+    const fill=(j,a,b,k)=>{if(terr[j]===TWA)return;for(const o of [-(k+1),W-k,-(k+2),W-k+1]){const u=ax?a+o:a,v=ax?b:b+o;if(!inMap(u,v))continue;const e=idx(u,v);if(kind[e]===K.EMPTY&&terr[e]===terr[j]&&deco[e]<=14){deco[j]=deco[e];return;}}};/* the cleared strip takes the vegetation beside it */
+    rows.forEach((R,q)=>R.forEach(([a,b],k)=>{const j=idx(a,b);if(q>=cut&&k===off){lvl[j]=0;vari[j]=0;deco[j]=0;}else{clearTile(j);fill(j,a,b,k);}touchN2(j);}));}stripShoreTrees();}
   compsDirty=true;ROADL=SAVE;return[Math.round(cx),Math.round(cy)];}
 function newCity(seed,blank){Object.assign(sim,{day:0,month:0,year:2027,speed:1,tax:[9,9,9],dem:[.7,.4,.6],pop:0,jc:0,ji:0,inc:0,exp:0,spent:0,hist:[],pw:0,wt:0,avgLv:0,name:'뉴타운',seed});
   RL=new Uint8Array(NN);STN=new Uint8Array(NN);RLINES=[];TRAINS=[];BOATS=[];RLC.clear();BOVC.clear();ROADVER++;
