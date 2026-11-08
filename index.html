@@ -1399,7 +1399,7 @@ function roadTex(i){if(isWide(i))return wideTex(i);if(isElev(i)){if(!elX(i))retu
   const m=roadMask(x,y),v=roadVar(x,y);if(v===2){const st=[0,0];let bit=0;for(const a of [1,2,4,8]){if(!(m&a))continue;const [dx,dy]=ARMD[a],nx=x+dx,ny=y+dy;if(roadAt(nx,ny)&&roadVar(nx,ny)!==2)st[bit]=filletNb(nx,ny,a,lvl[i])?1:2;bit++;}if(st[0]&&st[1])st[1]=0;return SP.roadD[SEASON][tp][m][st[0]*3+st[1]]||SP.roadD[SEASON][tp][m][0];}
   {const fv=filletOf(x,y);if(fv>=0)return SP.roadF[SEASON][tp][fv];}if(v)return SP.roadC[tp][0][m];
   if(m===5||m===10){const ns=m===5,cnt=(a,b)=>{if(!roadAt(a,b))return 0;const q=roadMask(a,b);return(q&1)+((q>>1)&1)+((q>>2)&1)+((q>>3)&1);};const A=ns?cnt(x,y-1):cnt(x-1,y),B=ns?cnt(x,y+1):cnt(x+1,y);
-    if(tp&&A>=3)return SP.roadAr[ns?0:1][0];if(tp&&B>=3)return SP.roadAr[ns?0:1][1];const h=((x*73856093)^(y*19349663))>>>0;if(A===2&&B===2&&h%19===0)return SP.roadX[tp][ns?0:1];}
+    if(A>=3)return SP.roadAr[tp][ns?0:1][0];if(B>=3)return SP.roadAr[tp][ns?0:1][1];const h=((x*73856093)^(y*19349663))>>>0;if(A===2&&B===2&&h%19===0)return SP.roadX[tp][ns?0:1];}
   return SP.road[tp][m];}
 function rabTex(p,entry){const r=mulberry(950+p+entry*20),A=hex('#484b51'),A2=hex('#51545a'),B1=hex('#b9a898'),B2=hex('#a8988a'),Cb=hex('#d6d3cc'),M=hex('#e9c94a'),Wt=hex('#ecece6'),G1=hex('#6f9e4e'),G2=hex('#5e8c40'),FL=[hex('#f2d24a'),hex('#f08ab0'),hex('#ffffff')],SO=hex('#cfc8b8');
   const ox=p%3,oy=(p/3)|0;return tex(gsp((fx,fy,px,py)=>{const X=ox+fx-1.5,Y=oy+fy-1.5,rr=Math.hypot(X,Y);
@@ -1411,8 +1411,9 @@ function roadVarTex(tp,ns,kind2,end){const r=mulberry(960+tp*7+(ns?1:0)*3+kind2*
   return tex(gsp((fx,fy,px,py)=>{const o=(py*128+px)*4,c=[bc[o],bc[o+1],bc[o+2]];const a=ns?fy:fx,l=ns?fx-.5:fy-.5,t=tp?.1:.14,c2=t+.018;if(Math.abs(l)>.5-c2)return c;
     if(kind2===0){if(Math.abs(a-.5)<.09&&Math.abs(l)<.5-c2-.02&&((Math.floor((ns?fx:fy)*40))&1))return Wt;return c;}
     const e=end?1-a:a,side=end?-1:1,ll=l*side;
-    for(const L of (tp?[.115,.29]:[.19])){const d=ll-L;if(e>.06&&e<.3&&Math.abs(d)<.013)return Wt;if(e>.02&&e<=.06&&Math.abs(d)<.045*(e-.02)/.04+.002)return Wt;}
-    if(e>.04&&e<.055&&ll>0&&ll<.5-c2-.01)return Wt;return c;}));}
+    if(e>.02&&e<.04&&ll>0&&ll<.5-c2-.006)return Wt;/* 정지선 */
+    for(const L of (tp?[.115,.29]:[.19])){const d=ll-L;if(e>.15&&e<.34&&Math.abs(d)<.011)return Wt;if(e>.08&&e<=.15&&Math.abs(d)<.05*(e-.08)/.07+.003)return Wt;}
+    return c;}));}
 function touchN2(i){const x=i&NM,y=i>>NS;for(let dy=-2;dy<=2;dy++)for(let dx=-2;dx<=2;dx++){if(Math.abs(dx)+Math.abs(dy)>2)continue;const xx=x+dx,yy=y+dy;if(xx>=0&&yy>=0&&xx<N&&yy<N)touch(yy*N+xx);}}
 
 function grassTex(seed,b,d,l,sea,vr){const c=gsp(speck(seed,b,d,l,.05,.04)),g=c.getContext('2d'),r=mulberry(seed+1);g.globalCompositeOperation='source-atop';
@@ -1468,7 +1469,7 @@ function buildSprites(){
         if(fx>.28&&fx<.72&&fy>.28&&fy<.72){const R=.5+(tp?.115:.19)-(tp?0:.02);for(const [ok,cx,cy] of [[s&&w,0,1],[n&&e,1,0],[e&&s,1,1],[w&&n,0,0]]){if(!ok)continue;const d=Math.hypot(fx-cx,fy-cy);if(Math.abs(d-R)<.01){const a=Math.atan2(fy-cy,fx-cx);if(((a*16/Math.PI)%2+2)%2<1.1)return Wt;}}}}
       return r()<.07?A2:A;}));}return arr;});
   SP.roadC=[0,1].map(tp=>[false,true].map(dg=>{const o={};for(const m of [3,6,12,9])o[m]=roadCornerTex(tp,m,dg);return o;}));SP.roadD=[0,1,2,3].map(sea=>[0,1].map(tp=>{const o={};for(const m of [3,6,12,9]){o[m]={};for(const [a,b] of [[0,0],[0,1],[0,2],[1,0],[2,0]])o[m][a*3+b]=diagTex(tp,m,[a,b],sea);}return o;}));SP.roadF=[0,1,2,3].map(sea=>[0,1].map(tp=>{const o={};for(const ns of [0,1])for(const end of [0,1])for(const turn of [-1,1])o[ns*4+end*2+(turn>0?1:0)]=filletStraightTex(tp,!!ns,end,turn,sea);return o;}));
-  SP.rab=[];for(let p=0;p<9;p++)SP.rab[p]=rabTex(p,0);for(const p of [1,3,5,7])SP.rab[p+9]=rabTex(p,1);SP.roadX=[0,1].map(tp=>[roadVarTex(tp,true,0,0),roadVarTex(tp,false,0,0)]);SP.roadAr=[true,false].map(ns=>[0,1].map(e=>roadVarTex(1,ns,1,e)));
+  SP.rab=[];for(let p=0;p<9;p++)SP.rab[p]=rabTex(p,0);for(const p of [1,3,5,7])SP.rab[p+9]=rabTex(p,1);SP.roadX=[0,1].map(tp=>[roadVarTex(tp,true,0,0),roadVarTex(tp,false,0,0)]);SP.roadAr=[0,1].map(tp=>[true,false].map(ns=>[0,1].map(e=>roadVarTex(tp,ns,1,e))));
   buildRoadCls();
   SP.lamp={shd:null};
   for(let s=0;s<4;s++){const S2=s;GENQ.push(()=>{PIXNAT=1;SP.tree[S2]=TREE_LAYOUT.map((lay,vi)=>[0,1,2].map(vv=>osp((g,lg,r)=>{TSALT=vi*3+vv;const sw=t=>{if(!vv||t==='bush')return t;const con=t==='pine'||t==='fir';return rp(r,con?['pine','fir','meta','pine']:['oak','zelkova','maple','birch','ginkgo','cherry','willow']);};lay.slice().sort((a,c)=>a[0]+a[1]-c[0]-c[1]).forEach(t=>treeH(g,t[0]+(vv?(r()-.5)*.1:0),t[1]+(vv?(r()-.5)*.1:0),t[2]*(vv?.85+r()*.3:1),sw(t[3]),S2,r));},100+S2*20+vi+vv*997)));PIXNAT=0;});
@@ -1668,7 +1669,8 @@ const VSPRH=new Map();function vehSprite(vt,ci,hd,K){K=K||2;const MP=K>2?VSPRH:V
     if(K>2&&vt!==3){/* 번호판 front and back */for(const e of [1,-1]){const q=R2(e*(L+.002),0),p=P(q[0],q[1],T.h0+.9);g.fillStyle='#f4f4f0';g.fillRect(p[0]-.7,p[1]-.28,1.4,.56);g.fillStyle='#2a2e33';g.fillRect(p[0]-.5,p[1]-.06,1,.12);}}
   OX=SCX;OY=SCY-32;if(K>2){const q=quantizeCrop(c,null);o={c:cropC(c,q),w:q[2]/K,h:q[3]/K,ox:CW/2-q[0]/K,oy:CH*.62-q[1]/K};}else o={c,w:CW,h:CH,ox:CW/2,oy:CH*.62};MP.set(key,o);return o;}
 function vehType(a){if(a.vt!==undefined)return a.vt;const r=Math.random();a.vt=a.bus?3:r<.09?2:r<.3?1:r<.38?4:r<.45?5:r<.52?9:r<.56?10:r<.6?12:r<.63?13:r<.65?11:r<.67?6:r<.68?8:r<.685?7:0;a.vci=(Math.random()*16)|0;a.lng=a.vt===7||a.vt===11||a.vt===13;return a.vt;}
-function drawVeh(g,a,wx,wy,p,S){const vt=vehType(a);let ang=Math.atan2(p[3],p[2]);if(!isFinite(ang))ang=0;const hd=((Math.round(ang/(Math.PI*2)*16)%16)+16)%16;const o=vehSprite(vt,vt===3?(a.c%4):a.vci,hd,HQON?5:2);g.drawImage(o.c,wx-o.ox/SR,wy-o.oy/SR,o.w/SR,o.h/SR);
+/* vehicles were ~20% oversize against the lane width */const VSC=.8;
+function drawVeh(g,a,wx,wy,p,S){const vt=vehType(a);let ang=Math.atan2(p[3],p[2]);if(!isFinite(ang))ang=0;const hd=((Math.round(ang/(Math.PI*2)*16)%16)+16)%16;const o=vehSprite(vt,vt===3?(a.c%4):a.vci,hd,HQON?5:2);g.drawImage(o.c,wx-o.ox/SR*VSC,wy-o.oy/SR*VSC,o.w/SR*VSC,o.h/SR*VSC);
   if((vt===6||vt===7||vt===8)&&a.siren!==false){if(a.siren===undefined)a.siren=Math.random()<.5;if(a.siren){const T=VTY[vt],ph=(animT*4+(a.vci||0))%2<1,L2=T.L/2,la=vt===6?L2*(T.c0+T.c1):vt===7?L2-L2*.15:L2-L2*.16-.05,hh=(vt===8?T.h1:T.ch)+1.1,th=hd/16*Math.PI*2,au=Math.cos(th)*la,av=Math.sin(th)*la;wx+=(au-av)*64/SR;wy+=(au+av)*32/SR;g.fillStyle=ph?'rgba(255,60,50,.95)':(vt===6?'rgba(70,130,255,.95)':'rgba(255,60,50,.45)');g.beginPath();g.arc(wx,wy-hh/SR,.32,0,6.283);g.fill();g.fillStyle=ph?'rgba(255,80,60,.25)':vt===6?'rgba(80,140,255,.25)':'rgba(255,80,60,.08)';g.beginPath();g.arc(wx,wy-hh/SR,1,0,6.283);g.fill();}}}
 /* traffic: signals and following */
 /* signal cycle (≈11s): axis 0 green → all-red clearance → axis 1 green → all-red; -1 = everyone stops */
@@ -3372,6 +3374,8 @@ function agentPos(a,ped){const t=a.t;if(ped){const h1=t<.5,T=h1?[a.x,a.y]:[a.nx,
     if(isWide(ti)&&!wideJ(tx,ty)){const {p,ax}=wInfo(ti),W=RC[lvl[ti]].W;const f=p===0?.08:p===W-1?.92:.5;if(ax===0)out[1]=ty+f;else out[0]=tx+f;}
     /* inside a big junction: walk only along its edges, where the crosswalks are */
     else if(isWide(ti)&&wideJ(tx,ty)){const J=juncInfo(tx,ty),xa=J.x0-.22,xb=J.x1+1.22,ya=J.y0-.22,yb=J.y1+1.22;if(Math.abs(out[2])>=Math.abs(out[3]))out[1]=(out[1]-ya<yb-out[1])?ya:yb;else out[0]=(out[0]-xa<xb-out[0])?xa:xb;}}}
+  else if(!a.bus){const tx=Math.floor(out[0]),ty=Math.floor(out[1]);let tgt=0;if(inMap(tx,ty)){const ti=idx(tx,ty);if(isWide(ti)&&!wideJ(tx,ty)&&kind[ti]===K.ROAD){const {p,ax}=wInfo(ti),L=RC[lvl[ti]].L,W=RC[lvl[ti]].W,Y=crossLayout(L,W),c=(ax===0?out[1]-ty:out[0]-tx)+p,hl=L/2;if(a.ln===undefined)a.ln=(Math.random()*8)|0;const k=a.ln%hl,lat=c<W/2?W/2-Y.md/2-Y.lw*(k+.5):W/2+Y.md/2+Y.lw*(k+.5);a.wlat=(ax===0?ty:tx)-p+lat;a.wax=ax;tgt=1;}}
+    if(a.wlf!==frameNo){a.wlf=frameNo;a.wl=(a.wl||0)+(tgt-(a.wl||0))*.05;}if(a.wl>.002&&a.wlat!=null){if(a.wax===0)out[1]+=(a.wlat-out[1])*a.wl;else out[0]+=(a.wlat-out[0])*a.wl;}}
   else if(a.bus){/* 중앙버스전용차로: on 10+ lane roads buses ease into the lane beside the median */const tx=Math.floor(out[0]),ty=Math.floor(out[1]);let tgt=0,lat=0;
     if(inMap(tx,ty)){const ti=idx(tx,ty);if(isWide(ti)&&!wideJ(tx,ty)&&RC[lvl[ti]].L>=10){const {p,ax}=wInfo(ti),W=RC[lvl[ti]].W,Y=crossLayout(RC[lvl[ti]].L,W),d=ax===0?out[2]:out[3],sg=ax===0?(d>0?1:-1):(d>0?-1:1),c=W/2+sg*(Y.md/2+Y.lw*.5);lat=(ax===0?ty:tx)-p+c;tgt=1;a.bax=ax;a.blat=lat;}}
     if(a.blf!==frameNo){a.blf=frameNo;a.bl=(a.bl||0)+(tgt-(a.bl||0))*.035;}if(a.bl>.002&&a.blat!=null){if(a.bax===0)out[1]+=(a.blat-out[1])*a.bl;else out[0]+=(a.blat-out[0])*a.bl;}}
@@ -3493,7 +3497,7 @@ const PROPS=.42;
 function propSpr(t,al,v,K){K=K||4;const k=t+'|'+al+'|'+v+'|'+K;let c=PSPR.get(k);if(c)return c;c=mk(24*K,24*K);const g=c.getContext('2d');g.setTransform(K,0,0,K,12*K,16*K);PROPDEF[t](g,al,v);if(PSPR.size>600)PSPR.clear();PSPR.set(k,c);return c;}
 /* per-prop correction to real size against a 1.7 m walker (wheels, crates, animals and pots were drawn far too big) */
 const PSZ={bike:.7,mini:.68,bikerack:.66,delivery:.66,scooter:.55,trike:.8,crates:.58,jars:.66,plant:.62,gas:.66,basin:.6,parcel:.62,ac:.76,table:.68,sign:.78,cart:.82,bins:.86,freezer:.86,bench:.64,hydrant:.68,postbox:.74,clothbox:.84,laundry:.9,nopark:.7,cat:.5,pigeons:.45,dog:.85,kids:.9};
-function putProp(g,wx,wy,u,v,t,al,vr){if(t==='pcar'){const o=vehSprite([0,0,1,5,0,9][vr%6],(vr*5+3)%16,al?4:0,HQON?5:2),x=wx+(u-v)*16,y=wy+(u+v)*8;g.drawImage(o.c,x-o.ox/SR,y-o.oy/SR,o.w/SR,o.h/SR);return;}
+function putProp(g,wx,wy,u,v,t,al,vr){if(t==='pcar'){const o=vehSprite([0,0,1,5,0,9][vr%6],(vr*5+3)%16,al?4:0,HQON?5:2),x=wx+(u-v)*16,y=wy+(u+v)*8;g.drawImage(o.c,x-o.ox/SR*VSC,y-o.oy/SR*VSC,o.w/SR*VSC,o.h/SR*VSC);return;}
   /* vector, in world space, scaled to people (1 unit ≈ 1 m) — crisp at every zoom like the walkers */
   const ks=PROPS*(PSZ[t]||1);g.save();g.translate(wx+(u-v)*16,wy+(u+v)*8);g.scale(ks,ks);PROPDEF[t](g,al,vr%6);g.restore();}
 const PROP_RES=[['bike',8],['plant',14],['bins',8],['parcel',6],['ac',8],['laundry',5],['jars',4],['basin',4],['pyeong',3],['trike',3],['cat',3],['ped',6],['nopark',4],['delivery',3],['clothbox',2],['kick',2]],
