@@ -206,8 +206,7 @@ body{font-size:12.5px;letter-spacing:-.005em}
   --zr:#4cc06a; --zc:#57a3ea; --zi:#e8ad34; --warn:#ef6f5b; color-scheme:dark}
 .panel,.hgrp{background:var(--glass)!important;-webkit-backdrop-filter:blur(10px)!important;backdrop-filter:blur(10px)!important;border:1px solid var(--glass-brd)!important;box-shadow:0 8px 22px var(--shadow)!important}
 .panel{border-radius:14px}.hgrp{border-radius:13px}
-body:not(.pix) #view{filter:saturate(1) brightness(.96) contrast(1.09) hue-rotate(-3deg)}
-body.pix #view{image-rendering:pixelated;image-rendering:crisp-edges}
+#view{filter:saturate(1) brightness(.96) contrast(1.09) hue-rotate(-3deg)}
 @media (min-width:721px){.hend{width:254px;margin-left:auto;gap:6px;padding:6px 8px}.hend .btn{flex:1 1 0;justify-content:center;padding:5px 6px}}
 .seg,.btn,.ddBtn,.wx,.pill,.track,#codeBox,.palItem,.tool{border-color:transparent!important}
 .seg{background:rgba(255,255,255,.04)}
@@ -348,7 +347,6 @@ kbd{font:600 10px var(--f-body);background:var(--chip-on);border-radius:5px;padd
     <button class="sw pill" data-fx="tilt"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="5.5" fill="none" stroke="currentColor" stroke-width="1.4"/><circle cx="8" cy="8" r="2" fill="currentColor"/></svg><span>미니어처</span><i class="knob"></i></button>
     <button class="sw pill" data-fx="shadow"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="3" y="3" width="6" height="8" rx="1" fill="currentColor"/><path d="M9 11l5 2.5H6.5L3 11" fill="currentColor" opacity=".45"/></svg><span>그림자</span><i class="knob"></i></button>
     <button class="sw pill" data-fx="perf"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M9 1.5 3.5 9H8l-1 5.5L12.5 7H8z" fill="currentColor"/></svg><span>성능 모드</span><i class="knob"></i></button>
-    <button class="sw pill" data-fx="pix"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 2h4v4H2zM10 2h4v4h-4zM6 6h4v4H6zM2 10h4v4H2zM10 10h4v4h-4z" fill="currentColor"/></svg><span>도트 화풍</span><i class="knob"></i></button>
     <button class="sw pill" data-fx="grow"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 14V7M8 7c0-3 2-4.5 5-4.5 0 3-2 4.5-5 4.5zM8 9C8 6.5 6.3 5 3.5 5 3.5 7.5 5.2 9 8 9z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg><span>자동 성장</span><i class="knob"></i></button>
   </div>
   <div class="tiles two">
