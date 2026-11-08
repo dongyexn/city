@@ -2583,13 +2583,17 @@ const scOf=k=>4/(1<<k);
 function litA(o,wx,wy){if(o.bh<=110)return 1;if(o.bw>300)return .38;const h=Math.imul((wx*7)|0,73856093)^Math.imul((wy*13)|0,19349663),v=(h>>>4)%100;return v<22?.1:v<45?.42:.62+((h>>>12)%38)/100;}
 function litDraw(g,o,wx,wy,hb,hr){if(o.bh>110&&o.c2){if(!o.blk2){const s2=o.c2,c=mk(s2.width,s2.height),x=c.getContext('2d');x.drawImage(s2,0,0);x.globalCompositeOperation='source-in';x.fillStyle='#000';x.fillRect(0,0,c.width,c.height);o.blk2=c;o.blk=c;}drawSpr(g,o,wx,wy,hb,'blk',true);}
   if(o.lit){const a=g.globalAlpha;g.globalAlpha=a*litA(o,wx,wy);drawSpr(g,o,wx,wy,hb,'lit',hr);g.globalAlpha=a;}}
-function ckey(C,ci,k,L){return C.id*1e7+(L?1e6:0)+k*10000+ci;}
+function ckey(C,ci,k,L){return C.id*1e7+(L?1e6:0)+k*10000+ci+(FX.perf?1e8:0);}
+/* chunk scale nearest to the screen scale (was always ≤ it, so far views were upscaled up to 2× and looked soft next to the near view) */
+const farK=S=>clamp(Math.round(Math.log2(4/S)-.1),1,6);
+/* when the near view's sun-driven shadows are on, far chunks use the same pass instead of their own baked casts, so zooming doesn't change the light */
+const dynSh=k=>GLT&&FX.shadow&&!FX.perf&&k<=3;
 function chunkGeom(C,ci){const cx=ci%C.NC,cy=(ci/C.NC)|0,x0=cx*C.CS,y0=cy*C.CS;return{x0,y0,left:(x0-y0-C.CS)*16,top:(x0+y0)*8-C.topOff};}
 let SHTMP=null;function buildChunk(C,ci,k,L){const key=ckey(C,ci,k,L),G=chunkGeom(C,ci),sc=scOf(k),w=Math.round(C.CW*sc),h=Math.round(C.CH*sc),CSz=C.CS;
   let e=cache.get(key);if(!e){const pk=w+'x'+h,pl=CPOOL.get(pk);let cv;if(pl&&pl.length){cv=pl.pop();CPOOLN--;}else cv=mk(w,h);e={cv,ver:0,used:0,bytes:w*h*4,k,C};cache.set(key,e);cacheBytes+=e.bytes;}
   const g=e.cv.getContext('2d');g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,w,h);g.imageSmoothingEnabled=true;g.imageSmoothingQuality='high';g.setTransform(sc,0,0,sc,-G.left*sc,-G.top*sc);const hr=sc<=1;
   if(!L){if(!GLT)for(let s=0;s<2*CSz-1;s++){const a=Math.max(0,s-CSz+1),b=Math.min(CSz-1,s);for(let xx=a;xx<=b;xx++)drawGround(g,G.x0+xx,G.y0+s-xx);}
-    if(FX.shadow){/* shadows are unioned on a scratch canvas first, so overlapping casts don't stack into darker tile-shaped patches */
+    if(FX.shadow&&!dynSh(k)){/* shadows are unioned on a scratch canvas first, so overlapping casts don't stack into darker tile-shaped patches */
       const tc=(SHTMP&&SHTMP.width===w&&SHTMP.height===h)?SHTMP:(SHTMP=mk(w,h)),t=tc.getContext('2d');t.setTransform(1,0,0,1,0,0);t.clearRect(0,0,w,h);t.imageSmoothingEnabled=true;t.setTransform(sc,0,0,sc,-G.left*sc,-G.top*sc);
       for(let y=Math.max(0,G.y0-2);y<Math.min(N,G.y0+CSz+1);y++)for(let x=Math.max(0,G.x0-9);x<Math.min(N,G.x0+CSz);x++){const i=idx(x,y),o=objOf(i);if(RL[i])for(const ro of ovList(i,OVT,2))if(ro.shd)drawShd(t,ro,(x-y)*16,(x+y)*8,objBase(i));if(!o)continue;if(o.shd)drawShd(t,o,(x-y)*16,(x+y)*8,objBase(i));if(o.front&&o.front.shd)drawShd(t,o.front,(x-y)*16,(x+y)*8,objBase(i));}
       g.globalCompositeOperation=GLT?'source-over':'source-atop';g.globalAlpha=GLT?.2:.24;if(GLT){g.save();g.beginPath();for(let yy=G.y0;yy<G.y0+CSz;yy++)for(let xx=G.x0;xx<G.x0+CSz;xx++){const p=tilePts(xx,yy);g.moveTo(p[0][0],p[0][1]);g.lineTo(p[1][0],p[1][1]);g.lineTo(p[2][0],p[2][1]);g.lineTo(p[3][0],p[3][1]);g.closePath();}g.clip();}g.setTransform(1,0,0,1,0,0);g.drawImage(tc,0,0);g.setTransform(sc,0,0,sc,-G.left*sc,-G.top*sc);if(GLT)g.restore();g.globalAlpha=1;g.globalCompositeOperation='source-over';}}
@@ -3110,8 +3114,8 @@ function render(dt){frameNo++;const W=scn.width,Hh=scn.height,S=zoom*dpr,ox=W/2-
   g.setTransform(1,0,0,1,0,0);g.globalCompositeOperation='source-over';g.globalAlpha=1;if(GLT)g.clearRect(0,0,W,Hh);drawSky(W,Hh);LIGHTK=0;
   const ck=camX+','+camY+','+zoom;if(ck!==RCAM.k){RCAM.k=ck;RCAM.n=0;}else RCAM.n++;const vl=camX-W/2/S,vr=camX+W/2/S,vt=camY-Hh/2/S,vb=camY+Hh/2/S,deadline=performance.now()+(frameNo<30?40:RCAM.n>12?45:RCAM.n>4?20:8);const near=zoom>=NEARZ;
   const nA=nightAmt();let res=null,vis=[];
-  if(near){res=renderNear(S,ox,oy,vl,vr,vt,vb,dt,deadline,nA);HQON=false;if(RCAM.n>10&&zoom<NEARZ*1.35){const dl=performance.now()+3,k2=clamp(Math.ceil(Math.log2(4/(NEARZ*.98*dpr))-.05),2,6);for(const ci of FC.order){const G=chunkGeom(FC,ci);if(G.left>vr||G.left+FC.CW<vl||G.top>vb||G.top+FC.CH<vt)continue;if(performance.now()>dl)break;getChunk(FC,ci,k2,false,dl,k2);}}if(S>=1.6&&!GLT)drawGlints(S,ox,oy,vl,vr,vt,vb,dt);}
-  else{const k=clamp(Math.ceil(Math.log2(4/S)-.05),2,6);for(const ci of FC.order){const G=chunkGeom(FC,ci);if(G.left>vr||G.left+FC.CW<vl||G.top>vb||G.top+FC.CH<vt)continue;vis.push([ci,G]);const e=getChunk(FC,ci,k,false,deadline,6);if(e)drawC(g,e,G,S,ox,oy);}
+  if(near){res=renderNear(S,ox,oy,vl,vr,vt,vb,dt,deadline,nA);HQON=false;if(RCAM.n>10&&zoom<NEARZ*1.35){const dl=performance.now()+3,k2=farK(NEARZ*.98*dpr);for(const ci of FC.order){const G=chunkGeom(FC,ci);if(G.left>vr||G.left+FC.CW<vl||G.top>vb||G.top+FC.CH<vt)continue;if(performance.now()>dl)break;getChunk(FC,ci,k2,false,dl,k2);}}if(S>=1.6&&!GLT)drawGlints(S,ox,oy,vl,vr,vt,vb,dt);}
+  else{const k=farK(S);if(dynSh(k))drawDynShadows(g,S,ox,oy,vl,vr,vt,vb);for(const ci of FC.order){const G=chunkGeom(FC,ci);if(G.left>vr||G.left+FC.CW<vl||G.top>vb||G.top+FC.CH<vt)continue;vis.push([ci,G]);const e=getChunk(FC,ci,k,false,deadline,6);if(e)drawC(g,e,G,S,ox,oy);}
     /* far view keeps traffic visible (drawn over the cached chunks; no depth sort at this scale) */
     if(zoom>=.35){g.setTransform(S,0,0,S,ox,oy);g.imageSmoothingEnabled=true;const L=[];const add=(a,ped)=>{const p=agentPos(a,ped),wx=(p[0]-p[1])*16,wy=(p[0]+p[1])*8-agH(p);if(wx<vl-20||wx>vr+20||wy<vt-20||wy>vb+20)return;L.push([p[0]+p[1],a,ped,wx,wy,p]);};for(const a of cars)add(a,false);if(zoom>=.8)for(const a of peds)add(a,true);L.sort((a,b)=>a[0]-b[0]);for(const it of L){if(it[2])drawPedV(g,it[1],it[3],it[4],it[5],S);else drawVeh(g,it[1],it[3],it[4],it[5],S);}g.setTransform(1,0,0,1,0,0);}
     if(overlay!=='none'){if(ovDirty){buildOverlay();ovDirty=false;}const Gs=overlay==='util'?1:CG;g.setTransform(16*Gs*S,8*Gs*S,-16*Gs*S,8*Gs*S,ox,oy);g.imageSmoothingEnabled=overlay!=='util';g.globalAlpha=overlay==='util'?.75:.62;g.drawImage(overlay==='util'?ovT:ovC,0,0);g.globalAlpha=1;g.setTransform(1,0,0,1,0,0);}}
@@ -3121,7 +3125,7 @@ function render(dt){frameNo++;const W=scn.width,Hh=scn.height,S=zoom*dpr,ox=W/2-
   const gray=(WX.cover*.2+WX.rain*.08)*WXA*1.3;if(gray>.01){g.fillStyle='rgba(60,72,88,'+gray.toFixed(3)+')';g.fillRect(0,0,W,Hh);}
   if(dusk>.02){g.fillStyle='rgba(255,128,60,'+(dusk*.14*(1-WX.cover*.6)).toFixed(3)+')';g.fillRect(0,0,W,Hh);}
   if(nA>.01){g.fillStyle='rgba(12,18,50,'+(.62*nA).toFixed(3)+')';g.fillRect(0,0,W,Hh);
-    const kL=near?0:clamp(Math.ceil(Math.log2(4/S)-.05),2,6);
+    const kL=near?0:farK(S);
     if(near||kL<=3){lctx.setTransform(1,0,0,1,0,0);lctx.globalCompositeOperation='source-over';if(GLT)lctx.clearRect(0,0,W,Hh);else{lctx.fillStyle='#000';lctx.fillRect(0,0,W,Hh);}
       if(near)lightsNear(S,ox,oy,res);else for(const [ci,G] of vis){const e=getChunk(FC,ci,kL,true,deadline+4,3);if(e)drawC(lctx,e,G,S,ox,oy);}
       g.globalCompositeOperation='lighter';g.globalAlpha=nA*lightF();g.drawImage(lbuf,0,0);g.globalAlpha=1;g.globalCompositeOperation='source-over';}}
