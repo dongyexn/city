@@ -1693,7 +1693,7 @@ function parapet(g,b,c){const t=.025;roofTex(g,b,t);for(const q of [BX(b.u0,b.v0
 /* 옥상 설비: 계단실·기계실·SMC 물탱크·실외기 열·환기구·안테나·피뢰침·태양광·빨래건조대·장독·텃밭상자·평상 (deterministic per roof, no shared RNG) */
 var KITW=new WeakMap(),KITP=[],KITRES=null;function kitRun(fn){KITP=[];RTS=new WeakSet();try{fn();kitFlush();}finally{KITP=[];}}
 function kitFlush(){const L=KITP;KITP=[];for(const p of L)roofKit(p.g,null,{lit:false},p.b,{keep:false,res:p.b.h1<64?null:false});}
-function kitCover(b){if(!KITP.length)return;KITP=KITP.filter(p=>{const q=p.b;if(b.h0<q.h1-1.5)return true;const ou=Math.min(b.u1,q.u1)-Math.max(b.u0,q.u0),ov=Math.min(b.v1,q.v1)-Math.max(b.v0,q.v0);return!(ou>0&&ov>0&&ou*ov>(q.u1-q.u0)*(q.v1-q.v0)*.35);});}
+function kitCover(b){if(!KITP.length)return;KITP=KITP.filter(p=>{const q=p.b;if(b.h0<q.h1-1.5)return true;const ou=Math.min(b.u1,q.u1)-Math.max(b.u0,q.u0),ov=Math.min(b.v1,q.v1)-Math.max(b.v0,q.v0);return!(ou>0&&ov>0&&ou*ov>(q.u1-q.u0)*(q.v1-q.v0)*.12);});}
 function kitDrop(b){const k=kitKey(b);KITP=KITP.filter(p=>kitKey(p.b)!==k);}
 const kitKey=b=>[b.u0,b.v0,b.u1,b.v1,b.h1].map(x=>Math.round(x*1000)).join();
 function roofKit(g,lg,st,b,opt){opt=opt||{};const du=b.u1-b.u0,dv=b.v1-b.v0,H=b.h1;if(du<.18||dv<.18)return;const kk=kitKey(b),KS=KITW.get(g)||(KITW.set(g,new Set()),KITW.get(g));if(KS.has(kk)&&!opt.force)return;KS.add(kk);const q=mulberry(((b.u0*7919+b.v0*6271+H*131+du*977)|0)+17),it=[];
@@ -2137,7 +2137,7 @@ const LMKD2={
     const top=Ht,w0=hw(Ht);for(let k=0;k<6;k++){const hA=top+k*16,hB=hA+16,wa=w0*(1-k/7),wb=w0*(1-(k+1)/7);g.strokeStyle='#d6dee4';g.lineWidth=1.2;for(const [a,b] of [[[C-wa,C+wa],[C-wb,C+wb]],[[C+wa,C+wa],[C+wb,C+wb]],[[C+wa,C-wa],[C+wb,C-wb]]]){const p0=P(a[0],a[1],hA),p1=P(b[0],b[1],hB);g.beginPath();g.moveTo(p0[0],p0[1]);g.lineTo(p1[0],p1[1]);g.stroke();}
       const q0=P(C-wb,C+wb,hB),q1=P(C+wb,C+wb,hB),q2=P(C+wb,C-wb,hB);g.beginPath();g.moveTo(q0[0],q0[1]);g.lineTo(q1[0],q1[1]);g.lineTo(q2[0],q2[1]);g.stroke();}
     spire(g,lg,st,C,C,top+96,top+130);const t=P(C,C,top+40);lg.fillStyle='rgba(255,240,210,.55)';lg.fillRect(t[0]-6,t[1]-40,12,40);st.lit=true;},
-  skypark:(g,lg,r,st)=>{const H=500,pod=BX(.04,.06,.96,.94,0,30);box(g,pod,'#d6d4cf',{par:.01,roof:'#9ec3a0'});shopGlass(g,lg,st,pod,3,26,'#9cc2da','#fff1c8');
+  skypark:(g,lg,r,st)=>{const H=500,pod=BX(.04,.06,.96,.94,0,30);box(g,pod,'#d6d4cf',{par:.01,roof:'#9ec3a0',nk:1});shopGlass(g,lg,st,pod,3,26,'#9cc2da','#fff1c8');
     for(const u of [.14,.42,.7]){for(const [v0,v1,hm] of [[.3,.5,0],[.5,.72,-24]]){const b=BX(u,v0,u+.16,v1,30,H+hm);box(g,b,'#e8ecef',{noao:1});wins(g,lg,r,st,b,{den:16,fh:10,wh:6,base:2,top:2,ww:.8,col:'#6f8fa6',lp:.55});}}
     const d=BX(.06,.36,.98,.66,H,H+16);box(g,d,'#dfe3e6',{noao:1,T:'#e8ecef'});poly(g,fq(d,0,d.u0,d.u1,H+6,H+10),'#8fb4c8');poly(g,fq(d,1,d.v0,d.v1,H+6,H+10),'#9fc4d6');fPool(g,.16,.42,.9,.5,H+16);
     for(let k=0;k<9;k++)treeH(g,.12+k*.095,.6,.45,k%2?'bush':'zelkova',1,r);for(let k=0;k<12;k++){const p=P(.18+k*.06,.44,H+17);lg.fillStyle='#bfe6ff';lg.fillRect(Math.round(p[0])-1,Math.round(p[1])-1,3,2);}st.lit=true;},
@@ -2178,7 +2178,7 @@ const LMKD2={
     for(let k=0;k<8;k++)treeH(g,.06+r()*.88,.56+r()*.28,.7,'zelkova',sea,r);fPool(g,.72,.5,.92,.72,0);const lc=P(.48,.68,132);lg.fillStyle='rgba(255,180,230,.6)';lg.fillRect(lc[0]-4,lc[1]-4,8,8);st.lit=true;},
   outlet:(g,lg,r,st,sea)=>{poly(g,top4(BX(.03,.03,.97,.97,0,0),.3),'#d8d2c4');const bs=[[.06,.06,.4,.3],[.46,.06,.94,.24],[.06,.4,.26,.94],[.7,.34,.94,.7],[.36,.74,.94,.94]];for(const [u0,v0,u1,v1] of bs){const b=BX(u0,v0,u1,v1,0,22);box(g,b,rp(r,['#ece6da','#e8e2d6','#d9c7a8','#f2efe6']));shopGlass(g,lg,st,b,2,14,'#9cc2da','#fff1c8');gable(g,b,22,32,rp(r,['#5a5f69','#7a3e30','#3a4a5a']),'#ece6da',(u1-u0)>(v1-v0)?'u':'v',.02);}
     for(let k=0;k<5;k++)treeH(g,.36+r()*.3,.36+r()*.3,.7,sea===0?'cherry':'zelkova',sea,r);fPool(g,.42,.44,.6,.6,0);flags(g,.3,.36,4,['#d63a32','#2f6fd6','#f2b233']);},
-  golfclub:(g,lg,r,st,sea)=>{const b=BX(.12,.16,.88,.7,0,22);box(g,b,'#ece6da');shopGlass(g,lg,st,b,2,16,'#9cc2da','#fff1c8');hip(g,b,22,36,'#4a4f57',.04);carsLot(g,r,.1,.76,.9,.94,false,4);treeH(g,.06,.4,.8,'pine',sea,r);}
+  golfclub:(g,lg,r,st,sea)=>{const b=BX(.12,.16,.88,.7,0,22);box(g,b,'#ece6da');shopGlass(g,lg,st,b,2,16,'#9cc2da','#fff1c8');hip(g,b,22,36,'#4a4f57',.04);carsLot(g,r,.1,.76,.9,.94,false,4);treeH(g,.04,.86,.8,'zelkova',sea,r);}
 };
 Object.assign(LMKD,LMKD2);
 /* public facilities (공공기관) */
@@ -3367,15 +3367,18 @@ function pedTrav(Tx,Ty,Fx,Fy,Xx,Xy,u,sd){const cx=Tx+.5,cy=Ty+.5,ix=Tx-Fx,iy=Ty-
   if(a>=0&&b>=0){const fw=(b-a+4)%4,bw=(a-b+4)%4,st=fw<=bw?1:-1,n=Math.min(fw,bw);let k=a;pts.push([cx+PSQ[k][0],cy+PSQ[k][1]]);for(let j=0;j<n;j++){k=(k+st+4)%4;pts.push([cx+PSQ[k][0],cy+PSQ[k][1]]);}}
   pts.push(X);let L=0;const ls=[];for(let k=1;k<pts.length;k++){const l=Math.hypot(pts[k][0]-pts[k-1][0],pts[k][1]-pts[k-1][1]);ls.push(l);L+=l;}
   let d=u*L;for(let k=0;k<ls.length;k++){if(d<=ls[k]||k===ls.length-1){const f=ls[k]?Math.min(1,d/ls[k]):0,A=pts[k],B=pts[k+1],l=ls[k]||1;return[A[0]+(B[0]-A[0])*f,A[1]+(B[1]-A[1])*f,(B[0]-A[0])/l,(B[1]-A[1])/l];}d-=ls[k];}return[X[0],X[1],ox,oy];}
+/* lateral lane offset eased once per frame, so a car changing between 2- and 4-lane streets slides over instead of jumping */
+function carOff(a,tg,r){if(a.lo===undefined)a.lo=tg;/* U-turn: mirror the offset so the car swings across the road instead of teleporting to the other side */if(a.ld&&a.ld[0]*r[2]+a.ld[1]*r[3]<-.5)a.lo=-a.lo;a.ld=[r[2],r[3]];if(a.lof!==frameNo){a.lof=frameNo;a.lo+=(tg-a.lo)*.12;}return a.lo;}
 function agentPos(a,ped){const t=a.t;if(ped){const h1=t<.5,T=h1?[a.x,a.y]:[a.nx,a.ny],F=h1?[a.px,a.py]:[a.x,a.y],X=h1?[a.nx,a.ny]:[a.n2x,a.n2y],u=h1?t+.5:t-.5;
     if(isX(T[0],T[1]))return pedTrav(T[0],T[1],F[0],F[1],X[0],X[1],u,a.side);}
-  const r=t<.5?trav(a.x,a.y,a.px,a.py,a.nx,a.ny,t+.5):trav(a.nx,a.ny,a.x,a.y,a.n2x,a.n2y,t-.5),o=ped?.42*a.side:(lvl[idx(a.x,a.y)]===1?(a.ln===undefined?(a.ln=Math.random()<.5?0:1):a.ln)?.29:.115:.19);const out=[r[0]-r[3]*o,r[1]+r[2]*o,r[2],r[3]];
+  const r=t<.5?trav(a.x,a.y,a.px,a.py,a.nx,a.ny,t+.5):trav(a.nx,a.ny,a.x,a.y,a.n2x,a.n2y,t-.5),o=ped?.42*a.side:carOff(a,lvl[idx(a.x,a.y)]===1?(a.ln===undefined?(a.ln=Math.random()<.5?0:1):a.ln)?.29:.115:.19,r);const out=[r[0]-r[3]*o,r[1]+r[2]*o,r[2],r[3]];
   if(ped){const tx=Math.floor(r[0]),ty=Math.floor(r[1]);if(tx>=0&&ty>=0&&tx<N&&ty<N){const ti=idx(tx,ty);if(!isWide(ti)&&kind[ti]===K.ROAD&&!isElev(ti)){const m=roadMask(tx,ty),fx=out[0]-tx,fy=out[1]-ty;if(m===5||m===1||m===4)out[0]=tx+(fx<.5?.07:.93);else if(m===10||m===2||m===8)out[1]=ty+(fy<.5?.07:.93);}
     if(isWide(ti)&&!wideJ(tx,ty)){const {p,ax}=wInfo(ti),W=RC[lvl[ti]].W;const f=p===0?.08:p===W-1?.92:.5;if(ax===0)out[1]=ty+f;else out[0]=tx+f;}
     /* inside a big junction: walk only along its edges, where the crosswalks are */
     else if(isWide(ti)&&wideJ(tx,ty)){const J=juncInfo(tx,ty),xa=J.x0-.22,xb=J.x1+1.22,ya=J.y0-.22,yb=J.y1+1.22;if(Math.abs(out[2])>=Math.abs(out[3]))out[1]=(out[1]-ya<yb-out[1])?ya:yb;else out[0]=(out[0]-xa<xb-out[0])?xa:xb;}}}
   else if(!a.bus){const tx=Math.floor(out[0]),ty=Math.floor(out[1]);let tgt=0;if(inMap(tx,ty)){const ti=idx(tx,ty);if(isWide(ti)&&!wideJ(tx,ty)&&kind[ti]===K.ROAD){const {p,ax}=wInfo(ti),L=RC[lvl[ti]].L,W=RC[lvl[ti]].W,Y=crossLayout(L,W),c=(ax===0?out[1]-ty:out[0]-tx)+p,hl=L/2;if(a.ln===undefined)a.ln=(Math.random()*8)|0;const k=a.ln%hl,lat=c<W/2?W/2-Y.md/2-Y.lw*(k+.5):W/2+Y.md/2+Y.lw*(k+.5);a.wlat=(ax===0?ty:tx)-p+lat;a.wax=ax;tgt=1;}}
-    if(a.wlf!==frameNo){a.wlf=frameNo;a.wl=(a.wl||0)+(tgt-(a.wl||0))*.05;}if(a.wl>.002&&a.wlat!=null){if(a.wax===0)out[1]+=(a.wlat-out[1])*a.wl;else out[0]+=(a.wlat-out[0])*a.wl;}}
+    /* slow, real-looking lane change in (≈2 s), smooth fade out through junctions — never a sideways jump */
+    if(a.wlf!==frameNo){a.wlf=frameNo;a.wl=(a.wl||0)+(tgt-(a.wl||0))*(tgt?.018:.09);}if(a.wl>.002&&a.wlat!=null){if(a.wax===0)out[1]+=(a.wlat-out[1])*a.wl;else out[0]+=(a.wlat-out[0])*a.wl;}}
   else if(a.bus){/* 중앙버스전용차로: on 10+ lane roads buses ease into the lane beside the median */const tx=Math.floor(out[0]),ty=Math.floor(out[1]);let tgt=0,lat=0;
     if(inMap(tx,ty)){const ti=idx(tx,ty);if(isWide(ti)&&!wideJ(tx,ty)&&RC[lvl[ti]].L>=10){const {p,ax}=wInfo(ti),W=RC[lvl[ti]].W,Y=crossLayout(RC[lvl[ti]].L,W),d=ax===0?out[2]:out[3],sg=ax===0?(d>0?1:-1):(d>0?-1:1),c=W/2+sg*(Y.md/2+Y.lw*.5);lat=(ax===0?ty:tx)-p+c;tgt=1;a.bax=ax;a.blat=lat;}}
     if(a.blf!==frameNo){a.blf=frameNo;a.bl=(a.bl||0)+(tgt-(a.bl||0))*.035;}if(a.bl>.002&&a.blat!=null){if(a.bax===0)out[1]+=(a.blat-out[1])*a.bl;else out[0]+=(a.blat-out[0])*a.bl;}}
