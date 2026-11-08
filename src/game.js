@@ -3985,7 +3985,11 @@ function genCity(seed){const r=mulberry(seed*13+5),SAVE=ROADL,DIR=[[1,0],[-1,0],
    for(let y=2;y<N-2;y++)for(let x=2;x<N-2;x++){const i=idx(x,y);if(kind[i]!==K.EMPTY||terr[i]!==TG||!isFlat(x,y)||RSV[i]||(deco[i]>8&&!(deco[i]>=18&&deco[i]<=21)))continue;
      let rd=false;for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]])if(kind[idx(x+dx,y+dy)]===K.ROAD)rd=true;if(!rd||dense(x,y)<24)continue;
      const h=(((x>>1)*73856093)^((y>>1)*19349663)^(seed*83492791))>>>0,t=(h%100)/100;deco[i]=t<.55?41:t<.72?42:t<.82?40:deco[i];touch(i);}}
-  waterSetback();stripShoreTrees();genRail(cx,cy,seed);
+  waterSetback();stripShoreTrees();
+  /* lots more than 4 tiles from any street can't be reached: leave them as open ground */
+  {const dist=new Uint8Array(NN).fill(99),q=[];for(let i=0;i<NN;i++)if(kind[i]===K.ROAD){dist[i]=0;q.push(i);}for(let h=0;h<q.length;h++){const i=q[h];if(dist[i]>=6)continue;const x=i&NM,y=i>>NS;for(const [dx,dy] of DIR){const xx=x+dx,yy=y+dy;if(xx<0||yy<0||xx>=N||yy>=N)continue;const j=idx(xx,yy);if(dist[j]>dist[i]+1){dist[j]=dist[i]+1;q.push(j);}}}
+   for(let i=0;i<NN;i++){const k=kind[i];if(k<K.RES||k>K.IND||dist[i]<=4||fix[i]===2||isFoot(i))continue;clearTile(i);touch(i);}}
+  genRail(cx,cy,seed);
   compsDirty=true;ROADL=SAVE;return[Math.round(cx),Math.round(cy)];}
 function newCity(seed,blank){Object.assign(sim,{day:0,month:0,year:2027,speed:1,tax:[9,9,9],dem:[.7,.4,.6],pop:0,jc:0,ji:0,inc:0,exp:0,spent:0,hist:[],pw:0,wt:0,avgLv:0,name:'뉴타운',seed});
   RL=new Uint8Array(NN);STN=new Uint8Array(NN);RLINES=[];TRAINS=[];BOATS=[];RLC.clear();BOVC.clear();ROADVER++;
