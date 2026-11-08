@@ -1412,7 +1412,7 @@ function roadVarTex(tp,ns,kind2,end){const r=mulberry(960+tp*7+(ns?1:0)*3+kind2*
     if(kind2===0){if(Math.abs(a-.5)<.09&&Math.abs(l)<.5-c2-.02&&((Math.floor((ns?fx:fy)*40))&1))return Wt;return c;}
     const e=end?1-a:a,side=end?-1:1,ll=l*side;
     if(e>.02&&e<.04&&ll>0&&ll<.5-c2-.006)return Wt;/* 정지선 */
-    for(const L of (tp?[.115,.29]:[.19])){const d=ll-L;if(e>.15&&e<.34&&Math.abs(d)<.011)return Wt;if(e>.08&&e<=.15&&Math.abs(d)<.05*(e-.08)/.07+.003)return Wt;}
+    for(const L of (tp?[.115,.29]:[.19])){const d=ll-L;if(e>.13&&e<.25&&Math.abs(d)<.0065)return Wt;if(e>.085&&e<=.13&&Math.abs(d)<.028*(e-.085)/.045+.002)return Wt;}
     return c;}));}
 function touchN2(i){const x=i&NM,y=i>>NS;for(let dy=-2;dy<=2;dy++)for(let dx=-2;dx<=2;dx++){if(Math.abs(dx)+Math.abs(dy)>2)continue;const xx=x+dx,yy=y+dy;if(xx>=0&&yy>=0&&xx<N&&yy<N)touch(yy*N+xx);}}
 
@@ -3916,7 +3916,7 @@ let ppFailed=false;function post(){if(!gl||ppFailed)return;if(!PP.ok){ppInit();i
   ppRun(PP.fin,base,A.t,null,w,h,u=>{gl.uniform1f(u.tilt,FX.tilt?clamp((zoom-1.5)/3,0,1)*.6:0);gl.uniform1f(u.bloom,.35+n*.75);gl.uniform1f(u.night,n);gl.uniform1f(u.grade,1);gl.uniform1f(u.vig,.32);gl.uniform1f(u.haze,clamp(1.2/zoom,.15,1)*(1-n*.7)+WX.fog*.5*WXA*1.3);gl.uniform1f(u.fy,.5);gl.uniform1f(u.warm,dusk*2);});}
 
 /* ================= audio (generative BGM) ================= */
-const AU={trk:(Math.random()*8)|0,trkBars:48,trkStart:0,ctx:null,on:false,vol:.7,env:.5,mood:'',want:'day',bar:0,step:0,next:0,timer:0,birds:false,crickets:false};
+const AU={trk:(Math.random()*14)|0,trkBars:48,trkStart:0,ctx:null,on:false,vol:.7,env:.5,mood:'',want:'day',bar:0,step:0,next:0,timer:0,birds:false,crickets:false};
 /* ambient tracks: chosen at random, ~4-6 min each, crossfaded. quiet / dreamy / deep */
 const TRACKS=[
  {name:'새벽 안개',bpm:44,prog:[[50,57,62,64,69],[47,54,59,62,66],[43,50,57,59,64],[45,52,57,61,64]],scale:[74,76,78,81,83,86],drone:38,pad:.2,bass:.12,keys:.08,cut:1100,den:.06,bell:.7,shim:.5,wash:.25},
@@ -3926,7 +3926,15 @@ const TRACKS=[
  {name:'잔설',bpm:40,prog:[[42,49,54,57,61],[38,45,50,54,57],[40,47,52,55,59],[37,44,49,52,56]],scale:[73,76,78,81,83,85],drone:30,pad:.2,bass:.11,keys:.09,cut:800,den:.05,bell:.9,shim:.45,wash:.35},
  {name:'궤도',bpm:38,prog:[[46,53,58,62,65],[46,53,57,60,65],[44,51,56,60,63],[46,53,58,62,67]],scale:[70,72,74,77,79,81],drone:34,pad:.21,bass:.14,keys:.06,cut:700,den:.04,bell:.5,shim:.6,wash:.4},
  {name:'저녁 강',bpm:43,prog:[[43,50,55,59,62],[41,48,53,57,60],[40,47,52,55,59],[38,45,50,55,57]],scale:[67,69,71,74,76,79],drone:31,pad:.22,bass:.13,keys:.08,cut:950,den:.055,bell:.35,shim:.3,wash:.3},
- {name:'심해',bpm:36,prog:[[29,36,44,48,51],[27,34,43,46,50],[29,36,43,46,51],[26,33,41,45,48]],scale:[63,65,68,70,72],drone:17,pad:.26,bass:.18,keys:.035,cut:480,den:.025,bell:.2,shim:.1,wash:.55}];
+ {name:'심해',bpm:36,prog:[[29,36,44,48,51],[27,34,43,46,50],[29,36,43,46,51],[26,33,41,45,48]],scale:[63,65,68,70,72],drone:17,pad:.26,bass:.18,keys:.035,cut:480,den:.025,bell:.2,shim:.1,wash:.55},
+ /* 로우파이: swung drums, warm e-piano 7th/9th chords, round bass, vinyl crackle */
+ {name:'골목 카페',sty:'lofi',bpm:78,prog:[[50,57,60,64,65],[55,59,62,65,69],[48,55,59,62,64],[52,57,60,64,67]],scale:[69,72,74,76,79],pad:.06,bass:.2,keys:.16,drums:.42,cut:1500,den:.12},
+ {name:'비 오는 오후',sty:'lofi',bpm:72,prog:[[45,52,55,59,62],[50,57,60,64,65],[43,50,53,57,60],[48,55,59,62,64]],scale:[64,67,69,72,74],pad:.07,bass:.2,keys:.15,drums:.38,cut:1300,den:.1},
+ {name:'늦은 퇴근',sty:'lofi',bpm:84,prog:[[53,60,64,67,69],[52,59,62,65,69],[50,57,60,64,67],[55,62,65,69,71]],scale:[72,74,76,79,81],pad:.05,bass:.22,keys:.16,drums:.45,cut:1700,den:.14},
+ /* 모던 클래식: felt piano broken chords, soft strings, sparse high melody */
+ {name:'창가의 빛',sty:'neo',bpm:66,prog:[[45,52,57,60,64],[41,48,53,57,60],[48,55,60,64,67],[43,50,55,59,62]],scale:[72,74,76,79,81],pad:.1,bass:.08,keys:.2,cut:1100,den:.1},
+ {name:'느린 편지',sty:'neo',bpm:58,prog:[[38,45,50,53,57],[34,41,46,50,53],[41,48,53,57,60],[36,43,48,52,55]],scale:[65,69,70,72,74],pad:.12,bass:.09,keys:.19,cut:950,den:.08},
+ {name:'강 위의 다리',sty:'neo',bpm:70,prog:[[40,47,52,55,59],[36,43,48,52,55],[43,50,55,59,62],[38,45,50,54,57]],scale:[71,74,76,78,79],pad:.1,bass:.08,keys:.2,cut:1200,den:.12}];
 const MOODS=new Proxy({},{get:(o,k)=>TRACKS[AU.trk|0]});
 function pickTrack(){let n;do{n=(Math.random()*TRACKS.length)|0;}while(TRACKS.length>1&&n===AU.trk);AU.trk=n;AU.trkBars=40+((Math.random()*24)|0);AU.trkStart=AU.bar;}
 const midi=m=>440*Math.pow(2,(m-69)/12);
@@ -3947,12 +3955,34 @@ function auStop(){if(!AU.ctx)return;AU.on=false;AU.master.gain.setTargetAtTime(0
 function auSched(){if(!AU.on)return;const a=AU.ctx,now=a.currentTime;if(AU.next<now-.2)AU.next=now+.05;
   while(AU.next<now+.25){auStep(AU.next);const M=MOODS[AU.mood];AU.next+=60/M.bpm/4;AU.step=(AU.step+1)%16;if(AU.step===0)AU.bar++;}}
 function auStep(t){if(AU.step===0&&AU.bar%2===0){
-    if(!AU.mood||AU.bar-AU.trkStart>=AU.trkBars){if(AU.mood){pickTrack();}AU.mood='t'+AU.trk;const M=TRACKS[AU.trk];for(const k of ['pad','bass','keys'])AU.bus[k].gain.setTargetAtTime(M[k],t,6);AU.bus.drums.gain.setTargetAtTime(0,t,2);updateMoodLbl();}
-    const M=TRACKS[AU.trk],ch=M.prog[(AU.bar>>2)%M.prog.length],bl=60/M.bpm*4;
+    if(!AU.mood||AU.bar-AU.trkStart>=AU.trkBars){if(AU.mood){pickTrack();}AU.mood='t'+AU.trk;const M=TRACKS[AU.trk];for(const k of ['pad','bass','keys'])AU.bus[k].gain.setTargetAtTime(M[k],t,6);AU.bus.drums.gain.setTargetAtTime(M.drums||0,t,2);updateMoodLbl();}
+    if(TRACKS[AU.trk].sty){styStep(TRACKS[AU.trk],t);return;}const M=TRACKS[AU.trk],ch=M.prog[(AU.bar>>2)%M.prog.length],bl=60/M.bpm*4;
     if(AU.bar%4===0){pad(ch,t,bl*4,M.cut);drone(M.drone+(ch[0]-M.prog[0][0])*0,t,bl*4.2,M.cut*.6);if(Math.random()<M.wash)wash(t,bl*4,M.cut);}
     if(AU.bar%4===2)bass(ch[0]-12,t,bl*2.1);if(Math.random()<M.shim)shimmer(ch,t+Math.random()*bl,bl*1.6);
     if(AU.birds&&Math.random()<.35)birds(t+Math.random()*bl*2);if(AU.crickets)crickets(t,bl*2);}
-  const M=TRACKS[AU.trk];if(AU.step%4===0&&Math.random()<M.den){const ch=M.prog[(AU.bar>>2)%M.prog.length],pool=M.scale.concat(ch.slice(2).map(n=>n+12)),n=pool[(Math.random()*pool.length)|0];if(Math.random()<M.bell)bell(n+(Math.random()<.5?12:0),t);else pluck(n,t);}}
+  const M=TRACKS[AU.trk];if(M.sty){styStep(M,t);return;}if(AU.step%4===0&&Math.random()<M.den){const ch=M.prog[(AU.bar>>2)%M.prog.length],pool=M.scale.concat(ch.slice(2).map(n=>n+12)),n=pool[(Math.random()*pool.length)|0];if(Math.random()<M.bell)bell(n+(Math.random()<.5?12:0),t);else pluck(n,t);}}
+function styStep(M,t){const st=AU.step,bl=60/M.bpm*4,sl=bl/16,ch=M.prog[(AU.bar>>1)%M.prog.length];
+  if(M.sty==='lofi'){const sw=(st&1)?sl*.2:0,tt=t+sw;
+    if(st===0||st===8){if(st===0)pad(ch.slice(1),t,bl*2,M.cut*.7);epiano(ch.slice(1),t+(st?sl*.4:0),st?bl*.4:bl*.55);}
+    if(st===0||st===10||(st===7&&Math.random()<.5))lbass(ch[0]-12,tt,sl*(st===0?5:3));
+    if(st===0||(st===10&&Math.random()<.7))kick(tt);if(st===4||st===12)lsnare(tt);if(st%2===0)hat(tt,st%4===2?.55:.8);else if(Math.random()<.25)hat(tt,.35);
+    if(st%2===0&&Math.random()<M.den){const n=M.scale[(Math.random()*M.scale.length)|0];epiano([n],tt,sl*3);}
+    if(Math.random()<.18)noiseHit(t+Math.random()*sl,'highpass',3200+Math.random()*3000,.5,.025+Math.random()*.03,.012,AU.bus.drums);}
+  else{/* felt piano: rolling broken chord in 8ths, bass note each bar, sparse melody, strings every 2 bars */
+    if(st===0&&AU.bar%2===0)strings(ch,t,bl*2,M.cut);if(st===0)piano(ch[0]-12,t,.5,bl*1.2);
+    if(st%2===0){const pat=[1,2,3,4,3,2,1,2],n=ch[pat[(st>>1)&7]];piano(n,t+(Math.random()-.5)*.01,.22+(st===0?.06:0),bl*.6);}
+    if(st%4===0&&Math.random()<M.den*1.4)piano(M.scale[(Math.random()*M.scale.length)|0],t+sl*.5,.26,bl*.9);}}
+/* felt-damped piano: inharmonic partials, fast attack, soft low-passed body */
+function piano(n,t,v,d){const a=AU.ctx,f=a.createBiquadFilter(),gn=a.createGain();f.type='lowpass';f.frequency.value=900+midi(n)*1.2;env(gn,t,.006,v*.5,Math.min(4,d+1.2));f.connect(gn);gn.connect(AU.bus.keys);
+  for(const [mul,amp] of [[1,1],[2.003,.4],[3.01,.15],[4.02,.06]]){const o=a.createOscillator(),og=a.createGain();o.type='sine';o.frequency.value=midi(n)*mul;og.gain.value=amp;o.connect(og);og.connect(f);o.start(t);o.stop(t+d+1.4);}}
+/* e-piano (Rhodes-like): sine + bell tine, slow tremolo, warm */
+function epiano(notes,t,d){const a=AU.ctx,f=a.createBiquadFilter(),gn=a.createGain(),tr=a.createOscillator(),tg=a.createGain();f.type='lowpass';f.frequency.value=1600;tr.frequency.value=4.5;tg.gain.value=.25;tr.connect(tg);tg.connect(gn.gain);
+  gn.gain.setValueAtTime(0,t);gn.gain.linearRampToValueAtTime(.5,t+.01);gn.gain.exponentialRampToValueAtTime(.02,t+d+.8);f.connect(gn);gn.connect(AU.bus.keys);tr.start(t);tr.stop(t+d+1);
+  for(const n of notes)for(const [mul,amp] of [[1,.12],[2,.025],[7.1,.006]]){const o=a.createOscillator(),og=a.createGain();o.type='sine';o.frequency.value=midi(n)*mul;og.gain.value=amp;o.connect(og);og.connect(f);o.start(t);o.stop(t+d+1);}}
+function lbass(n,t,d){const a=AU.ctx,o=a.createOscillator(),f=a.createBiquadFilter(),gn=a.createGain();o.type='triangle';o.frequency.value=midi(n);f.type='lowpass';f.frequency.value=320;env(gn,t,.012,.5,d+.2);o.connect(f);f.connect(gn);gn.connect(AU.bus.bass);o.start(t);o.stop(t+d+.4);}
+function lsnare(t){noiseHit(t,'bandpass',1500,.6,.18,.18,AU.bus.drums);noiseHit(t+.01,'lowpass',900,.5,.08,.1,AU.bus.drums);}
+function strings(notes,t,d,cut){const a=AU.ctx,f=a.createBiquadFilter(),gn=a.createGain();f.type='lowpass';f.frequency.value=cut;gn.gain.setValueAtTime(0,t);gn.gain.linearRampToValueAtTime(.035,t+d*.4);gn.gain.linearRampToValueAtTime(0,t+d+1.5);f.connect(gn);gn.connect(AU.bus.pad);
+  for(const n of notes.slice(1))for(const det of [-6,6]){const o=a.createOscillator(),v=a.createOscillator(),vg=a.createGain();o.type='sawtooth';o.frequency.value=midi(n);o.detune.value=det;v.frequency.value=5;vg.gain.value=6;v.connect(vg);vg.connect(o.detune);o.connect(f);o.start(t);o.stop(t+d+1.6);v.start(t);v.stop(t+d+1.6);}}
 function drone(n,t,d,cut){const a=AU.ctx,f=a.createBiquadFilter(),gn=a.createGain();f.type='lowpass';f.frequency.value=Math.max(180,cut);f.Q.value=.7;gn.gain.setValueAtTime(0,t);gn.gain.linearRampToValueAtTime(.09,t+5);gn.gain.setValueAtTime(.09,t+Math.max(5,d-3));gn.gain.linearRampToValueAtTime(0,t+d+5);f.connect(gn);gn.connect(AU.bus.bass);
   for(const [mul,det,typ] of [[1,-4,'sine'],[1,4,'triangle'],[1.5,0,'sine'],[.5,0,'sine']]){const o=a.createOscillator();o.type=typ;o.frequency.value=midi(n)*mul;o.detune.value=det;const og=a.createGain();og.gain.value=mul===.5?.6:mul===1.5?.25:.5;o.connect(og);og.connect(f);o.start(t);o.stop(t+d+5.2);}}
 function shimmer(ch,t,d){const a=AU.ctx;for(let k=0;k<2;k++){const n=ch[2+((Math.random()*(ch.length-2))|0)]+24+(k?7:0),o=a.createOscillator(),gn=a.createGain(),v=a.createOscillator(),vg=a.createGain();o.type='sine';o.frequency.value=midi(n);v.frequency.value=4+Math.random()*2;vg.gain.value=3;v.connect(vg);vg.connect(o.detune);
