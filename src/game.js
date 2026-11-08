@@ -2842,6 +2842,9 @@ function genRail(cx,cy,seedR){RL.fill(0);STN.fill(0);RLINES=[];const med=(i,ax)=
       if(cur&&(!run||cur.b-cur.a>run.b-run.a))run=cur;if(run&&run.b-run.a>=40&&(!best||(run.b-run.a)-Math.abs(o)*.5>(best.b-best.a)-Math.abs(best.c-Math.round(ax?cx:cy))*.5))best=run;}
     if(!best)continue;const line=RLINES.length,path=[];for(let t=best.a;t<=best.b;t++){const x=ax?best.c:t,y=ax?t:best.c;path.push([x,y]);RL[idx(x,y)]|=1<<line;}
     const sts=[0];for(let k=22;k<path.length-8;k+=22+((hsh(k,line,5)*6)|0))sts.push(k);sts.push(path.length-1);
+    /* no stop in the middle of a sea bridge: slide a stop to the nearest stretch with land around it, or drop it */
+    {const landy=k=>{if(k<3||k>path.length-4)return false;for(let d=-3;d<=3;d++){const q=path[k+d];if(terr[idx(q[0],q[1])]===TWA)return false;}let n=0,l=0;const [x0,y0]=path[k];for(let dy=-4;dy<=4;dy++)for(let dx=-4;dx<=4;dx++){if(!inMap(x0+dx,y0+dy))continue;n++;if(terr[idx(x0+dx,y0+dy)]!==TWA)l++;}return l>=n*.5;};
+      for(let j=1;j<sts.length-1;j++){if(landy(sts[j]))continue;let nk=-1;for(let d=1;d<=8&&nk<0;d++)for(const s of [d,-d]){const k=sts[j]+s;if(k-sts[j-1]>=14&&sts[j+1]-k>=14&&landy(k)){nk=k;break;}}if(nk<0){sts.splice(j,1);j--;}else sts[j]=nk;}}
     for(const k of sts){for(let d=-3;d<=3;d++){const q=path[Math.max(0,Math.min(path.length-1,k+d))];STN[idx(q[0],q[1])]|=1<<line;}}
     RLINES.push({ax,path,line,sts});}
   if(RLINES.length===2){for(let i=0;i<NN;i++)if(RL[i]===3){const x=i&NM,y=i>>NS;for(let d=-1;d<=1;d++){if(inMap(x+d,y))STN[idx(x+d,y)]|=RL[idx(x+d,y)]&1?1:0;if(RL[idx(x+d,y)]&2)STN[idx(x+d,y)]|=2;if(inMap(x,y+d)){const j=idx(x,y+d);STN[j]|=RL[j]&3;}if(inMap(x+d,y)){const j=idx(x+d,y);STN[j]|=RL[j]&3;}}}rebuildRailLines();}
@@ -3856,7 +3859,7 @@ function genCity(seed){const r=mulberry(seed*13+5),SAVE=ROADL,DIR=[[1,0],[-1,0],
   const aNew=r()*6.283,aInd=aNew+Math.PI*(.6+r()*.8),angD=(x,y,a)=>{let d=Math.atan2(y-cy,x-cx)-a;while(d>Math.PI)d-=6.283;while(d<-Math.PI)d+=6.283;return Math.abs(d);};
   const cells=[];for(let a=0;a+1<xs.length;a++)for(let b=0;b+1<ys.length;b++){const La=laneOf(a,ix0),Lb=laneOf(a+1,ix0),Ma=laneOf(b,iy0),Mb=laneOf(b+1,iy0),wa=Wof(La),wb=Wof(Lb),va=Wof(Ma),vb=Wof(Mb);
     const x0=xs[a]+xo(a,b)-((wa-1)>>1)+wa,x1=xs[a+1]+xo(a+1,b)-((wb-1)>>1)-1,y0=ys[b]-((va-1)>>1)+va,y1=ys[b+1]-((vb-1)>>1)-1,mx=(x0+x1)/2,my=(y0+y1)/2,d=dN(mx,my);if(x1-x0<8||y1-y0<8||d>1.02)continue;
-    let flat=0,tot=0;for(let y=y0;y<=y1;y+=3)for(let x=x0;x<=x1;x+=3){tot++;if(U(x,y))flat++;}if(flat/tot<.25)continue;
+    /* U() does not see water: a superblock that is mostly sea would become a district (even the CBD) with nothing on it */let flat=0,tot=0;for(let y=y0;y<=y1;y+=3)for(let x=x0;x<=x1;x+=3){tot++;if(U(x,y)&&terr[idx(x,y)]!==TWA)flat++;}if(flat/tot<.25)continue;
     const ck=cNear(mx,my),role=CEN[ck].role;let t;
     if(role==='main'){t=d<.2?'cbd':d<.6?'old':'gen';if(d>.55&&angD(mx,my,aInd)<.4)t='ind';else if(d>.45&&angD(mx,my,aNew)<.45)t='new';}
     else if(role==='ind')t=d<.25?'sub':d<.85?'ind':'gen';
