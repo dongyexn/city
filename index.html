@@ -471,7 +471,8 @@ function relax(){for(let it=0;it<2;it++){
 /* ================= sprite toolkit (4x resolution: tile 128x64) ================= */
 const SW=128,SOH=(TOPM+16)*SR,SCX=64,SCY=TOPM*SR+32;
 let OX=SCX,OY=SCY-32;
-let PUV=1;function P(u,v,h){return[OX+(u-v)*64*PUV,OY+(u+v)*32*PUV-h];}
+/* TSL: terrain slope [along u, along v] in height units while drawing a slope-specific nature sprite, so each tree stands on the ground instead of the tile's average height */
+let PUV=1,TSL=null;function P(u,v,h){if(TSL)h=(h||0)+(TSL[0]*(u-.5)+TSL[1]*(v-.5))*E*SR;return[OX+(u-v)*64*PUV,OY+(u+v)*32*PUV-h];}
 let MAING=null,LGE=null;function poly(g,pts,c){if(LGE&&g===MAING){LGE.globalCompositeOperation='destination-out';LGE.fillStyle='#000';LGE.beginPath();LGE.moveTo(pts[0][0],pts[0][1]);for(let i=1;i<pts.length;i++)LGE.lineTo(pts[i][0],pts[i][1]);LGE.closePath();LGE.fill();LGE.globalCompositeOperation='source-over';}g.fillStyle=c;g.beginPath();g.moveTo(pts[0][0],pts[0][1]);for(let i=1;i<pts.length;i++)g.lineTo(pts[i][0],pts[i][1]);g.closePath();g.fill();if(SNOWG&&g===MAING){const S2=SNOWG;S2.globalCompositeOperation='destination-out';S2.beginPath();S2.moveTo(pts[0][0],pts[0][1]);for(let i=1;i<pts.length;i++)S2.lineTo(pts[i][0],pts[i][1]);S2.closePath();S2.fill();S2.globalCompositeOperation='source-over';}}
 function BX(u0,v0,u1,v1,h0,h1){return{u0,v0,u1,v1,h0,h1};}
 function fq(b,side,a0,a1,h0,h1){return side?[P(b.u1,a0,h0),P(b.u1,a1,h0),P(b.u1,a1,h1),P(b.u1,a0,h1)]:[P(a0,b.v1,h0),P(a1,b.v1,h0),P(a1,b.v1,h1),P(a0,b.v1,h1)];}
@@ -587,10 +588,10 @@ function oszpS(draw,seed,sz,ds,noShadow){TSALT=0;ds=ds||1;const ps=sz/ds,W2=SW*s
   if(st.lit){const s2=mk(b[2],b[3]),sx=s2.getContext('2d');sx.drawImage(o.c,0,0);sx.globalCompositeOperation='source-in';sx.fillStyle='#000';sx.fillRect(0,0,b[2],b[3]);sx.globalCompositeOperation='source-over';sx.drawImage(cropC(l,b),0,0);o.lit2=half(s2);o.lit=o.lit2;}
   if(!noShadow&&!st.noShadow)makeShadow(o,sz);if(st.sn)finSnow(o,sn,b);o.fs=sz;o.hr={draw,seed,sz,ps,z:1,b,dy:0,fac:CURFAC,nat:PIXNAT};if(DROPOK){o.rg={draw,seed,sz,ps,z:1,b,fac:CURFAC,nat:PIXNAT};if(!window.__NODROP)o.c=null;}return o;}
 /* OSPPAD: extra canvas margin left/right (sprite px) for sprites whose content overhangs the tile (forest crowns at the tile corners) */
-let OSPPAD=0;function osp(draw,seed,hc){hc=hc||SOH;TSALT=0;const pd=OSPPAD,WW=SW+2*pd,dy=SOH-hc,c=mk(WW,hc),g=c.getContext('2d',{willReadFrequently:true}),l=mk(WW,hc),lg=l.getContext('2d',{willReadFrequently:true}),sn=mk(WW,hc),r=mulberry(seed),st={lit:false,emit:[]};OX=SCX+pd;OY=SCY-32-dy;SNOWG=sn.getContext('2d');MAING=g;kitRun(()=>draw(g,lg,r,st));SNOWG=null;MAING=null;
+let OSPPAD=0,OSPPADB=0;function osp(draw,seed,hc){hc=hc||SOH;TSALT=0;const pd=OSPPAD,pb=OSPPADB,WW=SW+2*pd,dy=SOH-hc,c=mk(WW,hc+pb),g=c.getContext('2d',{willReadFrequently:true}),l=mk(WW,hc+pb),lg=l.getContext('2d',{willReadFrequently:true}),sn=mk(WW,hc+pb),r=mulberry(seed),st={lit:false,emit:[]};OX=SCX+pd;OY=SCY-32-dy;SNOWG=sn.getContext('2d');MAING=g;kitRun(()=>draw(g,lg,r,st));SNOWG=null;MAING=null;
   const b=quantizeCrop(c,st.lit?l:null);const o={bx:b[0]-pd,by:b[1]+dy,bw:b[2],bh:b[3],emit:(dy||pd)?st.emit.map(e=>[e[0]-pd,e[1]+dy,e[2],e[3]]):st.emit};o.c=cropC(c,b);o.c2=half(o.c);
   if(st.lit){const s=mk(b[2],b[3]),sx=s.getContext('2d');sx.drawImage(o.c,0,0);sx.globalCompositeOperation='source-in';sx.fillStyle='#000';sx.fillRect(0,0,b[2],b[3]);sx.globalCompositeOperation='source-over';sx.drawImage(cropC(l,b),0,0);o.lit2=half(s);o.lit=o.lit2;}
-  if(!st.noShadow)makeShadow(o);finSnow(o,sn,b);o.hr={draw,seed,sz:1,ps:1,z:0,b,dy,hc,pad:pd,fac:CURFAC,nat:PIXNAT};if(DROPOK){o.rg={draw,seed,sz:1,ps:1,z:0,b,pad:pd,fac:CURFAC,nat:PIXNAT};if(!window.__NODROP)o.c=null;}
+  if(!st.noShadow)makeShadow(o);finSnow(o,sn,b);o.hr={draw,seed,sz:1,ps:1,z:0,b,dy,hc,pad:pd,padb:pb,fac:CURFAC,nat:PIXNAT};if(DROPOK){o.rg={draw,seed,sz:1,ps:1,z:0,b,pad:pd,padb:pb,fac:CURFAC,nat:PIXNAT};if(!window.__NODROP)o.c=null;}
   return o;}
 const SHK=.82,SHC=.42;
 function makeShadow(o,fs){const src=o.c2,w=src.width,h=src.height,B=(SCY-((fs||1)-1)*32-o.by)/2;
@@ -878,7 +879,7 @@ function natScene(g,lg,r,sea,trees,nt,nf,nb,und){const items=[];for(const t of t
 const STANDS=[{d:[['pine',.86],['singal',.1],['juniper',.04]]},{d:[['pine',.5],['singal',.42],['dangd',.08]],patch:1},{d:[['singal',.8],['dangd',.1],['pine',.1]]},{d:[['sangsu',.72],['singal',.18],['cherry',.1]]},
  {d:[['korpine',1]],row:1},{d:[['hinoki',1]],row:1},{d:[['birch',.82],['aspen',.18]]}];
 function standAt(x,y){const n=fbm(x/46,y/46,913,2)+(hsh(x,y,917)-.5)*.09+(fbm(x/7,y/7,919,2)-.5)*.12,e=hv(x,y);if(n>.79)return e>14?5:4;if(n>.64&&e<10)return 6;if(e>16)return n<.45?2:1;if(e<5)return n<.48?3:0;return n<.4?0:n<.52?1:n<.6?2:3;}
-function forestSpr(sea,vi,vv,sd){vv=vv||0;sd=sd||0;return osp((g,lg,r)=>{TSALT=60+vi*5+vv;TWILD=1;try{const [kd,n0,dc]=FOREST[vi],ST=STANDS[sd],trees=[];
+function forestSpr(sea,vi,vv,sd,sl){vv=vv||0;sd=sd||0;const tsl=sl==null||sl===12?null:[((sl/5)|0)-2,(sl%5)-2];return osp((g,lg,r)=>{TSALT=60+vi*5+vv;TWILD=1;TSL=tsl;try{const [kd,n0,dc]=FOREST[vi],ST=STANDS[sd],trees=[];
   const pick=(u,v,cs)=>{if(ST.patch)return cs!=null?cs:(r()<.5?'pine':'singal');let q=r();for(const [k,w] of ST.d){if((q-=w)<=0)return k;}return ST.d[0][0];};
   /* irregular stand: trees gather in a few loose clumps plus scattered singles, count varies a lot per variant, only a minimum spacing keeps trunks apart — no grid, no rows (plantations included) */
   {const n=Math.max(2,Math.round(n0*(.5+r()*.85))),nc=1+((r()*3)|0),C=[];for(let q=0;q<nc;q++)C.push([-.05+r()*1.1,-.05+r()*1.1,.12+r()*.22,r()<.5?'pine':'singal']);
@@ -887,8 +888,8 @@ function forestSpr(sea,vi,vv,sd){vv=vv||0;sd=sd||0;return osp((g,lg,r)=>{TSALT=6
   /* keep crowns inside the 128px sprite: squeeze the across-screen offset (u-v) softly, depth (u+v) unchanged — corner trees used to be sliced off */
   for(const t of trees){const d=t[0]-t[1],m=Math.min(1.86,t[0]+t[1]);t[0]=(m+d)/2;t[1]=(m-d)/2;}
   const PS=sd===0||sd===1||sd===4,BI=sd===6,und=dc===0?[['litter',2],[PS?'jindal':BI?'fern':(r()<.5?'sasa':'fern'),2+((r()*2)|0)],[PS?'azalea':'berry',r()<.5?1:0],['stone',r()<.3?1:0]]:dc===1?[['litter',1],[PS?'jindal':'fern',2],[PS?'azalea':BI?'fern':'berry',1+((r()*2)|0)],['hagi',r()<.4?1:0],['stone',r()<.3?1:0]]:[[PS?'azalea':'hagi',1+((r()*2)|0)],['berry',r()<.5?1:0],['eul',r()<.35?1:0],['stone',r()<.3?1:0]];
-  natScene(g,lg,r,sea,trees,dc===0?3:dc===1?8:14,dc===2?1:0,0,und);}finally{TWILD=0;}},300+sea*20+vi+vv*1009+sd*7919);}
-const FCACHE=new Map();function forestGet(sea,vi,sd,vv){const k=((sea*8+vi)*8+sd)*4+vv;let o=FCACHE.get(k);if(!o){const d0=DROPOK;DROPOK=1;try{PIXNAT=1;OSPPAD=40;try{o=forestSpr(sea,vi,vv,sd);}finally{PIXNAT=0;OSPPAD=0;}}finally{DROPOK=d0;}FCACHE.set(k,o);}return o;}
+  natScene(g,lg,r,sea,trees,dc===0?3:dc===1?8:14,dc===2?1:0,0,und);}finally{TWILD=0;TSL=null;}},300+sea*20+vi+vv*1009+sd*7919+(sl==null?0:sl*104729));}
+const FCACHE=new Map();function forestGet(sea,vi,sd,vv,sl){if(sl==null)sl=12;const k=(((sea*8+vi)*8+sd)*4+vv)*25+sl;let o=FCACHE.get(k);if(!o){const d0=DROPOK;DROPOK=1;try{PIXNAT=1;OSPPAD=40;OSPPADB=60;try{o=forestSpr(sea,vi,vv,sd,sl);}finally{PIXNAT=0;OSPPAD=0;OSPPADB=0;}}finally{DROPOK=d0;}FCACHE.set(k,o);}return o;}
 function meadowSpr(sea,vi,vv){vv=vv||0;return osp((g,lg,r)=>{const trees=vi===3?[[.3+r()*.4,.3+r()*.4,.85+r()*.4,rp(r,['oak','zelkova','pine','cherry','maple','birch','willow'])]]:[];const und=[[['eul',r()<.3?1+((r()*2)|0):0],['stone',r()<.25?1:0]],[['eul',r()<.15?1:0]],[['hagi',1],['berry',r()<.5?1:0],['azalea',r()<.4?1:0],['stone',r()<.3?1:0]],[['berry',r()<.4?1:0],['hagi',r()<.3?1:0]]][vi];
   natScene(g,lg,r,sea,trees,Math.round([14,16,12,10][vi]*(.6+r()*.8)),[0,2,1,1][vi]+(r()*2|0),0,und);},800+sea*10+vi+vv*1013);}
 function rockSpr(sea,vi){return osp((g,lg,r)=>{if(r()<.7)treeH(g,.25,.3,.8,'pine',sea,r);const rs=[];for(let k=0;k<3+vi*2;k++)rs.push([.22+r()*.56,.22+r()*.56,.08+r()*.12,8+r()*18]);rs.sort((a,b)=>a[0]+a[1]-b[0]-b[1]);
@@ -1418,7 +1419,7 @@ function buildSprites(){
   SP.puff=mk(16,16);{const x=SP.puff.getContext('2d');blob(x,8,8,7,'#cfcfca');blob(x,7,7,5.5,'#e4e4df');blob(x,6,5,3,'#f4f4f0');quantizeCrop(SP.puff);}
   SP.cloud=mk(256,128);{const x=SP.cloud.getContext('2d'),r=mulberry(909);for(let k=0;k<26;k++){const cx=40+r()*176,cy=50+r()*40,rad=16+r()*26,gr=x.createRadialGradient(cx,cy,0,cx,cy,rad);gr.addColorStop(0,'rgba(255,255,255,.55)');gr.addColorStop(1,'rgba(255,255,255,0)');x.fillStyle=gr;x.fillRect(cx-rad,cy-rad,rad*2,rad*2);}}
 }
-function decoSprite(d,i){if(d>=30)return(SP.fgSpr&&SP.fgSpr[d])||null;const h=i===undefined?0:(Math.imul(i,2654435761)>>>13);const pk=a=>a[h%a.length];if(d<=8)return pk(SP.tree[SEASON][d-1]);if(d<=14){if(i===undefined)return forestGet(SEASON,d-9,0,0);const x=i&NM,y=i>>NS;return forestGet(SEASON,d-9,standAt(x,y),h&3);}if(d<=16)return SP.rock[SEASON][d-15];if(d===17)return SP.gh;if(d===22)return SP.reed[SEASON];if(d===23&&SP.giant&&SP.giant[SEASON])return pk(SP.giant[SEASON]);return pk(SP.meadow[SEASON][(d-18)&3]);}
+function decoSprite(d,i){if(d>=30)return(SP.fgSpr&&SP.fgSpr[d])||null;const h=i===undefined?0:(Math.imul(i,2654435761)>>>13);const pk=a=>a[h%a.length];if(d<=8)return pk(SP.tree[SEASON][d-1]);if(d<=14){if(i===undefined)return forestGet(SEASON,d-9,0,0);const x=i&NM,y=i>>NS;const a0=hv(x,y),a1=hv(x+1,y),a2=hv(x+1,y+1),a3=hv(x,y+1),su=clamp(Math.round((a1+a2-a0-a3)/2),-2,2),sv=clamp(Math.round((a3+a2-a0-a1)/2),-2,2);return forestGet(SEASON,d-9,standAt(x,y),h&3,(su+2)*5+sv+2);}if(d<=16)return SP.rock[SEASON][d-15];if(d===17)return SP.gh;if(d===22)return SP.reed[SEASON];if(d===23&&SP.giant&&SP.giant[SEASON])return pk(SP.giant[SEASON]);return pk(SP.meadow[SEASON][(d-18)&3]);}
 /*@@ROADCLS@@*/
 /* ---- road classes: 1 ~ 16 lanes. lvl: 2=1차선 골목, 0=2차선, 1=4차선, 3..8 = 6/8/10/12/14/16차선 (multi-tile) ---- */
 const RC={2:{L:1,W:1},0:{L:2,W:1},1:{L:4,W:1},3:{L:6,W:2},4:{L:8,W:3},5:{L:10,W:3},6:{L:12,W:4},7:{L:14,W:4},8:{L:16,W:5}};
@@ -2985,13 +2986,13 @@ let SNQ=0;const REG={q:new Set(),bytes:0,list:new Set()},LGD=mk(1,1).getContext(
 /* close-zoom detail: sprites on screen are redrawn at 2x resolution on demand (time-budgeted, LRU-capped) */
 var HQDL=1;const HQ={q:new Set(),list:new Set(),bytes:0,K:3,want:3};
 /* close-up sprites are re-rendered at a resolution that follows the zoom (3x … 6x), bounded per canvas */
-function hqC(o){const R=o.hr;if(!R)return;const pd=R.pad||0,W2=SW*R.sz+2*pd,H2=R.z?SOH:(R.hc||SOH),Kmax=Math.max(3,Math.floor(Math.sqrt(9e6/(W2*H2)))),K=Math.min(Math.max(3,HQ.want),Kmax);if(o.hq&&(o.hqK||3)>=K){o.hqMax=1;return;}if(o.hq){HQ.bytes-=o.hq.width*o.hq.height*4;}o.hqMax=K>=Kmax?1:0;o.hqK=K;const c=mk(W2*K,H2*K),g=c.getContext('2d'),sv=[OX,OY,PUV,RX,RY,SNOWG,MAING,TSALT];
+function hqC(o){const R=o.hr;if(!R)return;const pd=R.pad||0,W2=SW*R.sz+2*pd,H2=(R.z?SOH:(R.hc||SOH))+(R.padb||0),Kmax=Math.max(3,Math.floor(Math.sqrt(9e6/(W2*H2)))),K=Math.min(Math.max(3,HQ.want),Kmax);if(o.hq&&(o.hqK||3)>=K){o.hqMax=1;return;}if(o.hq){HQ.bytes-=o.hq.width*o.hq.height*4;}o.hqMax=K>=Kmax?1:0;o.hqK=K;const c=mk(W2*K,H2*K),g=c.getContext('2d'),sv=[OX,OY,PUV,RX,RY,SNOWG,MAING,TSALT];
   g.setTransform(K,0,0,K,0,0);if(R.z){OX=W2/2;OY=SCY-32-(R.sz-1)*64;PUV=R.ps;RX=RX0*R.ps;RY=RY0*R.ps;}else{OX=SCX+pd;OY=SCY-32-(R.dy||0);PUV=1;RX=RX0;RY=RY0;}SNOWG=null;MAING=null;
   TSALT=0;HQDL=K;try{kitRun(()=>(R.fac?R.fac():R.draw)(g,LGD,mulberry(R.seed),{lit:false,emit:[],sn:false}));}finally{HQDL=1;[OX,OY,PUV,RX,RY,SNOWG,MAING,TSALT]=sv;}
   const q=quantizeCrop(c,null),dyp=R.z?0:(R.dy||0)*K;o.hq=cropC(c,q);o.hqb=[(q[0]-(R.z?(R.sz-1)*64*K:0))/K-pd,(q[1]+dyp)/K,q[2]/K,q[3]/K];HQ.bytes+=q[2]*q[3]*4;HQ.list.add(o);}
 function hqTick(budget){if(!HQ.q.size)return;const t0=performance.now();for(const o of HQ.q){HQ.q.delete(o);hqC(o);if(performance.now()-t0>budget)break;}
   const cap=MEMLOW?40e6:140e6;if(HQ.bytes>cap){const arr=[...HQ.list].sort((a,b)=>(a.hlu||0)-(b.hlu||0));for(const o of arr){if(HQ.bytes<=cap*.75)break;if(o.hlu===frameNo)continue;HQ.bytes-=o.hq.width*o.hq.height*4;o.hq=null;HQ.list.delete(o);}}}
-function regenC(o){const R=o.rg;if(!R||o.c)return;const pd=R.pad||0,W2=SW*R.sz+2*pd,c=mk(W2,SOH),g=c.getContext('2d'),sv=[OX,OY,PUV,RX,RY,SNOWG,MAING];
+function regenC(o){const R=o.rg;if(!R||o.c)return;const pd=R.pad||0,W2=SW*R.sz+2*pd,c=mk(W2,SOH+(R.padb||0)),g=c.getContext('2d'),sv=[OX,OY,PUV,RX,RY,SNOWG,MAING];
   if(R.z){OX=W2/2;OY=SCY-32-(R.sz-1)*64;PUV=R.ps;RX=RX0*R.ps;RY=RY0*R.ps;}else{OX=SCX+pd;OY=SCY-32;PUV=1;RX=RX0;RY=RY0;}SNOWG=null;MAING=null;
   TSALT=0;try{kitRun(()=>(R.fac?R.fac():R.draw)(g,LGD,mulberry(R.seed),{lit:false,emit:[],sn:false}));}finally{[OX,OY,PUV,RX,RY,SNOWG,MAING]=sv;}o.c=cropC(c,R.b);REG.bytes+=R.b[2]*R.b[3]*4;REG.list.add(o);}
 const fullC=o=>{if(!o.c)regenC(o);return o.c||o.c2;};
