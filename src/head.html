@@ -279,11 +279,19 @@ kbd{font:600 10px var(--f-body);background:var(--chip-on);border-radius:5px;padd
 .tile span,.sw span,.btn,.pill,.lbl,.sh,.kp2 .lbl,#ctx button,.ch,.tool,.palItem span,.tgTab,.keys span,.net .lbl,.fin>span{white-space:nowrap}
 .tile.arm{background:var(--accent-soft);color:var(--accent)}.tile.warn.arm{background:rgba(239,111,91,.16);color:var(--warn)}
 @media (prefers-reduced-motion: reduce){*{transition:none!important}}
+/* ===== iPhone / home-screen app: no rubber-band, no tap flash, no long-press callout, no accidental page zoom ===== */
+html{-webkit-text-size-adjust:100%;overscroll-behavior:none}
+body{overscroll-behavior:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:manipulation}
+*{-webkit-tap-highlight-color:transparent}
+input[type=text],input:not([type]),textarea{-webkit-user-select:text;user-select:text}
+@media (pointer:coarse){input:not([type=range]),select,textarea{font-size:16px!important}}
+.wx,.date,.tgTab,.btn,.tool span{white-space:nowrap}
 /* ===== phone landscape: one compact HUD row, small minimap, icon-only tools, panels fit the short screen ===== */
 @media (orientation:landscape) and (max-height:520px) and (min-width:600px){
   #hud{gap:5px;top:calc(env(safe-area-inset-top,0px) + 6px);flex-wrap:nowrap}
   .hgrp{min-height:32px;padding:2px 8px;border-radius:11px}
-  .hwx,.hstats .lbl,.hfill{display:none!important}
+  .hwx,.hstats,.hfill,#date{display:none!important}
+  .hend .btn{font-size:0!important;gap:0;padding:3px 9px;min-width:34px;justify-content:center}.hend .btn svg{width:14px;height:14px}
   .city{font-size:14px!important}.date{font-size:11.5px}.wx{font-size:11px;padding:1px 6px 1px 4px}
   .hend{width:auto!important;margin-left:auto}.hend .btn{padding:3px 8px;min-height:26px}
   .hspd .seg button,.hspd button{padding:2px 7px;min-height:26px}

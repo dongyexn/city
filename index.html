@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#0d1015">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icons/favicon-32.png">
@@ -292,11 +292,19 @@ kbd{font:600 10px var(--f-body);background:var(--chip-on);border-radius:5px;padd
 .tile span,.sw span,.btn,.pill,.lbl,.sh,.kp2 .lbl,#ctx button,.ch,.tool,.palItem span,.tgTab,.keys span,.net .lbl,.fin>span{white-space:nowrap}
 .tile.arm{background:var(--accent-soft);color:var(--accent)}.tile.warn.arm{background:rgba(239,111,91,.16);color:var(--warn)}
 @media (prefers-reduced-motion: reduce){*{transition:none!important}}
+/* ===== iPhone / home-screen app: no rubber-band, no tap flash, no long-press callout, no accidental page zoom ===== */
+html{-webkit-text-size-adjust:100%;overscroll-behavior:none}
+body{overscroll-behavior:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:manipulation}
+*{-webkit-tap-highlight-color:transparent}
+input[type=text],input:not([type]),textarea{-webkit-user-select:text;user-select:text}
+@media (pointer:coarse){input:not([type=range]),select,textarea{font-size:16px!important}}
+.wx,.date,.tgTab,.btn,.tool span{white-space:nowrap}
 /* ===== phone landscape: one compact HUD row, small minimap, icon-only tools, panels fit the short screen ===== */
 @media (orientation:landscape) and (max-height:520px) and (min-width:600px){
   #hud{gap:5px;top:calc(env(safe-area-inset-top,0px) + 6px);flex-wrap:nowrap}
   .hgrp{min-height:32px;padding:2px 8px;border-radius:11px}
-  .hwx,.hstats .lbl,.hfill{display:none!important}
+  .hwx,.hstats,.hfill,#date{display:none!important}
+  .hend .btn{font-size:0!important;gap:0;padding:3px 9px;min-width:34px;justify-content:center}.hend .btn svg{width:14px;height:14px}
   .city{font-size:14px!important}.date{font-size:11.5px}.wx{font-size:11px;padding:1px 6px 1px 4px}
   .hend{width:auto!important;margin-left:auto}.hend .btn{padding:3px 8px;min-height:26px}
   .hspd .seg button,.hspd button{padding:2px 7px;min-height:26px}
@@ -2236,7 +2244,7 @@ const LMKD2={
       line=(gg,pts)=>{gg.beginPath();gg.moveTo(pts[0][0],pts[0][1]);for(let k=1;k<pts.length;k++)gg.lineTo(pts[k][0],pts[k][1]);gg.stroke();},
       colA=[['#7f98aa','#b4c6d2'],['#c3d3dd','#e9f0f4'],['#a9bccb','#dbe6ed']];
     for(let fi=0;fi<3;fi++){const pts=strip(fi,0,1,H0,Ht),yB=P(C,C,H0)[1],yT=P(C,C,Ht)[1],gr=g.createLinearGradient(0,yB,0,yT);gr.addColorStop(0,colA[fi][0]);gr.addColorStop(.55,shd(colA[fi][0],.12));gr.addColorStop(1,colA[fi][1]);
-      g.save();faceClip(g,pts);g.fillStyle=gr;g.fillRect(-4000,yT-10,8000,yB-yT+20);
+      g.save();faceClip(g,pts);g.fillStyle=gr;g.fillRect(-4000,yT-10,8000,yB-yT+400);
       /* 하늘 반사 사선 띠 */g.globalAlpha=.16;g.fillStyle='#ffffff';for(let k=0;k<3;k++){const y0=yB-(yB-yT)*(.18+k*.3);g.beginPath();g.moveTo(-4000,y0);g.lineTo(4000,y0-8000*.35);g.lineTo(4000,y0-8000*.35-60-k*30);g.lineTo(-4000,y0-60-k*30);g.closePath();g.fill();}g.globalAlpha=1;
       /* 층 띠(스팬드럴) + 멀리언 */g.lineWidth=.6;for(let h=H0+9;h<Ht;h+=9){g.strokeStyle=(h/9)%5<1?'rgba(70,90,105,.32)':'rgba(255,255,255,.22)';line(g,[fp(fi,0,h),fp(fi,1,h)]);}
       const M=fi===1?3:14;g.strokeStyle='rgba(60,80,96,.2)';g.lineWidth=.5;for(let k=1;k<M;k++){const f=k/M,pl=[];for(let s=0;s<=20;s++)pl.push(fp(fi,f,H0+(Ht-H0)*s/20));line(g,pl);}
@@ -2245,7 +2253,11 @@ const LMKD2={
       g.restore();
       if(lg){for(let h=H0+12;h<Ht-6;h+=9)for(let k=0;k<(fi===1?1:5);k++)if(r()<.22){const f=r()*.92;poly(lg,strip(fi,f,f+.06,h+1.5,h+6.5),LIT[(r()*LIT.length)|0]);st.lit=true;}}}
     /* 모서리 하이라이트 */g.strokeStyle='rgba(255,255,255,.55)';g.lineWidth=.8;for(const [fi,f] of [[0,1],[2,0]]){const pl=[];for(let s=0;s<=24;s++)pl.push(fp(fi,f,H0+(Ht-H0)*s/24));line(g,pl);}
-    /* 로비: double-height clear glass with a slim entrance canopy */for(let fi=0;fi<3;fi++){poly(g,strip(fi,.06,.94,H0,H0+16),fi===0?'#a9c3d2':fi===1?'#d5e4ec':'#bfd3df');g.strokeStyle='rgba(70,90,105,.45)';g.lineWidth=.6;for(let k=1;k<10;k++){const f=.06+.88*k/10;line(g,[fp(fi,f,H0),fp(fi,f,H0+16)]);}line(g,[fp(fi,.06,H0+16),fp(fi,.94,H0+16)]);if(lg){poly(lg,strip(fi,.08,.92,H0+1,H0+14),'rgba(255,238,200,.55)');st.lit=true;}}
+    /* 로비: stone plinth, recessed dark glass lobby lit warm inside, white canopy band, entrance on each face */for(let fi=0;fi<3;fi++){const sh=fi===0?-.12:fi===1?.08:0;poly(g,strip(fi,0,1,H0,H0+18),shd('#3f5568',sh));poly(g,strip(fi,.05,.95,H0+1.6,H0+15),shd('#56708a',sh));
+      g.strokeStyle='rgba(20,30,40,.55)';g.lineWidth=.7;for(let k=1;k<12;k++){const f=.05+.9*k/12;line(g,[fp(fi,f,H0+1.6),fp(fi,f,H0+15)]);}line(g,[fp(fi,.05,H0+8.5),fp(fi,.95,H0+8.5)]);
+      if(fi!==1){poly(g,strip(fi,.42,.58,H0+1.6,H0+11),'#26323e');poly(g,strip(fi,.38,.62,H0+11,H0+12.4),'#e9edf0');}
+      poly(g,strip(fi,0,1,H0,H0+1.6),shd('#cfc9bd',sh));poly(g,strip(fi,-.02,1.02,H0+15,H0+18),shd('#eef1f3',sh));
+      if(lg){poly(lg,strip(fi,.06,.94,H0+2,H0+14.5),'rgba(255,226,170,.7)');st.lit=true;}}
     /* 크라운: 위로 갈수록 열리는 격자(다이아그리드) */
     {const back=[];for(let s=0;s<=12;s++){const h=Ht+(Htop-Ht)*s/12,w=hw(h);back.push(P(C-w,C+w,h));}for(let s=12;s>=0;s--){const h=Ht+(Htop-Ht)*s/12,w=hw(h);back.push(P(C+w,C-w,h));}
       g.save();g.globalAlpha=.45;poly(g,[...strip(0,0,1,Ht,Htop),...strip(2,0,1,Ht,Htop)],'#6e8494');g.restore();
@@ -2935,7 +2947,7 @@ function buildPkSprites(){SP.pka={};for(const a of 'muvxz'){SP.pka[a]=[0,1,2,3].
 function pkObj(i){const c=pkChar(i);if(!c)return undefined;const x=i&NM,y=i>>NS,hsh2=(Math.imul(i,2654435761)>>>0);
   if(c==='o')return forestGet(SEASON,hsh2%3,[0,2,3][(hsh2>>4)%3],(hsh2>>6)&1);
   if(c==='y'||c==='d'){const ok=(xx,yy)=>{if(xx<0||yy<0||xx>=N||yy>=N)return false;const j=idx(xx,yy),cc=pkChar(j);return c==='y'?(cc==='y'||cc==='u'||cc==='z'||cc==='d'||kind[j]===K.ROAD):(cc==='d'||cc==='y'||(terr[j]!==TWA&&kind[j]!==K.EMPTY));};
-    let m=0;if(ok(x,y-1))m|=1;if(ok(x+1,y))m|=2;if(ok(x,y+1))m|=4;if(ok(x-1,y))m|=8;let cm=0;if(c==='y'&&(m===3||m===6||m===12||m===9)){const dx=(m&2)?1:-1,dy=(m&1)?-1:1;if(!ok(x+dx,y+dy))cm=1;}return trailSpr(m,SEASON,c==='d',c==='y'&&hsh2%5===0,cm,c==='y'&&deco[i]===60,c==='y'&&hsh2%5===2);}
+    let m=0;if(ok(x,y-1))m|=1;if(ok(x+1,y))m|=2;if(ok(x,y+1))m|=4;if(ok(x-1,y))m|=8;let cm=0;if(c==='y'&&(m===3||m===6||m===12||m===9)){const dx=(m&2)?1:-1,dy=(m&1)?-1:1;if(!ok(x+dx,y+dy))cm=1;}return trailSpr(m,SEASON,c==='d',c==='y'&&hsh2%5===0,cm,false,c==='y'&&hsh2%5===2);}
   if(c==='u'){const cu=(xx,yy)=>xx>=0&&yy>=0&&pkChar(idx(xx,yy))==='u';if(cu(x-1,y)||cu(x,y-1))return SP.pkPlaza[SEASON][hsh2%2];}
   if(c==='m'){/* lawn on the beach band: grass only, no trees on sand */let sh=false;for(let dy=-2;dy<=2&&!sh;dy++)for(let dx=-2;dx<=2;dx++){const xx=x+dx,yy=y+dy;if(xx>=0&&yy>=0&&xx<N&&yy<N&&terr[idx(xx,yy)]===TWA){sh=true;break;}}if(sh)return null;return SP.pkM[SEASON][(hsh2>>3)%6];}if(SP.pka[c])return SP.pka[c][SEASON];return undefined;}
 function pkFree(i,nat){const k=kind[i];if(k===K.ROAD||k===K.LMK)return false;if(terr[i]===TWA)return false;if(k===K.EMPTY)return true;if(k>=K.RES&&k<=K.IND&&!lvl[i])return true;if(k===K.PARK&&fix[i]!==2)return true;return false;}
@@ -4518,7 +4530,8 @@ function connectWater(){let ch=0;const W=(x,y)=>x>=0&&y>=0&&x<N&&y<N&&terr[idx(x
 /* warm-up: build road-decoration and landmark sprites in idle frame time, nearest chunks first, so panning later does not stall on first-time sprite creation */
 let WARM=null;function warmStart(){const ct=w2t(camX,camY),NC=N>>4,cx=ct[0]>>4,cy=ct[1]>>4,L=[];for(let c=0;c<NC*NC;c++)L.push(c);L.sort((a,b)=>Math.hypot(a%NC-cx,((a/NC)|0)-cy)-Math.hypot(b%NC-cx,((b/NC)|0)-cy));WARM={L,k:0,t:0};}
 function warmTick(ms){if(!WARM)return;const t0=performance.now(),NC=N>>4;while(WARM.k<WARM.L.length){const c=WARM.L[WARM.k],x0=(c%NC)*16,y0=((c/NC)|0)*16;for(;WARM.t<256;WARM.t++){const i=idx(x0+(WARM.t&15),y0+(WARM.t>>4));if(kind[i])objOf(i);if((WARM.t&15)===15&&performance.now()-t0>ms){WARM.t++;return;}}WARM.t=0;WARM.k++;}WARM=null;}
-function afterLoad(){LOADT=performance.now();connectWater();clearUndo();RDC.clear();szCompute();vfDirty=true;vtSeed=-1;compsDirty=true;recomputeComps();fields();SEASON=curSeason();bumpAll();mmAll();ovDirty=true;cars=[];peds=[];spawnDirty=true;$('cityName').value=sim.name;
+/* Safari: pinch on the HUD must not zoom the page (the map handles its own pinch) */for(const ev of ['gesturestart','gesturechange'])document.addEventListener(ev,e=>e.preventDefault(),{passive:false});
+function afterLoad(){LOADT=performance.now();connectWater();waterSetback();clearUndo();RDC.clear();szCompute();vfDirty=true;vtSeed=-1;compsDirty=true;recomputeComps();fields();SEASON=curSeason();bumpAll();mmAll();ovDirty=true;cars=[];peds=[];spawnDirty=true;$('cityName').value=sim.name;
   ['R','C','I'].forEach((s,j)=>{$('tax'+s).value=sim.tax[j];$('o'+s).textContent=sim.tax[j]+'%';});setSpeed(sim.speed);updatePanels();sel=null;$('info').hidden=true;warmStart();}
 const SKEY='pixelcity.save.v2';
 function save(quiet){try{localStorage.setItem(SKEY,JSON.stringify(serialize()));if(!quiet)toast('저장 완료');}catch(err){if(!quiet)toast('저장 불가');}}
@@ -4793,6 +4806,8 @@ function genCity(seed){const r=mulberry(seed*13+5),SAVE=ROADL,DIR=[[1,0],[-1,0],
    const rmR=[];   const bridgeAdj=i=>{const x=i&NM,y=i>>NS;for(const [dx,dy] of DIR){const xx=x+dx,yy=y+dy;if(!inMap(xx,yy))continue;const j=idx(xx,yy);if(kind[j]===K.ROAD&&terr[j]===TWA)return true;}return false;};
    for(let i=0;i<NN;i++){const w=WD[i];if(w<1||w>2||terr[i]===TWA)continue;const k=kind[i];
      if(k>=K.RES&&k<=K.IND&&lvl[i]&&!isFoot(i)&&fix[i]!==2){clearTile(i);touch(i);}
+     else if(k>=K.POWER&&k<=K.FIRE&&nearWater(i&NM,i>>NS)){clearTile(i);touch(i);}
+     else if(k===K.LMK&&nearWater(i&NM,i>>NS)&&LMKT[vari[i]]&&!['fishing','sewage','airport','bigcafe','resort'].includes(LMKT[vari[i]].id)){removeLmk(lmkA[i]);touch(i);}
      else if(k===K.ROAD&&w===1&&!isWide(i)&&!isElev(i)&&!bridgeAdj(i)&&!RL[i]){rmR.push([i,lvl[i],vari[i]]);clearTile(i);vari[i]=0;touchN(i);}}
    /* a shore street that was the only link between two parts of the network stays (whole run, so traffic still gets through) */
    {const comp=new Int32Array(NN).fill(-1);let nc=0;for(let s0=0;s0<NN;s0++){if(kind[s0]!==K.ROAD||comp[s0]>=0)continue;const qq=[s0];comp[s0]=nc;for(let h=0;h<qq.length;h++){const i=qq[h],x=i&NM,y=i>>NS;for(const [dx,dy] of DIR){const xx=x+dx,yy=y+dy;if(!inMap(xx,yy))continue;const j=idx(xx,yy);if(kind[j]===K.ROAD&&comp[j]<0){comp[j]=nc;qq.push(j);}}}nc++;}
