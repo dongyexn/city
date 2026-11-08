@@ -1073,12 +1073,11 @@ function wideTexFn(lv,p,ax,st){const{L,W}=RC[lv],Y=crossLayout(L,W),r=mulberry(4
       const dk=c<W/2?c-Y.sw-.018:W-Y.sw-.018-c;if(st===0&&dk>=0&&dk<.045&&a>.46&&a<.56)return((Math.floor(a*120))&1)?GR1:GR2;}
     const col=crossCol(Y,c,a,P2);if(col)return col;return r()<.07?A2:A;};}
 const TY1=hex('#e8c23a'),TY2=hex('#d2a828'),GR1=hex('#2a2c30'),GR2=hex('#5a5c60');
-function singleTexFn(lv,m){const{L}=RC[lv],Y=crossLayout(L,1),r=mulberry(4600+lv*31+m),A=hex(L<=1?'#5a5c60':'#484b51'),A2=hex(L<=1?'#626468':'#51545a'),B1=hex('#b9a898'),B2=hex('#a8988a'),Cb=hex('#d6d3cc');
+function singleTexFn(lv,m){const{L}=RC[lv],Y=crossLayout(L,1),r=mulberry(4600+lv*31+m),A=hex('#484b51'),A2=hex('#51545a'),B1=hex('#b9a898'),B2=hex('#a8988a'),Cb=hex('#d6d3cc');
   const n=m&1,e=m&2,s=m&4,w=m&8,t=L<=1?.22:Y.sw,c=t+.02,Sm=hex('#6f706c');
   /* 골목: a narrow concrete lane with a drainage seam, block-paved verges on both sides (also at corners) */
   return(fx,fy,px,py)=>{const blk=PV(fx,fy,B1,B2);if((fy<t&&!n)||(fx>1-t&&!e)||(fy>1-t&&!s)||(fx<t&&!w))return blk;
-    if(L<=1){const cr=(cx,cy)=>Math.abs(fx-cx)<t&&Math.abs(fy-cy)<t;if(cr(0,0)||cr(1,0)||cr(0,1)||cr(1,1))return blk;const ed=Math.min(n||s?Math.min(Math.abs(fx-t),Math.abs(fx-1+t)):9,e||w?Math.min(Math.abs(fy-t),Math.abs(fy-1+t)):9);if(ed<.018)return Sm;
-      const ns=(n||s)&&!(e||w),ew=(e||w)&&!(n||s);if((ns&&Math.abs(fx-.5)<.008)||(ew&&Math.abs(fy-.5)<.008))return Sm;return r()<.06?A2:A;}
+    if(L<=1){const cr=(cx,cy)=>Math.abs(fx-cx)<t&&Math.abs(fy-cy)<t;if(cr(0,0)||cr(1,0)||cr(0,1)||cr(1,1))return blk;/* 이면도로: asphalt like every street, white edge lines (길가장자리구역선) a little inside the kerb, no centre line */const ns=(n||s)&&!(e||w),ew=(e||w)&&!(n||s),el=.045;if(ns&&(Math.abs(fx-t-el)<.007||Math.abs(fx-1+t+el)<.007))return Cb;if(ew&&(Math.abs(fy-t-el)<.007||Math.abs(fy-1+t+el)<.007))return Cb;const ed=Math.min(n||s?Math.min(Math.abs(fx-t),Math.abs(fx-1+t)):9,e||w?Math.min(Math.abs(fy-t),Math.abs(fy-1+t)):9);if(ed<.012)return Sm;return r()<.06?A2:A;}
     if((fy<c&&!n)||(fx>1-c&&!e)||(fy>1-c&&!s)||(fx<c&&!w))return Cb;return r()<.07?A2:A;};}
 function buildRoadCls(){SP.trench=[0,1].map(ax=>{const base=SP.road[0][ax?5:10].c.getContext('2d').getImageData(0,0,128,64).data;return tex(gsp((fx,fy,px,py)=>{const l=Math.abs((ax?fx:fy)-.5),o=(py*128+px)*4;if(l>.46)return hex('#cfccc4');if(l>.38){const k=(l-.38)/.08;return[(96+70*k)|0,(95+68*k)|0,(92+64*k)|0];}return[(base[o]*.58)|0,(base[o+1]*.58)|0,(base[o+2]*.6)|0];}));});SP.wt={};for(const lv of [3,4,5,6,7,8]){const W=RC[lv].W;SP.wt[lv]=[];for(let p=0;p<W;p++){SP.wt[lv][p]=[0,1].map(ax=>[0,1,2,3,4,5].map(st=>st===1&&(p>0||ax>0||lv>3)?null:tex(gsp(wideTexFn(lv,p,ax,st)))));}}
   const J=SP.wt[3][0][0][1];for(const lv in SP.wt)for(const pp of SP.wt[lv])for(const ar of pp)ar[1]=J;
@@ -3266,20 +3265,20 @@ void main(){
   vec3 n=normalize(vec3(-vD.x*.75,-vD.y*.75,1.));float L=dot(n,uL)-uL.z;
   vec2 gx=dFdx(vG),gy=dFdy(vG);float fp=max(max(dot(gx,gx),dot(gy,gy)),1e-8),mf=(1./22.)/sqrt(fp)/2.5*uQ;
   vec3 wv3=texture(uWd,(vG+.5)/${HN}.).rgb;vec2 wv=wv3.rg;float wnz=(vn(vG*1.7+vec2(2.,9.))-.5)*.5+(vn(vG*5.3+vec2(7.,1.))-.5)*.16;
-  vec2 sdv=texture(uSd,(vG*2.+.5)/${SDN}.).rg;float sd=sdv.r*3.;bool emb=sdv.g>.5;bool elig=(fl&4)!=0||(fl&1)!=0;
+  vec2 sdv=texture(uSd,(vG*2.+.5)/${SDN}.).rg;float sd=sdv.r*3.;/* embanked-stream weight, blurred and noise-broken so a stream mouth fades into the river instead of meeting it on a straight tile line */float ef=0.;for(int k=0;k<9;k++){vec2 o=vec2(float(k%3)-1.,float(k/3)-1.)*1.4;ef+=texture(uSd,(vG*2.+o*2.+.5)/${SDN}.).g;}ef=smoothstep(.3,.7,ef/9.+(vn(vG*1.1+vec2(3.,8.))-.5)*.35);bool emb=sdv.g>.5;bool elig=(fl&4)!=0||(fl&1)!=0;
   float r0=emb?.5:.5+(vn(vG*.31+vec2(9.,3.))-.5)*.36+wnz*.06;bool isW=(fl&4)!=0;if(elig)isW=sd<r0;float dl=sd-r0;
-  if(isW){float d=max(r0-sd,wv.r*12.75-.35),fd=clamp(d/4.5,0.,1.),t=uT;fd=max(fd,clamp(d*.9,0.,.8));float e=d;
+  if(isW){float d=max(r0-sd,(wv.r*12.75-.35)*(1.-ef)),fd=clamp(d/4.5,0.,1.),t=uT;fd=max(fd,clamp(d*.9,0.,.8));fd=mix(fd,min(fd,.32),ef);float e=d;
     if(!emb&&e<.07){vec3 c=sandP(vG,e+.05,mf);c*=1.+clamp(L*1.55,-.42,.36)*1.1;o=vec4(c,1.);return;}
     vec2 p=vG;bool wi=uSea>2.5;
     vec3 sh0=wi?vec3(.42,.6,.62):vec3(.33,.68,.66),mid=wi?vec3(.2,.4,.5):vec3(.13,.46,.56),dp=wi?vec3(.1,.23,.34):vec3(.05,.23,.37);
     vec3 c=mix(sh0,mid,smoothstep(0.,.35,fd));c=mix(c,dp,smoothstep(.35,1.,fd));
     float n1=vn(p*.7+vec2(t*.09,t*.04)),n2=vn(p*1.9-vec2(t*.06,-t*.11)),n3=vn(p*4.7+vec2(t*.23,-t*.17));
     c*=1.+(n1-.5)*.12*fd;
-    c=mix(vec3(.56,.6,.5),c,clamp(smoothstep(.05,.7,e)*.7+.3*fd+(emb?.3:0.),0.,1.));
+    c=mix(vec3(.56,.6,.5),c,clamp(smoothstep(.05,.7,e)*.7+.3*fd+ef*.3,0.,1.));
     vec2 gr=vec2(0);vec2 k1=vec2(1.3,.7),k2=vec2(-.5,1.9),k3=vec2(2.7,-1.1),k4=vec2(.9,3.3),k5=vec2(-3.1,2.2);
     gr+=k1*cos(dot(p,k1)*2.1+t*1.1)*.05;gr+=k2*cos(dot(p,k2)*2.3+t*1.4)*.045;gr+=k3*cos(dot(p,k3)*2.+t*-1.9)*.03;gr+=k4*cos(dot(p,k4)*2.4+t*2.3)*.02;gr+=k5*cos(dot(p,k5)*3.1+t*2.9)*.014;
     gr+=vec2(n2-.5,n3-.5)*.1;
-    float ca=pow(1.-abs(vn(p*2.6+vec2(t*.21,t*.13))-vn(p*3.3-vec2(t*.16,-t*.1))),7.);c+=vec3(.5,.66,.6)*ca*.07*pow(1.-fd,3.)*(1.-uN)*(emb?.3:1.);
+    float ca=pow(1.-abs(vn(p*2.6+vec2(t*.21,t*.13))-vn(p*3.3-vec2(t*.16,-t*.1))),7.);c+=vec3(.5,.66,.6)*ca*.07*pow(1.-fd,3.)*(1.-uN)*mix(1.,.3,ef);
     vec3 wn=normalize(vec3(-gr*.8,1.)),V=normalize(vec3(.55,.55,.62));float fr=.06+.5*pow(1.-max(dot(wn,V),0.),3.);
     vec3 sky=mix(uSky*1.08,uSky*.78+vec3(.02,.04,.06),clamp(.5+gr.y*2.,0.,1.));c=mix(c,sky,fr*(.3+.7*fd));
     vec3 Rf=reflect(-uL,wn);float sp=pow(max(dot(Rf,V),0.),420.)*(1.-uN)*(.3+.7*fd)*(1.-uCl*.7);c+=vec3(1.,.96,.88)*min(sp,1.)*.45;
@@ -3288,8 +3287,8 @@ void main(){
     if(uWet>.05){vec2 q=p*2.6,cl=floor(q),f=fract(q)-.5;vec4 h=rn(cl+vec2(7.,3.));float ph=fract(t*.9+h.r),rr=length(f-(h.gb-.5)*.5);c+=vec3(.75,.82,.88)*smoothstep(.035,0.,abs(rr-ph*.42))*(1.-ph)*.35*uWet;}
     if(wi){float ice=smoothstep(.22,.04,fd)*(.55+.25*n3);c=mix(c,vec3(.84,.89,.92),ice*.6);}
     float wave=.05*sin(t*1.25+p.x*.9+p.y*.6)+.03*sin(t*2.1-p.x*1.7+p.y*1.1);
-    float fo=emb?smoothstep(.14,.02,d)*.3:smoothstep(.22,.06,e+wave)*smoothstep(.0,.08,e+wave)*.75;fo+=(emb?0.:1.)*smoothstep(.45,.1,e+(vn(p*3.2+vec2(t*.13,t*.09))-.5)*.35+wave)*.1;
-    float lap=.22+.08*sin(t*1.1+p.x*.6+p.y*.45);fo+=(emb?0.:1.)*smoothstep(.09,0.,abs(e-lap))*.12*smoothstep(.75,.3,n3);
+    float fo=mix(smoothstep(.22,.06,e+wave)*smoothstep(.0,.08,e+wave)*.75,smoothstep(.14,.02,d)*.3,ef);fo+=(1.-ef)*smoothstep(.45,.1,e+(vn(p*3.2+vec2(t*.13,t*.09))-.5)*.35+wave)*.1;
+    float lap=.22+.08*sin(t*1.1+p.x*.6+p.y*.45);fo+=(1.-ef)*smoothstep(.09,0.,abs(e-lap))*.12*smoothstep(.75,.3,n3);
     c=mix(c,vec3(.93,.96,.96),clamp(fo,0.,1.)*.78);
     float cs=vn(p*.035+vec2(t*.012,t*.006));c*=1.-smoothstep(.52,.75,cs)*.16*uCl;o=vec4(c,1.);return;}
   vec2 f=fract(vG);if((fl&64)!=0){vec4 h=rn(vec2(ti)+vec2(31.,17.));int rt=int(h.r*4.);if(rt==1)f=vec2(1.-f.y,f.x);else if(rt==2)f=1.-f;else if(rt==3)f=vec2(f.y,1.-f.x);if(h.g>.5)f=f.yx;}
