@@ -157,10 +157,11 @@ function oszpS(draw,seed,sz,ds,noShadow){TSALT=0;ds=ds||1;const ps=sz/ds,W2=SW*s
   const b=quantizeCrop(c,st.lit?l:null);const o={bx:b[0]-ox,by:b[1],bw:b[2],bh:b[3],emit:st.emit.map(e=>[e[0]-ox,e[1],e[2],e[3]])};o.c=cropC(c,b);o.c2=half(o.c);
   if(st.lit){const s2=mk(b[2],b[3]),sx=s2.getContext('2d');sx.drawImage(o.c,0,0);sx.globalCompositeOperation='source-in';sx.fillStyle='#000';sx.fillRect(0,0,b[2],b[3]);sx.globalCompositeOperation='source-over';sx.drawImage(cropC(l,b),0,0);o.lit2=half(s2);o.lit=o.lit2;}
   if(!noShadow&&!st.noShadow)makeShadow(o,sz);if(st.sn)finSnow(o,sn,b);o.fs=sz;o.hr={draw,seed,sz,ps,z:1,b,dy:0,fac:CURFAC,nat:PIXNAT};if(DROPOK){o.rg={draw,seed,sz,ps,z:1,b,fac:CURFAC,nat:PIXNAT};if(!window.__NODROP)o.c=null;}return o;}
-function osp(draw,seed,hc){hc=hc||SOH;TSALT=0;const dy=SOH-hc,c=mk(SW,hc),g=c.getContext('2d',{willReadFrequently:true}),l=mk(SW,hc),lg=l.getContext('2d',{willReadFrequently:true}),sn=mk(SW,hc),r=mulberry(seed),st={lit:false,emit:[]};OX=SCX;OY=SCY-32-dy;SNOWG=sn.getContext('2d');MAING=g;kitRun(()=>draw(g,lg,r,st));SNOWG=null;MAING=null;
-  const b=quantizeCrop(c,st.lit?l:null);const o={bx:b[0],by:b[1]+dy,bw:b[2],bh:b[3],emit:dy?st.emit.map(e=>[e[0],e[1]+dy,e[2],e[3]]):st.emit};o.c=cropC(c,b);o.c2=half(o.c);
+/* OSPPAD: extra canvas margin left/right (sprite px) for sprites whose content overhangs the tile (forest crowns at the tile corners) */
+let OSPPAD=0;function osp(draw,seed,hc){hc=hc||SOH;TSALT=0;const pd=OSPPAD,WW=SW+2*pd,dy=SOH-hc,c=mk(WW,hc),g=c.getContext('2d',{willReadFrequently:true}),l=mk(WW,hc),lg=l.getContext('2d',{willReadFrequently:true}),sn=mk(WW,hc),r=mulberry(seed),st={lit:false,emit:[]};OX=SCX+pd;OY=SCY-32-dy;SNOWG=sn.getContext('2d');MAING=g;kitRun(()=>draw(g,lg,r,st));SNOWG=null;MAING=null;
+  const b=quantizeCrop(c,st.lit?l:null);const o={bx:b[0]-pd,by:b[1]+dy,bw:b[2],bh:b[3],emit:(dy||pd)?st.emit.map(e=>[e[0]-pd,e[1]+dy,e[2],e[3]]):st.emit};o.c=cropC(c,b);o.c2=half(o.c);
   if(st.lit){const s=mk(b[2],b[3]),sx=s.getContext('2d');sx.drawImage(o.c,0,0);sx.globalCompositeOperation='source-in';sx.fillStyle='#000';sx.fillRect(0,0,b[2],b[3]);sx.globalCompositeOperation='source-over';sx.drawImage(cropC(l,b),0,0);o.lit2=half(s);o.lit=o.lit2;}
-  if(!st.noShadow)makeShadow(o);finSnow(o,sn,b);o.hr={draw,seed,sz:1,ps:1,z:0,b,dy,hc,fac:CURFAC,nat:PIXNAT};if(DROPOK){o.rg={draw,seed,sz:1,ps:1,z:0,b,fac:CURFAC,nat:PIXNAT};if(!window.__NODROP)o.c=null;}
+  if(!st.noShadow)makeShadow(o);finSnow(o,sn,b);o.hr={draw,seed,sz:1,ps:1,z:0,b,dy,hc,pad:pd,fac:CURFAC,nat:PIXNAT};if(DROPOK){o.rg={draw,seed,sz:1,ps:1,z:0,b,pad:pd,fac:CURFAC,nat:PIXNAT};if(!window.__NODROP)o.c=null;}
   return o;}
 const SHK=.82,SHC=.42;
 function makeShadow(o,fs){const src=o.c2,w=src.width,h=src.height,B=(SCY-((fs||1)-1)*32-o.by)/2;
@@ -447,17 +448,17 @@ function natScene(g,lg,r,sea,trees,nt,nf,nb,und){const items=[];for(const t of t
 /* forest stands: one dominant species per stand with a few companions, like real Korean woods; plantations in rows */
 const STANDS=[{d:[['pine',.86],['singal',.1],['juniper',.04]]},{d:[['pine',.5],['singal',.42],['dangd',.08]],patch:1},{d:[['singal',.8],['dangd',.1],['pine',.1]]},{d:[['sangsu',.72],['singal',.18],['cherry',.1]]},
  {d:[['korpine',1]],row:1},{d:[['hinoki',1]],row:1},{d:[['birch',.82],['aspen',.18]]}];
-function standAt(x,y){const n=fbm(x/46,y/46,913,2),e=hv(x,y);if(n>.79)return e>14?5:4;if(n>.64&&e<10)return 6;if(e>16)return n<.45?2:1;if(e<5)return n<.48?3:0;return n<.4?0:n<.52?1:n<.6?2:3;}
+function standAt(x,y){const n=fbm(x/46,y/46,913,2)+(hsh(x,y,917)-.5)*.09+(fbm(x/7,y/7,919,2)-.5)*.12,e=hv(x,y);if(n>.79)return e>14?5:4;if(n>.64&&e<10)return 6;if(e>16)return n<.45?2:1;if(e<5)return n<.48?3:0;return n<.4?0:n<.52?1:n<.6?2:3;}
 function forestSpr(sea,vi,vv,sd){vv=vv||0;sd=sd||0;return osp((g,lg,r)=>{TSALT=60+vi*5+vv;TWILD=1;try{const [kd,n0,dc]=FOREST[vi],ST=STANDS[sd],trees=[];
   const pick=(u,v)=>{if(ST.patch)return (u-v+(vv-.5)*.6)>0?'pine':'singal';let q=r();for(const [k,w] of ST.d){if((q-=w)<=0)return k;}return ST.d[0][0];};
-  if(ST.row){const step=dc===0?.22:.3;for(let a=-.05;a<1.05;a+=step)for(let b=-.05;b<1.05;b+=step)if(r()<(dc===2?.55:.85))trees.push([a+(r()-.5)*.09,b+(r()-.5)*.09,.85+r()*.3,pick(a,b)]);}
+  if(ST.row){const step=dc===0?.22:.3;for(let a=-.05;a<1.05;a+=step)for(let b=-.05;b<1.05;b+=step)if(r()<(dc===2?.55:.85))trees.push([a+(r()-.5)*.17,b+(r()-.5)*.17,.85+r()*.4,pick(a,b)]);}
   else{const n=Math.max(3,Math.round(n0*(.75+r()*.5))),G=Math.ceil(Math.sqrt(n*1.25)),cells=[];for(let a=0;a<G;a++)for(let b=0;b<G;b++)cells.push([a,b]);for(let q=cells.length-1;q>0;q--){const j=(r()*(q+1))|0;[cells[q],cells[j]]=[cells[j],cells[q]];}
-    for(let k=0;k<n;k++){const [ca,cb]=cells[k%cells.length],u=-.06+(ca+.1+r()*.8)/G*1.12,v=-.06+(cb+.1+r()*.8)/G*1.12;trees.push([u,v,dc===0?1.05+r()*.45:.85+r()*.5,pick(u,v)]);}}
+    for(let k=0;k<n;k++){const [ca,cb]=cells[k%cells.length],u=-.06+(ca+.1+r()*.8)/G*1.12,v=-.06+(cb+.1+r()*.8)/G*1.12;trees.push([u,v,dc===0?1.2+r()*.6:dc===1?.9+r()*.55:.8+r()*.55,pick(u,v)]);}}
   /* keep crowns inside the 128px sprite: squeeze the across-screen offset (u-v) softly, depth (u+v) unchanged — corner trees used to be sliced off */
-  for(const t of trees){const d=t[0]-t[1],m=Math.min(1.86,t[0]+t[1]),L=.56,d2=L*Math.tanh(d/L);t[0]=(m+d2)/2;t[1]=(m-d2)/2;}
+  for(const t of trees){const d=t[0]-t[1],m=Math.min(1.86,t[0]+t[1]);t[0]=(m+d)/2;t[1]=(m-d)/2;}
   const PS=sd===0||sd===1||sd===4,BI=sd===6,und=dc===0?[['litter',2],[PS?'jindal':BI?'fern':(r()<.5?'sasa':'fern'),2+((r()*2)|0)],[PS?'azalea':'berry',r()<.5?1:0],['stone',r()<.3?1:0]]:dc===1?[['litter',1],[PS?'jindal':'fern',2],[PS?'azalea':BI?'fern':'berry',1+((r()*2)|0)],['hagi',r()<.4?1:0],['stone',r()<.3?1:0]]:[[PS?'azalea':'hagi',1+((r()*2)|0)],['berry',r()<.5?1:0],['eul',r()<.35?1:0],['stone',r()<.3?1:0]];
   natScene(g,lg,r,sea,trees,dc===0?3:dc===1?8:14,dc===2?1:0,0,und);}finally{TWILD=0;}},300+sea*20+vi+vv*1009+sd*7919);}
-const FCACHE=new Map();function forestGet(sea,vi,sd,vv){const k=((sea*8+vi)*8+sd)*4+vv;let o=FCACHE.get(k);if(!o){const d0=DROPOK;DROPOK=1;try{PIXNAT=1;try{o=forestSpr(sea,vi,vv,sd);}finally{PIXNAT=0;}}finally{DROPOK=d0;}FCACHE.set(k,o);}return o;}
+const FCACHE=new Map();function forestGet(sea,vi,sd,vv){const k=((sea*8+vi)*8+sd)*4+vv;let o=FCACHE.get(k);if(!o){const d0=DROPOK;DROPOK=1;try{PIXNAT=1;OSPPAD=40;try{o=forestSpr(sea,vi,vv,sd);}finally{PIXNAT=0;OSPPAD=0;}}finally{DROPOK=d0;}FCACHE.set(k,o);}return o;}
 function meadowSpr(sea,vi,vv){vv=vv||0;return osp((g,lg,r)=>{const trees=vi===3?[[.3+r()*.4,.3+r()*.4,.85+r()*.4,rp(r,['oak','zelkova','pine','cherry','maple','birch','willow'])]]:[];const und=[[['eul',r()<.3?1+((r()*2)|0):0],['stone',r()<.25?1:0]],[['eul',r()<.15?1:0]],[['hagi',1],['berry',r()<.5?1:0],['azalea',r()<.4?1:0],['stone',r()<.3?1:0]],[['berry',r()<.4?1:0],['hagi',r()<.3?1:0]]][vi];
   natScene(g,lg,r,sea,trees,Math.round([14,16,12,10][vi]*(.6+r()*.8)),[0,2,1,1][vi]+(r()*2|0),0,und);},800+sea*10+vi+vv*1013);}
 function rockSpr(sea,vi){return osp((g,lg,r)=>{if(r()<.7)treeH(g,.25,.3,.8,'pine',sea,r);const rs=[];for(let k=0;k<3+vi*2;k++)rs.push([.22+r()*.56,.22+r()*.56,.08+r()*.12,8+r()*18]);rs.sort((a,b)=>a[0]+a[1]-b[0]-b[1]);
@@ -987,7 +988,7 @@ function buildSprites(){
   SP.puff=mk(16,16);{const x=SP.puff.getContext('2d');blob(x,8,8,7,'#cfcfca');blob(x,7,7,5.5,'#e4e4df');blob(x,6,5,3,'#f4f4f0');quantizeCrop(SP.puff);}
   SP.cloud=mk(256,128);{const x=SP.cloud.getContext('2d'),r=mulberry(909);for(let k=0;k<26;k++){const cx=40+r()*176,cy=50+r()*40,rad=16+r()*26,gr=x.createRadialGradient(cx,cy,0,cx,cy,rad);gr.addColorStop(0,'rgba(255,255,255,.55)');gr.addColorStop(1,'rgba(255,255,255,0)');x.fillStyle=gr;x.fillRect(cx-rad,cy-rad,rad*2,rad*2);}}
 }
-function decoSprite(d,i){if(d>=30)return(SP.fgSpr&&SP.fgSpr[d])||null;const h=i===undefined?0:(Math.imul(i,2654435761)>>>13);const pk=a=>a[h%a.length];if(d<=8)return pk(SP.tree[SEASON][d-1]);if(d<=14){if(i===undefined)return forestGet(SEASON,d-9,0,0);const x=i&NM,y=i>>NS;return forestGet(SEASON,d-9,standAt(x,y),h&1);}if(d<=16)return SP.rock[SEASON][d-15];if(d===17)return SP.gh;if(d===22)return SP.reed[SEASON];if(d===23&&SP.giant&&SP.giant[SEASON])return pk(SP.giant[SEASON]);return pk(SP.meadow[SEASON][(d-18)&3]);}
+function decoSprite(d,i){if(d>=30)return(SP.fgSpr&&SP.fgSpr[d])||null;const h=i===undefined?0:(Math.imul(i,2654435761)>>>13);const pk=a=>a[h%a.length];if(d<=8)return pk(SP.tree[SEASON][d-1]);if(d<=14){if(i===undefined)return forestGet(SEASON,d-9,0,0);const x=i&NM,y=i>>NS;return forestGet(SEASON,d-9,standAt(x,y),h&3);}if(d<=16)return SP.rock[SEASON][d-15];if(d===17)return SP.gh;if(d===22)return SP.reed[SEASON];if(d===23&&SP.giant&&SP.giant[SEASON])return pk(SP.giant[SEASON]);return pk(SP.meadow[SEASON][(d-18)&3]);}
 /*@@ROADCLS@@*/
 /* ---- road classes: 1 ~ 16 lanes. lvl: 2=1차선 골목, 0=2차선, 1=4차선, 3..8 = 6/8/10/12/14/16차선 (multi-tile) ---- */
 const RC={2:{L:1,W:1},0:{L:2,W:1},1:{L:4,W:1},3:{L:6,W:2},4:{L:8,W:3},5:{L:10,W:3},6:{L:12,W:4},7:{L:14,W:4},8:{L:16,W:5}};
@@ -2393,7 +2394,7 @@ function checkSeason(){const s=curSeason();if(s!==SEASON){SEASON=s;bumpAll();}}
 function tick(silent){if(compsDirty)recomputeComps();growSlice();sim.day++;if(sim.day%8===0)utilities();if(sim.day%30===0)month(silent);}
 
 /* ================= chunk grids ================= */
-const FC={CS:16,NC:N/16,CW:512,CH:256+TOPM+ELEV+SKIRT,topOff:TOPM+ELEV,full:true,id:0};
+const FC={CS:16,NC:N/16,CW:512+2*12,pad:12,CH:256+TOPM+ELEV+SKIRT,topOff:TOPM+ELEV,full:true,id:0};
 const GC={CS:8,NC:N/8,CW:256,CH:128+(HMAX+1)*E+SKIRT,topOff:(HMAX+1)*E,full:false,id:1};
 for(const C of [FC,GC]){C.ver=new Uint32Array(C.NC*C.NC);C.order=[];for(let s=0;s<2*C.NC-1;s++)for(let cx=Math.max(0,s-C.NC+1);cx<=Math.min(C.NC-1,s);cx++)C.order.push((s-cx)*C.NC+cx);}
 function touch(i){if(BHD){BHD[i]=NaN;BHV++;}if(GLT){GLDIRTY.add(i);const x=i&NM,y=i>>NS;for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){const xx=x+dx,yy=y+dy;if((dx||dy)&&xx>=0&&yy>=0&&xx<N&&yy<N&&terr[yy*N+xx]===TWA)GLDIRTY.add(yy*N+xx);}}const x=i&NM,y=i>>NS;FC.ver[(y>>4)*FC.NC+(x>>4)]++;GC.ver[(y>>3)*GC.NC+(x>>3)]++;const x4=Math.min(N-1,x+4),x8=Math.min(N-1,x+8);FC.ver[(y>>4)*FC.NC+(x8>>4)]++;GC.ver[(y>>3)*GC.NC+(x4>>3)]++;GC.ver[(y>>3)*GC.NC+(x8>>3)]++;mmSet(i);}
@@ -2554,14 +2555,14 @@ let SNQ=0;const REG={q:new Set(),bytes:0,list:new Set()},LGD=mk(1,1).getContext(
 /* close-zoom detail: sprites on screen are redrawn at 2x resolution on demand (time-budgeted, LRU-capped) */
 var HQDL=1;const HQ={q:new Set(),list:new Set(),bytes:0,K:3,want:3};
 /* close-up sprites are re-rendered at a resolution that follows the zoom (3x … 6x), bounded per canvas */
-function hqC(o){const R=o.hr;if(!R)return;const W2=SW*R.sz,H2=R.z?SOH:(R.hc||SOH),Kmax=Math.max(3,Math.floor(Math.sqrt(9e6/(W2*H2)))),K=Math.min(Math.max(3,HQ.want),Kmax);if(o.hq&&(o.hqK||3)>=K){o.hqMax=1;return;}if(o.hq){HQ.bytes-=o.hq.width*o.hq.height*4;}o.hqMax=K>=Kmax?1:0;o.hqK=K;const c=mk(W2*K,H2*K),g=c.getContext('2d'),sv=[OX,OY,PUV,RX,RY,SNOWG,MAING,TSALT];
-  g.setTransform(K,0,0,K,0,0);if(R.z){OX=W2/2;OY=SCY-32-(R.sz-1)*64;PUV=R.ps;RX=RX0*R.ps;RY=RY0*R.ps;}else{OX=SCX;OY=SCY-32-(R.dy||0);PUV=1;RX=RX0;RY=RY0;}SNOWG=null;MAING=null;
+function hqC(o){const R=o.hr;if(!R)return;const pd=R.pad||0,W2=SW*R.sz+2*pd,H2=R.z?SOH:(R.hc||SOH),Kmax=Math.max(3,Math.floor(Math.sqrt(9e6/(W2*H2)))),K=Math.min(Math.max(3,HQ.want),Kmax);if(o.hq&&(o.hqK||3)>=K){o.hqMax=1;return;}if(o.hq){HQ.bytes-=o.hq.width*o.hq.height*4;}o.hqMax=K>=Kmax?1:0;o.hqK=K;const c=mk(W2*K,H2*K),g=c.getContext('2d'),sv=[OX,OY,PUV,RX,RY,SNOWG,MAING,TSALT];
+  g.setTransform(K,0,0,K,0,0);if(R.z){OX=W2/2;OY=SCY-32-(R.sz-1)*64;PUV=R.ps;RX=RX0*R.ps;RY=RY0*R.ps;}else{OX=SCX+pd;OY=SCY-32-(R.dy||0);PUV=1;RX=RX0;RY=RY0;}SNOWG=null;MAING=null;
   TSALT=0;HQDL=K;try{kitRun(()=>(R.fac?R.fac():R.draw)(g,LGD,mulberry(R.seed),{lit:false,emit:[],sn:false}));}finally{HQDL=1;[OX,OY,PUV,RX,RY,SNOWG,MAING,TSALT]=sv;}
-  const q=quantizeCrop(c,null),dyp=R.z?0:(R.dy||0)*K;o.hq=cropC(c,q);o.hqb=[(q[0]-(R.z?(R.sz-1)*64*K:0))/K,(q[1]+dyp)/K,q[2]/K,q[3]/K];HQ.bytes+=q[2]*q[3]*4;HQ.list.add(o);}
+  const q=quantizeCrop(c,null),dyp=R.z?0:(R.dy||0)*K;o.hq=cropC(c,q);o.hqb=[(q[0]-(R.z?(R.sz-1)*64*K:0))/K-pd,(q[1]+dyp)/K,q[2]/K,q[3]/K];HQ.bytes+=q[2]*q[3]*4;HQ.list.add(o);}
 function hqTick(budget){if(!HQ.q.size)return;const t0=performance.now();for(const o of HQ.q){HQ.q.delete(o);hqC(o);if(performance.now()-t0>budget)break;}
   const cap=MEMLOW?40e6:140e6;if(HQ.bytes>cap){const arr=[...HQ.list].sort((a,b)=>(a.hlu||0)-(b.hlu||0));for(const o of arr){if(HQ.bytes<=cap*.75)break;if(o.hlu===frameNo)continue;HQ.bytes-=o.hq.width*o.hq.height*4;o.hq=null;HQ.list.delete(o);}}}
-function regenC(o){const R=o.rg;if(!R||o.c)return;const W2=SW*R.sz,c=mk(W2,SOH),g=c.getContext('2d'),sv=[OX,OY,PUV,RX,RY,SNOWG,MAING];
-  if(R.z){OX=W2/2;OY=SCY-32-(R.sz-1)*64;PUV=R.ps;RX=RX0*R.ps;RY=RY0*R.ps;}else{OX=SCX;OY=SCY-32;PUV=1;RX=RX0;RY=RY0;}SNOWG=null;MAING=null;
+function regenC(o){const R=o.rg;if(!R||o.c)return;const pd=R.pad||0,W2=SW*R.sz+2*pd,c=mk(W2,SOH),g=c.getContext('2d'),sv=[OX,OY,PUV,RX,RY,SNOWG,MAING];
+  if(R.z){OX=W2/2;OY=SCY-32-(R.sz-1)*64;PUV=R.ps;RX=RX0*R.ps;RY=RY0*R.ps;}else{OX=SCX+pd;OY=SCY-32;PUV=1;RX=RX0;RY=RY0;}SNOWG=null;MAING=null;
   TSALT=0;try{kitRun(()=>(R.fac?R.fac():R.draw)(g,LGD,mulberry(R.seed),{lit:false,emit:[],sn:false}));}finally{[OX,OY,PUV,RX,RY,SNOWG,MAING]=sv;}o.c=cropC(c,R.b);REG.bytes+=R.b[2]*R.b[3]*4;REG.list.add(o);}
 const fullC=o=>{if(!o.c)regenC(o);return o.c||o.c2;};
 function regenTick(budget){const t0=performance.now();for(const o of REG.q){REG.q.delete(o);regenC(o);if(performance.now()-t0>budget)break;}const cap=MEMLOW?48e6:180e6;
@@ -2580,7 +2581,7 @@ function ckey(C,ci,k,L){return C.id*1e7+(L?1e6:0)+k*10000+ci+(FX.perf?1e8:0);}
 const farK=S=>clamp(Math.round(Math.log2(4/S)-.1),1,6);
 /* when the near view's sun-driven shadows are on, far chunks use the same pass instead of their own baked casts, so zooming doesn't change the light */
 const dynSh=k=>GLT&&FX.shadow&&!FX.perf&&k<=3;
-function chunkGeom(C,ci){const cx=ci%C.NC,cy=(ci/C.NC)|0,x0=cx*C.CS,y0=cy*C.CS;return{x0,y0,left:(x0-y0-C.CS)*16,top:(x0+y0)*8-C.topOff};}
+function chunkGeom(C,ci){const cx=ci%C.NC,cy=(ci/C.NC)|0,x0=cx*C.CS,y0=cy*C.CS;return{x0,y0,left:(x0-y0-C.CS)*16-(C.pad||0),top:(x0+y0)*8-C.topOff};}
 let SHTMP=null;function buildChunk(C,ci,k,L){const key=ckey(C,ci,k,L),G=chunkGeom(C,ci),sc=scOf(k),w=Math.round(C.CW*sc),h=Math.round(C.CH*sc),CSz=C.CS;
   let e=cache.get(key);if(!e){const pk=w+'x'+h,pl=CPOOL.get(pk);let cv;if(pl&&pl.length){cv=pl.pop();CPOOLN--;}else cv=mk(w,h);e={cv,ver:0,used:0,bytes:w*h*4,k,C};cache.set(key,e);cacheBytes+=e.bytes;}
   const g=e.cv.getContext('2d');g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,w,h);g.imageSmoothingEnabled=true;g.imageSmoothingQuality='high';g.setTransform(sc,0,0,sc,-G.left*sc,-G.top*sc);const hr=sc<=1;
@@ -3197,7 +3198,7 @@ vec3 grassP(vec2 p,float mf,float fd){
   vec3 tx=t1*2.*(.82+.36*t2.g);float lt=dot(tx,vec3(.3,.55,.15));
   float w=smoothstep(.4,.6,fd+(lt-1.)*.45+(vn(p*1.3+vec2(9.,2.))-.5)*.28);
   vec3 cg=uGr[0]*tx,cf=uFl[0]*mix(tx,vec3(lt),.35)*.96;vec3 col=mix(cg,cf,w);float lu0=dot(col,vec3(.3,.55,.15));col=mix(vec3(lu0),col,.82);
-  if(w>.15&&mf>1.){vec4 h=rn(floor(p*30.)+vec2(3.,9.));float lf=step(.72,h.r)*w*smoothstep(1.4,2.6,mf);col=mix(col,(uSea>1.5&&uSea<2.5?vec3(.5,.32,.16):vec3(.32,.28,.18))*(.8+h.g*.4),lf*.55);}
+  if(w>.15&&mf>1.){vec4 h=rn(floor(p*30.)+vec2(3.,9.));float lf=step(.72,h.r)*w*smoothstep(1.4,2.6,mf);col=mix(col,(uSea>1.5&&uSea<2.5?vec3(.5,.32,.16):vec3(.32,.28,.18))*(.8+h.g*.4),lf*.3);}
   return col;}
 vec3 sandP(vec2 p,float e,float mf0){float mf=clamp(mf0,0.,1.),n1=vn(p*3.1+vec2(1.,5.)),n2=vn(p*8.3+vec2(7.,2.));vec3 dry=vec3(.76,.7,.54)*(1.-(n1-.5)*.12*mf-(n2-.5)*.07*mf),wet=vec3(.5,.46,.37)*(1.-(n1-.5)*.1*mf);
   vec3 c=mix(wet,dry,smoothstep(.1,.42,e));float pb=smoothstep(.7,.8,vn(p*5.7+vec2(3.,3.)));return mix(c,vec3(.62,.61,.58),pb*.4*mf);}
@@ -3336,7 +3337,7 @@ function glTerrain(w,h){glUpdate();{const k=[camX,camY,zoom,dpr,w,h,Math.round(n
   const P=GT.prog,u=P.u;gl.useProgram(P.p);gl.uniform2f(u.uCam,camX,camY);gl.uniform2f(u.uRes,w,h);gl.uniform1f(u.uS,zoom*dpr);gl.uniform1f(u.uT,performance.now()/1000);gl.uniform1f(u.uN,nightAmt());
   gl.uniform3f(u.uSky,SKYC.b[0]/255*.92,SKYC.b[1]/255*.95,SKYC.b[2]/255);gl.uniform3f(u.uL,LIGHT[0],LIGHT[1],LIGHT[2]);
   const bind=(unit,target,tx,name)=>{gl.activeTexture(gl.TEXTURE0+unit);gl.bindTexture(target,tx);if(u[name])gl.uniform1i(u[name],unit);};
-  bind(0,gl.TEXTURE_2D_ARRAY,GT.at,'uAt');bind(1,gl.TEXTURE_2D,GT.ti,'uTi');bind(2,gl.TEXTURE_2D,GT.hg,'uHg');bind(3,gl.TEXTURE_2D,GT.wd,'uWd');bind(4,gl.TEXTURE_2D,GT.nz,'uNz');bind(5,gl.TEXTURE_2D,GT.rn,'uRn');bind(6,gl.TEXTURE_2D,GT.sd,'uSd');bind(7,gl.TEXTURE_2D,GT.fo,'uFo');bind(8,gl.TEXTURE_2D,GT.gt,'uGt');gl.uniform1f(u.uSea,SEASON);if(u.uCl)gl.uniform1f(u.uCl,Math.min(1,WX.cover*1.2));if(u.uWet)gl.uniform1f(u.uWet,WX.rain);gl.uniform1f(u.uQ,FX.perf?0.:1.);{const G=GRASS[SEASON],dry=mix(G[0],SEASON===3?-.05:.12).map((v,i)=>i===2?v*.78:v),A=new Float32Array(12);[G[0],G[1],G[2],dry].forEach((cc,j)=>{const h=typeof cc==='string'?hex(cc):cc;A[j*3]=h[0]/255;A[j*3+1]=h[1]/255;A[j*3+2]=h[2]/255;});gl.uniform3fv(u['uGr[0]'],A);const FL=[['#4f6e3a','#425e30','#5d7c44'],['#3f5e30','#344f28','#4a6a38'],['#6a5a34','#5a4a2a','#7a6a40'],['#6a6650','#5a5642','#7a7660']][SEASON],B=new Float32Array(9);FL.forEach((cc,j)=>{const h=hex(cc);B[j*3]=h[0]/255;B[j*3+1]=h[1]/255;B[j*3+2]=h[2]/255;});gl.uniform3fv(u['uFl[0]'],B);}
+  bind(0,gl.TEXTURE_2D_ARRAY,GT.at,'uAt');bind(1,gl.TEXTURE_2D,GT.ti,'uTi');bind(2,gl.TEXTURE_2D,GT.hg,'uHg');bind(3,gl.TEXTURE_2D,GT.wd,'uWd');bind(4,gl.TEXTURE_2D,GT.nz,'uNz');bind(5,gl.TEXTURE_2D,GT.rn,'uRn');bind(6,gl.TEXTURE_2D,GT.sd,'uSd');bind(7,gl.TEXTURE_2D,GT.fo,'uFo');bind(8,gl.TEXTURE_2D,GT.gt,'uGt');gl.uniform1f(u.uSea,SEASON);if(u.uCl)gl.uniform1f(u.uCl,Math.min(1,WX.cover*1.2));if(u.uWet)gl.uniform1f(u.uWet,WX.rain);gl.uniform1f(u.uQ,FX.perf?0.:1.);{const G=GRASS[SEASON],dry=mix(G[0],SEASON===3?-.05:.12).map((v,i)=>i===2?v*.78:v),A=new Float32Array(12);[G[0],G[1],G[2],dry].forEach((cc,j)=>{const h=typeof cc==='string'?hex(cc):cc;A[j*3]=h[0]/255;A[j*3+1]=h[1]/255;A[j*3+2]=h[2]/255;});gl.uniform3fv(u['uGr[0]'],A);const FL=[['#3a5230','#304628','#425a36'],['#2e4428','#263a22','#34492c'],['#4a4230','#3e3828','#52482f'],['#55524a','#4a473f','#5e5a50']][SEASON],B=new Float32Array(9);FL.forEach((cc,j)=>{const h=hex(cc);B[j*3]=h[0]/255;B[j*3+1]=h[1]/255;B[j*3+2]=h[2]/255;});gl.uniform3fv(u['uFl[0]'],B);}
   gl.bindVertexArray(GT.vao);glDrawVis(w,h);gl.bindVertexArray(null);gl.activeTexture(gl.TEXTURE0);}
 function glDrawVis(w,h){const S=zoom*dpr,hw=w/2/S+40,hh=h/2/S+40,s0=Math.max(0,Math.floor((camY-hh)/8)-2),s1=Math.min(2*N-2,Math.ceil((camY+hh+HMAX*6)/8)+2),d0=Math.floor((camX-hw)/16)-2,d1=Math.ceil((camX+hw)/16)+2;
   if(!GT.so||s1<s0){gl.drawElements(gl.TRIANGLES,GT.cnt,gl.UNSIGNED_INT,0);return;}const nd=s1-s0+1;
