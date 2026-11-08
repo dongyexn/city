@@ -478,12 +478,27 @@ function BX(u0,v0,u1,v1,h0,h1){return{u0,v0,u1,v1,h0,h1};}
 function fq(b,side,a0,a1,h0,h1){return side?[P(b.u1,a0,h0),P(b.u1,a1,h0),P(b.u1,a1,h1),P(b.u1,a0,h1)]:[P(a0,b.v1,h0),P(a1,b.v1,h0),P(a1,b.v1,h1),P(a0,b.v1,h1)];}
 function top4(b,h,ins){ins=ins||0;return[P(b.u0+ins,b.v0+ins,h),P(b.u1-ins,b.v0+ins,h),P(b.u1-ins,b.v1-ins,h),P(b.u0+ins,b.v1-ins,h)];}
 /* 노후 표현 (close-up only): grime at the foot of the wall, darkened coping, rain streaks, a downpipe with brackets */
+/* material textures (cached patterns, sprite-space so they scale with the HQ re-render): fine grain + soft mottling for stone/paint walls */
+const MATP={};function matPat(g,k){if(MATP[k])return MATP[k];const S=128,c=mk(S,S),x=c.getContext('2d'),r=mulberry(k==='grain'?71:83);
+  if(k==='grain'){for(let i=0;i<5200;i++){const d=r()<.55;x.fillStyle=d?'rgba(0,0,0,'+(.05+r()*.12).toFixed(3)+')':'rgba(255,255,255,'+(.04+r()*.09).toFixed(3)+')';x.fillRect(r()*S,r()*S,.5+r()*1.1,.5+r()*1.1);}}
+  else{for(let i=0;i<70;i++){const X=r()*S,Y=r()*S,R=6+r()*22,d=r()<.55;for(const ox of [-S,0,S])for(const oy of [-S,0,S]){const gr=x.createRadialGradient(X+ox,Y+oy,0,X+ox,Y+oy,R);gr.addColorStop(0,d?'rgba(0,0,0,.09)':'rgba(255,255,255,.07)');gr.addColorStop(1,'rgba(0,0,0,0)');x.fillStyle=gr;x.fillRect(X+ox-R,Y+oy-R,2*R,2*R);}}
+    for(let i=0;i<26;i++){const X=r()*S,Y=r()*S,L=8+r()*40;x.fillStyle='rgba(30,26,22,'+(.03+r()*.05).toFixed(3)+')';x.fillRect(X,Y,.8+r()*1.4,L);x.fillRect(X,Y-S,.8+r()*1.4,L);}}
+  return MATP[k]=g.createPattern(c,'repeat');}
+function faceClip(g,pts){g.beginPath();g.moveTo(pts[0][0],pts[0][1]);for(let k=1;k<pts.length;k++)g.lineTo(pts[k][0],pts[k][1]);g.closePath();g.clip();}
+function wallTex(g,b){for(let side=0;side<2;side++){const pts=side?fq(b,1,b.v0,b.v1,b.h0,b.h1):fq(b,0,b.u0,b.u1,b.h0,b.h1),xs=pts.map(q=>q[0]),ys=pts.map(q=>q[1]),x0=Math.min(...xs),y0=Math.min(...ys),w=Math.max(...xs)-x0,h=Math.max(...ys)-y0;
+  g.save();faceClip(g,pts);g.fillStyle=matPat(g,'mottle');g.globalAlpha=.6;g.fillRect(x0,y0,w,h);g.fillStyle=matPat(g,'grain');g.globalAlpha=.8;g.fillRect(x0,y0,w,h);
+  /* grime collects toward the base, top edge catches light */const gr=g.createLinearGradient(0,y0,0,y0+h);gr.addColorStop(0,'rgba(255,255,255,.05)');gr.addColorStop(.6,'rgba(0,0,0,0)');gr.addColorStop(1,'rgba(30,24,18,.12)');g.globalAlpha=1;g.fillStyle=gr;g.fillRect(x0,y0,w,h);g.restore();}}
+/* glass: sky reflected in the upper floors, panel-to-panel tint (each pane sits at a slightly different angle), a couple of soft diagonal glints */
+function glassTex(g,r,b,side,a0,a1,n,fh){const pts=fq(b,side,a0,a1,b.h0,b.h1),xs=pts.map(q=>q[0]),ys=pts.map(q=>q[1]),x0=Math.min(...xs),y0=Math.min(...ys),w=Math.max(...xs)-x0,h=Math.max(...ys)-y0,cw=(a1-a0)/n;
+  for(let hh=b.h0;hh<b.h1-.5;hh+=fh)for(let i=0;i<n;i++){const v=r();if(v<.35)continue;poly(g,fq(b,side,a0+cw*i+.006,a0+cw*(i+1)-.006,hh+1.2,Math.min(b.h1,hh+fh)),v<.7?'rgba(255,255,255,'+(.03+r()*.07).toFixed(3)+')':'rgba(8,18,32,'+(.05+r()*.1).toFixed(3)+')');}
+  g.save();faceClip(g,pts);const gr=g.createLinearGradient(0,y0,0,y0+h);gr.addColorStop(0,side?'rgba(225,238,250,.30)':'rgba(200,220,240,.18)');gr.addColorStop(.45,'rgba(160,190,220,.06)');gr.addColorStop(1,'rgba(10,20,34,.18)');g.fillStyle=gr;g.fillRect(x0,y0,w,h);
+  const ng=1+((r()*2)|0);for(let k=0;k<ng;k++){const cx=x0+r()*w,sw=6+r()*14;g.fillStyle='rgba(255,255,255,'+(.05+r()*.06).toFixed(3)+')';g.beginPath();g.moveTo(cx,y0);g.lineTo(cx+sw,y0);g.lineTo(cx+sw-h*.55,y0+h);g.lineTo(cx-h*.55,y0+h);g.closePath();g.fill();}g.restore();}
 function weather(g,b,base){const t=hq32(b.u0,b.v0,b.h1,3);for(let side=0;side<2;side++){const [a0,a1]=side?[b.v0,b.v1]:[b.u0,b.u1],L=a1-a0;
     poly(g,fq(b,side,a0,a1,b.h0,b.h0+1.4),'rgba(40,34,26,.16)');poly(g,fq(b,side,a0,a1,b.h0+1.4,b.h0+4),'rgba(40,34,26,.06)');poly(g,fq(b,side,a0,a1,b.h1-1.2,b.h1),'rgba(30,30,30,.08)');
     const ns=Math.floor(L*14*t);for(let k=0;k<ns;k++){const x=a0+L*hq32(b.u0,side,k,9),ln=(b.h1-b.h0)*(.12+.3*hq32(k,b.v0,side));poly(g,fq(b,side,x,x+.006,b.h1-ln,b.h1-1.2),'rgba(60,52,44,.07)');}
     if(t<.65&&b.h1-b.h0>=14){const x=side?a0+.012:a1-.016,pc=shd(base,-.28);poly(g,fq(b,side,x,x+.007,b.h0+.3,b.h1-.6),pc);for(let h=b.h0+6;h<b.h1-2;h+=10)poly(g,fq(b,side,x-.003,x+.01,h,h+.35),shd(pc,-.2));poly(g,fq(b,side,x-.006,x+.013,b.h0,b.h0+.7),pc);}}}
 function box(g,b,base,o){o=o||{};if(KITP.length)kitCover(b);if(KITP.length&&b.h1-b.h0>=16&&b.u1-b.u0>=.2&&b.v1-b.v0>=.2)kitFlush();const L=o.L||shd(base,-.3),R=o.R||shd(base,-.08),T=o.T||shd(base,.14);
-  poly(g,fq(b,0,b.u0,b.u1,b.h0,b.h1),L);poly(g,fq(b,1,b.v0,b.v1,b.h0,b.h1),R);if(!o.nt)poly(g,top4(b,b.h1),T);
+  poly(g,fq(b,0,b.u0,b.u1,b.h0,b.h1),L);poly(g,fq(b,1,b.v0,b.v1,b.h0,b.h1),R);if(!o.notex&&b.h1-b.h0>=6&&b.u1-b.u0>=.08&&b.v1-b.v0>=.08)wallTex(g,b);if(!o.nt)poly(g,top4(b,b.h1),T);
   if(HQDL>1&&!o.noao&&b.h0<1&&b.h1-b.h0>=10&&b.u1-b.u0>=.14&&b.v1-b.v0>=.14)weather(g,b,base);
   if(HQDL>1&&BRK.has(base)&&b.h1-b.h0>=8)for(let side=0;side<2;side++){const a0=side?b.v0:b.u0,a1=side?b.v1:b.u1;for(let h=b.h0+.9,k=0;h<b.h1-.3;h+=.9,k++){poly(g,fq(b,side,a0,a1,h,h+.16),'rgba(235,225,210,.16)');if(k%3===1)poly(g,fq(b,side,a0,a1,h+.16,h+.9),'rgba(40,20,10,.05)');}}if(SNOWG&&b.h1>2&&!o.nt)poly(SNOWG,top4(b,b.h1),'#fff');
   if(o.par){poly(g,top4(b,b.h1,o.par),o.roof||shd(base,-.2));if(b.h1-b.h0>=16&&b.u1-b.u0>=.25&&b.v1-b.v0>=.25&&b.h1<=140&&!o.nk)KITP.push({g,b});}
@@ -506,9 +521,9 @@ function wins(g,lg,r,st,b,o){const fh=o.fh||10,wh=o.wh||6,base=o.base==null?3:o.
         if(o.frame)poly(g,fq(b,side,x0,x1,h+wh-1,h+wh),side?shd(c,.45):shd(c,.2));
         if(lg&&r()<lp){poly(lg,q,LIT[(r()*LIT.length)|0]);st.lit=true;}}
       if(o.rail)poly(g,fq(b,side,a0+.008,a1-.008,h-2.5,h-1),side?o.rail:shd(o.rail,-.18));}}}
-function curtain(g,lg,r,st,b,o){const col=o.col,fh=o.fh||10;box(g,b,col,{L:shd(col,-.28),R:col,T:o.T||'#9da3a8',edge:shd(col,.45),par:o.par,roof:o.roof});
+function curtain(g,lg,r,st,b,o){const col=o.col,fh=o.fh||10;box(g,b,col,{L:shd(col,-.28),R:col,T:o.T||'#9da3a8',edge:shd(col,.45),par:o.par,roof:o.roof,notex:1});
   for(let side=0;side<2;side++){const a0=side?b.v0:b.u0,a1=side?b.v1:b.u1,n=Math.max(2,Math.round((a1-a0)*PUV*(o.den||12))),cw=(a1-a0)/n;
-    for(let h=b.h0+fh;h<b.h1-1;h+=fh)poly(g,fq(b,side,a0,a1,h,h+1.2),side?shd(col,.3):shd(col,.04));
+    glassTex(g,r,b,side,a0,a1,n,fh);for(let h=b.h0+fh;h<b.h1-1;h+=fh)poly(g,fq(b,side,a0,a1,h,h+1.2),side?shd(col,.3):shd(col,.04));
     for(let i=1;i<n;i++){const a=a0+cw*i;poly(g,fq(b,side,a-.006,a+.006,b.h0,b.h1),side?shd(col,.2):shd(col,-.05));}
     if(lg)for(let h=b.h0+2;h+fh-2<=b.h1;h+=fh)for(let i=0;i<n;i++)if(r()<o.lp){poly(lg,fq(b,side,a0+cw*i+.008,a0+cw*(i+1)-.008,h,h+fh-3),LIT[(r()*LIT.length)|0]);st.lit=true;}}
   const dv=b.v1-b.v0;poly(g,[P(b.u1,b.v0+.12*dv,b.h0+20),P(b.u1,b.v0+.26*dv,b.h0+20),P(b.u1,b.v0+.14*dv,b.h1-6),P(b.u1,b.v0,b.h1-6)],'rgba(255,255,255,.18)');}
@@ -742,10 +757,11 @@ const STFORM=[[.95,1.05,0,1.2,1,0,1,0],[.8,1.18,0,1.3,1,0,.95,0],[1.12,.95,0,1.1
 function streetTree(g,u,v,sp,sea,r,fv){const o=TSTREET;TSTREET=1+(fv&3);try{treeH(g,u,v,1.05,sp,sea,r);}finally{TSTREET=o;}}const SPK={};SPX.forEach(a=>SPK[a[0]]=a);
 const TFAM={oak:['sangsu','singal','plane','horse','tulip','hack','dogwood','sangsu'],dec:['sangsu','singal','plane','horse','tulip','hack'],zelkova:['zelkova','zelkova','hack','pagoda','plane'],
  cherry:['cherry','cherry','magnolia','ipap','crape','persim','quince','sansu'],chr:['cherry'],maple:['maple','dangd','redmap','maple'],ginkgo:['ginkgo','ginkgo','tulip','poplar'],
- birch:['birch','aspen'],willow:['willow'],meta:['meta'],pine:['pine','pine','korpine','blkpine','juniper'],con:['pine','korpine'],fir:['fir','korfir','arbor','hinoki','yew','spruce'],
+ birch:['birch','aspen'],willow:['willow'],meta:['meta'],pine:['korpine','korpine','korfir','juniper','hinoki'],con:['korpine','korfir'],fir:['fir','korfir','arbor','hinoki','yew','spruce'],
  bush:['boxwood','azalea','royal','forsy','hibis','camel','spirea','boxwood','azalea','bamboo']};
 let TSALT=0;
-function pickSp(type,u,v){if(SPK[type])return SPK[type];const f=TFAM[type]||TFAM.oak,h=(TSALT?Math.imul(TSALT+1,83492791)^Math.imul(type.length*7+type.charCodeAt(0),2654435761):(Math.imul(Math.round(u*211)+7,73856093)^Math.imul(Math.round(v*211)+3,19349663)))>>>0;return SPK[f[(h>>>7)%f.length]];}
+/* 소나무·곰솔 are out: any request for them resolves to the other conifers */
+function pickSp(type,u,v){if(type==='blkpine')type='pine';if(type!=='pine'&&SPK[type])return SPK[type];const f=TFAM[type]||TFAM.oak,h=(TSALT?Math.imul(TSALT+1,83492791)^Math.imul(type.length*7+type.charCodeAt(0),2654435761):(Math.imul(Math.round(u*211)+7,73856093)^Math.imul(Math.round(v*211)+3,19349663)))>>>0;return SPK[f[(h>>>7)%f.length]];}
 function inEnv(sh,dx,dy){switch(sh){case 'oval':return dx*dx/.4+dy*dy/1.25<1;case 'column':return dx*dx/.13+dy*dy/2.2<1;case 'wide':return dx*dx/1.5+dy*dy/.42<1;
   case 'vase':{if(dy<-.75||dy>.7)return false;const w=.45+.75*(.7-dy)/1.45;return Math.abs(dx)<w&&(dy>-.35||dx*dx/(w*w)+(dy+.35)*(dy+.35)/.16<1);}
   case 'cone':return dy>-1.75&&dy<.85&&Math.abs(dx)<.8*(dy+1.75)/2.6;case 'flame':return dy>-1.5&&dy<.8&&Math.abs(dx)<.6*Math.sin(Math.PI*(dy+1.5)/2.3)+.06;
@@ -3679,7 +3695,7 @@ void main(){
       else if(lu>.42&&lu<.82&&c.r>c.b+.03){vec2 q=vG*24.;q.x+=floor(q.y)*.5;vec2 qi=floor(q),qf=fract(q);vec4 h=rn(qi+vec2(3.,5.));c*=1.+(h.r-.5)*.1*zm;vec2 w=fwidth(q)+1e-4;float gl=smoothstep(0.,.06+w.x,qf.x)*smoothstep(0.,.08+w.y,qf.y);c=mix(c*.78,c,mix(1.,gl,zm));c*=1.+(vn(vG*60.)-.5)*.05*zm;}
       else if(lu>=.82){float wr=smoothstep(.5,.78,vn(vG*19.+vec2(1.,6.)))*.45+smoothstep(.6,.9,vn(vG*70.))*.25;c=mix(c,vec3(.42,.43,.45),wr*zm);}}}
   if(elig&&dl<2.4){if(emb){if(dl<.16){vec2 q=vec2((vG.x-vG.y)*8.,(vG.x+vG.y)*12.);vec2 qi=floor(vec2(q.x+floor(q.y)*.5,q.y));vec4 h=rn(qi);vec3 st=vec3(.66,.64,.6)*(.9+h.r*.16);vec2 qf=fract(vec2(q.x+floor(q.y)*.5,q.y));vec2 qw=fwidth(q)+1e-4;st*=mix(.8,1.,smoothstep(.0,.08+qw.x,qf.x)*smoothstep(.0,.1+qw.y,qf.y)*smoothstep(1.,.97-qw.x,qf.x));st*=mix(.7,1.,smoothstep(0.,.16,dl));c=dl>.13?mix(st,c,(dl-.13)/.03):st;}}
-    else{float bw=.35+1.3*vn(vG*.06+vec2(4.,1.)),e=dl/bw+wnz*.25;if(e<1.){vec3 sdc=sandP(vG,e,mf);c=mix(sdc,c,smoothstep(.42,.95,e));}}}
+    else{float bw=.75+1.45*vn(vG*.06+vec2(4.,1.)),e=dl/bw+wnz*.3+(vn(vG*.9+vec2(2.,7.))-.5)*.25;if(e<1.){vec3 sdc=sandP(vG,e,mf);c=mix(sdc,c,smoothstep(.42,.95,e));}}}
   if((fl&32)!=0&&(fl&8)==0){vec2 fr=fract(vG);float gs=0.;
     for(int k=0;k<8;k++){ivec2 dv=k==0?ivec2(-1,0):k==1?ivec2(1,0):k==2?ivec2(0,-1):k==3?ivec2(0,1):k==4?ivec2(-1,-1):k==5?ivec2(1,-1):k==6?ivec2(-1,1):ivec2(1,1);
       ivec2 nt=clamp(ti+dv,ivec2(0),ivec2(${N-1}));int nf=int(texelFetch(uTi,nt,0).b*255.+.5);if((nf&8)==0)continue;
