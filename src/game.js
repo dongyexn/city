@@ -2598,7 +2598,7 @@ function stationBldg(x0,y0,r){const i0=idx(x0,y0);let ax=-1;for(const L of RLINE
   const at=(t,o)=>ax?[x0+o,y0+t]:[x0+t,y0+o];
   for(let dt=-3;dt<=3;dt++){const [cx,cy]=at(dt,0),ci=idx(cx,cy);if(inMap(cx,cy)&&kind[ci]===K.LMK&&lmkA[ci]>=0&&(LMKT[vari[lmkA[ci]]]?.id||'').startsWith('rstn'))return false;}
   for(const big of (r()<.4?[1,0]:[0])){const tid=LMKT.findIndex(t=>t.id===(big?'rstnx':'rstn')),sz=LMKT[tid].sz;
-  for(const sd of [1,-1]){let o=0;while(Math.abs(o)<12){const [x,y]=at(0,o+sd);if(!inMap(x,y)||kind[idx(x,y)]!==K.ROAD)break;o+=sd;}const e=o+sd;
+  for(const sd of [1,-1]){/* road half-width beside the track: the narrowest column, so a cross street at the station does not push the building down that street */let o=99;for(let dt=-6;dt<=6;dt++){const [cx,cy]=at(dt,0);if(!inMap(cx,cy)||kind[idx(cx,cy)]!==K.ROAD)continue;let q=0;while(Math.abs(q)<12){const [x,y]=at(dt,q+sd);if(!inMap(x,y)||kind[idx(x,y)]!==K.ROAD)break;q+=sd;}if(q&&Math.abs(q)<Math.abs(o))o=q;}if(o===99)continue;const e=o+sd;
     for(const off of [0,-1,1,-2,2,-3,3,-4,4,-5,5,-6,6]){const t0=off-(sz>>1),oA=Math.min(e,e+sd*(sz-1)),xa=ax?x0+oA:x0+t0,ya=ax?y0+t0:y0+oA;
       if((xa>>4)!==((xa+sz-1)>>4)||(ya>>4)!==((ya+sz-1)>>4))continue;let ok=true;
       for(let y=ya;y<ya+sz&&ok;y++)for(let x=xa;x<xa+sz;x++){if(!inMap(x,y)){ok=false;break;}const j=idx(x,y);if(kind[j]===K.ROAD||kind[j]===K.LMK||terr[j]===TWA||RL[j]||tileAvgH(x,y)>3){ok=false;break;}}
@@ -3814,7 +3814,7 @@ function genCity(seed){const r=mulberry(seed*13+5),SAVE=ROADL,DIR=[[1,0],[-1,0],
     for(const [a,b] of q){if([[a-1,b],[a+1,b],[a,b-1],[a,b+1]].some(([u,v])=>(u<x||u>x+1||v<y||v>y+1)&&isRd(u,v)))continue;const j=idx(a,b);kind[j]=K.EMPTY;lvl[j]=0;vari[j]=0;touchN2(j);ch++;break;}}if(!ch)break;}
   /* final tidy: no narrow roads turning or branching on water (only straight bridges), then drop tiny road islands */
   {const isR=(x,y)=>x>=0&&y>=0&&x<N&&y<N&&kind[idx(x,y)]===K.ROAD;
-   const tidyW=()=>{for(let pass=0;pass<8;pass++){let n=0;for(let i=0;i<NN;i++){if(kind[i]!==K.ROAD||terr[i]!==TWA)continue;const x=i&NM,y=i>>NS;
+   const tidyW=()=>{for(let pass=0;pass<256;pass++){let n=0;for(let i=0;i<NN;i++){if(kind[i]!==K.ROAD||terr[i]!==TWA)continue;const x=i&NM,y=i>>NS;
        if(isWide(i)){/* a wide bridge must land on road at both ends */const ax=wInfo(i).ax,dx=ax?0:1,dy=ax?1:0;let ok=true;for(const sg of [-1,1]){let xx=x,yy=y;for(let k=0;k<200;k++){xx+=dx*sg;yy+=dy*sg;if(!isR(xx,yy)){ok=false;break;}if(terr[idx(xx,yy)]!==TWA)break;}if(!ok)break;}if(!ok){clearTile(i);touch(i);n++;}continue;}
        const m=roadMask(x,y),wideNb=[[1,0],[-1,0],[0,1],[0,-1]].some(([dx,dy])=>isR(x+dx,y+dy)&&isWide(idx(x+dx,y+dy))&&terr[idx(x+dx,y+dy)]===TWA);if((m!==5&&m!==10)||wideNb){clearTile(i);touch(i);n++;}}if(!n)break;}};
    tidyW();
