@@ -3963,7 +3963,9 @@ function genCity(seed){const r=mulberry(seed*13+5),SAVE=ROADL,DIR=[[1,0],[-1,0],
     else t=d<.22?'sub':d<.7?(fbm(mx/40,my/40,seed+9,2)>.4?'new':'gen'):'gen';
     if(t==='gen'&&d>.6&&fbm(mx/70,my/70,seed+5,2)>.52)t='vil';cells.push({x0,y0,x1,y1,mx,my,d,t,k:ck,ga:a,gb:b});}
   GCELLS=cells;
-  {const cs=cells.filter(c=>c.t!=='ind'&&!c.k).sort((p,q)=>p.d-q.d);for(let k=0;k<2&&k<cs.length;k++)if(cs[k].d<.45)cs[k].t='cbd';}
+  /* 도심은 건축 가능한 땅이 반 이상인 블록에만: 강 둔치·제방에 먹히는 강변 블록이 CBD가 되면 빈 들판이 된다. 중심 사분면이 물로 빠져도 블록이 셋 이상이면 도심 하나는 둔다(두 블록뿐인 섬 도시는 구도심 유지) */
+  {const bf=c=>{let n=0,t=0;for(let y=c.y0;y<=c.y1;y+=2)for(let x=c.x0;x<=c.x1;x+=2){t++;const i=idx(x,y);if(terr[i]!==TWA&&hh(x,y)<=2&&!(distR[i]>=0&&distR[i]*MS<DUN+6))n++;}return n/t;};
+   const cs=cells.filter(c=>c.t!=='ind'&&!c.k&&bf(c)>=.5).sort((p,q)=>p.d-q.d);for(let k=0;k<2&&k<cs.length;k++)if(cs[k].d<.45||(!k&&cs[k].d<.7&&cells.filter(c=>c.t!=='ind'&&!c.k).length>=3&&!cells.some(c=>c.t==='cbd')))cs[k].t='cbd';}
   {const cand=cells.filter(c=>!c.k&&c.t==='gen'&&c.d>.45&&c.d<.75);for(let k=0;k<2&&cand.length;k++){const c=cand.splice((r()*cand.length)|0,1)[0];c.t='sub';}}
   for(const c of cells)for(let y=c.y0;y<=c.y1;y++)for(let x=c.x0;x<=c.x1;x++){const i=idx(x,y);if(terr[i]===TPAD||terr[i]===TFLD){terr[i]=TG;deco[i]=0;touch(i);}else if(deco[i]&&deco[i]<=14&&hh(x,y)<=1&&r()<.7)deco[i]=0;}
   for(let i=0;i<NN;i++){if(terr[i]!==TPAD&&terr[i]!==TFLD)continue;const x=i&NM,y=i>>NS;if(dN(x,y)<.98){terr[i]=TG;if(deco[i]===17)deco[i]=0;touch(i);}}
@@ -3984,11 +3986,11 @@ function genCity(seed){const r=mulberry(seed*13+5),SAVE=ROADL,DIR=[[1,0],[-1,0],
         let jogs=0;for(let a=a0+1;a<=a1;a++)if(q[a]!==q[a-1])jogs++;const stair=jogs>nA*.18;
         for(let a=a0;a<=a1;a++){const oR=s*q[a];if(stair)continue;road.add(T(a,oR));const t=oR-3*s;trail.add(T(a,t));if(a<a1){const oN=s*q[a+1];if(oN!==oR)road.add(T(a+1,oR));const tN=oN-3*s;if(tN!==t)trail.add(tN===t+s?T(a+1,t):T(a,tN));}}
         for(let a=a0+6;a<a1-6;a+=24+((r()*20)|0))if(r()<.75){const L2=3+((r()*3)|0);for(let k=0;k<L2;k++)sport.add(a+k);}
-        for(let a=a0;a<=a1;a++){const oR=s*q[a];for(let o=e[a];s*(oR-o)>=1;o+=s){const [x,y]=XY(a,o),i=idx(x,y);if(road.has(i)||kind[i]===K.ROAD||kind[i]===K.LMK||terr[i]===TWA)continue;
-            if(trail.has(i)){PK(i,'y');continue;}const dr=s*(oR-o),dw=s*(o-e[a])+1;if(dr<=2){GR(i);RSV[i]=1;continue;}
+        for(let a=a0;a<=a1;a++){const oR=s*q[a];for(let o=e[a];s*(oR-o)>=(stair?0:1);o+=s){const [x,y]=XY(a,o),i=idx(x,y);if(road.has(i)||kind[i]===K.ROAD||kind[i]===K.LMK||terr[i]===TWA)continue;
+            if(trail.has(i)){PK(i,'y');continue;}const dr=s*(oR-o),dw=s*(o-e[a])+1;if(dr<=2){/* no 강변로 on a staircase bank: the levee band stays lawn, not a bare reserved strip with a stray row of lots in the road slot */if(stair){PK(i,'m');continue;}GR(i);RSV[i]=1;continue;}
             const h=hsh(x,y,seed+313);let c='m';if(sport.has(a)&&dr>=4&&dr<=5)c='x';else if(dw<=2)c='m';else if(h<.035)c='v';else if(h<.05)c='z';else if(h<.058)c='u';else if(h>.9&&dw>3)c='o';PK(i,c);}}
         for(const i of trail)PK(i,'y');
-        for(let a=a0;a<=a1;a++){for(const k of [1,2]){const [x,y]=XY(a,s*q[a]+s*k);if(inMap(x,y)&&!road.has(idx(x,y)))RSV[idx(x,y)]=1;}}
+        if(!stair)for(let a=a0;a<=a1;a++){for(const k of [1,2]){const [x,y]=XY(a,s*q[a]+s*k);if(inMap(x,y)&&!road.has(idx(x,y)))RSV[idx(x,y)]=1;}}
         for(const i of road){if(isWide(i)||kind[i]===K.LMK)continue;if(kind[i]!==K.ROAD){rabClear(i);clearTile(i);kind[i]=K.ROAD;lvl[i]=1;deco[i]=0;vari[i]=0;if(terr[i]===TPAD||terr[i]===TFLD||terr[i]===TSA)terr[i]=TG;touchN2(i);}if(terr[i]!==TWA)berm.add(i);}
         a0=a1+1;}}
     /* raise the road one step: the levee tiles on both sides become grass slopes */
