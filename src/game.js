@@ -328,7 +328,7 @@ function inEnv(sh,dx,dy){switch(sh){case 'oval':return dx*dx/.4+dy*dy/1.25<1;cas
   case 'cone':return dy>-1.75&&dy<.85&&Math.abs(dx)<.8*(dy+1.75)/2.6;case 'flame':return dy>-1.5&&dy<.8&&Math.abs(dx)<.6*Math.sin(Math.PI*(dy+1.5)/2.3)+.06;
   case 'shrub':return dx*dx/1.3+dy*dy/.36<1&&dy<.55;case 'tiered':return dx*dx+dy*dy<1&&((dy+1)*3.2%1)<.72;default:return dx*dx+dy*dy<1;}}
 function drawTree(g,x,y,s,S,sea,r,u){const [key,,sh,tr0,R0,bark,sum,spr,aut,ev,gl,fw,fr]=S;const F=TSTREET?STFORM[TSTREET-1]:TFORM[(r()*10)|0],jw=.92+r()*.16,WS=F[0]*jw,HS=F[1]*(.92+r()*.16),R=R0*s*Math.sqrt(WS*HS),tr=Math.round(tr0*s*F[3]*(sh==='shrub'?1:.9+r()*.2)),cy=y-tr-(sh==='shrub'?R*.45:sh==='cone'||sh==='column'||sh==='flame'?R*.8*HS:R*.72*HS);
-  const pal=c=>[cmix(c,'#0f1c16',.42),c,cmix(c,'#a8b45a',.28),cmix(c,'#c8cc7a',.42)],base=sea===0?spr:sea===1?sum:sea===2?aut:(ev?shd(sum,-.08):null);
+  const pal=c=>[cmix(c,'#0f1c16',.42),c,cmix(c,'#a8b45a',.2),cmix(c,'#c8cc7a',.3)],base=sea===0?spr:sea===1?sum:sea===2?aut:(ev?shd(sum,-.08):null);
   const flowerAll=sea===0&&fw&&fw[0]&&(key==='cherry'||key==='magnolia'||key==='forsy'||key==='azalea'||key==='royal'||key==='spirea'||key==='sansu');
   /* trunk */
   if(sh==='bamboo'){const n=6+((r()*4)|0);for(let k=0;k<n;k++){const bx=x+(r()-.5)*R*1.3,h=R*(2.2+r()*1.3);g.fillStyle='#5a8a34';g.fillRect(Math.round(bx),Math.round(y-h),2,Math.round(h));g.fillStyle='#8cba5a';g.fillRect(Math.round(bx),Math.round(y-h),1,Math.round(h));for(let q=y-3;q>y-h;q-=3*s){g.fillStyle='#4e7a30';g.fillRect(Math.round(bx),Math.round(q),1,1);}
@@ -346,7 +346,7 @@ function drawTree(g,x,y,s,S,sea,r,u){const [key,,sh,tr0,R0,bark,sum,spr,aut,ev,g
       const sx=topX+(r()-.5)*R*.15,sy=sh==='shrub'?y:cy+R*(.25+r()*.25)*HS,L=R*(sh==='weep'?.7:.85)*(.55+r()*.55)*Math.sqrt(WS);let ex=sx+Math.cos(a)*L*WS/Math.sqrt(WS),ey=sy+Math.sin(a)*L*(sh==='wide'?.6:.9)*HS;for(let q=0;q<5&&!env(ex,ey);q++){ex=sx+(ex-sx)*.82;ey=sy+(ey-sy)*.82;}g.lineWidth=brW;g.beginPath();g.moveTo(sx,sy);g.quadraticCurveTo(sx+Math.cos(a)*L*.3,sy+Math.sin(a)*L*.6,ex,ey);g.stroke();
       for(let q=0;q<2;q++){const a2=a+(q?.5:-.5)+(r()-.5)*.3,L2=L*.4,tx=ex+Math.cos(a2)*L2,ty=ey+Math.sin(a2)*L2;g.lineWidth=Math.max(.5,brW*.6);g.beginPath();g.moveTo(ex,ey);g.lineTo(tx,ty);g.stroke();tips.push([tx,ty]);}tips.push([ex,ey]);}}
   if(!base){return;}
-  const P4=pal(base),flw=fw&&fw[sea],frt=fr&&fr[sea],dark=shd(P4[0],-.25);
+  const P4=pal(cmix(base,'#142218',.3)),flw=fw&&fw[sea],frt=fr&&fr[sea],dark=shd(P4[0],-.25);
   /* leaves */
   const LQ=HQDL>1?2.6:1,pts=[],N=Math.round((sh==='shrub'?3.4:gl==='n'?3:2.6)*R*R*(sh==='column'||sh==='flame'?1.1:1)*LQ*F[6]*(sh==='pine'?1.6:1));
   if(sh==='pine'){/* 소나무: crooked leader, 4-6 ragged cloud pads made of several small leaf clumps */const pads=3+((r()*3)|0);let lx=topX,ly=cy+R*.45;
@@ -354,6 +354,13 @@ function drawTree(g,x,y,s,S,sea,r,u){const [key,,sh,tr0,R0,bark,sum,spr,aut,ev,g
       g.lineWidth=Math.max(.6,brW*(1-k*.12));g.beginPath();g.moveTo(lx,ly);g.quadraticCurveTo((lx+px)/2+side*R*.1,(ly+py)/2,px,py+pr*.15);g.stroke();lx=lx+(px-lx)*.35;ly=py;
       const nb2=4+((r()*4)|0),blobs=[];for(let q=0;q<nb2;q++)blobs.push([px+(r()*2-1)*pr*.7,py+(r()*2-1)*pr*.18-pr*.05,pr*(.26+r()*.2)]);
       for(let q=0;q<N/pads;q++){const b=blobs[(r()*blobs.length)|0],a=r()*Math.PI*2,d=Math.sqrt(r());pts.push([b[0]+Math.cos(a)*d*b[2],b[1]+Math.sin(a)*d*b[2]*.62,Math.sin(a)*d*.9+(b[1]-py)/pr]);}}}
+  else if(sh==='cone'||sh==='column'||sh==='flame'){let y0=null,y1=null;for(let yy=cy-R*2.6;yy<cy+R*1.3;yy+=R*.04)if(env(topX,yy)){if(y0===null)y0=yy;y1=yy;}
+    if(y0!==null){g.strokeStyle=bark;g.lineWidth=Math.max(.6,tw*.55);g.beginPath();g.moveTo(topX,cy);g.lineTo(topX+(r()-.5)*R*.06,y0+R*.05);g.stroke();g.strokeStyle=shd(bark,-.1);
+      const nt=Math.max(5,Math.round((y1-y0)/(R*(sh==='column'?.16:.2))));for(let k=0;k<nt;k++){const ty=y0+(y1-y0)*(k+.6)/nt+(r()-.5)*R*.07;let hw=0;for(let dx=0;dx<R*2;dx+=R*.03){if(env(topX+dx,ty)||env(topX-dx,ty))hw=dx;else if(hw>0)break;}
+        hw=Math.max(R*.08,hw*(.72+r()*.42));for(const sd of [-1,1]){if(k>1&&r()<.1)continue;const L=hw*(.8+r()*.35),np=Math.max(3,Math.round(N/nt/2*(.8+r()*.4))),droop=R*(.08+r()*.12)*(sh==='column'?.5:1),th=R*(sh==='column'?.07:.09);
+          g.lineWidth=Math.max(.45,brW*.5);g.beginPath();g.moveTo(topX,ty-R*.05);g.quadraticCurveTo(topX+sd*L*.5,ty-R*.02,topX+sd*L*.92,ty+droop*.85);g.stroke();
+          for(let q=0;q<np;q++){const t=Math.pow(r(),.75),bx=topX+sd*L*t,by=ty+droop*t*t-R*.04*(1-t),tt=th*(1.25-.6*t),oy=(r()-.5)*2*tt;pts.push([bx+(r()-.5)*R*.07,by+oy,oy/tt*.55+(by-cy)/R*.45-.15]);}}}
+      for(let q=0;q<N*.08;q++){const yy=y0+(y1-y0)*r();pts.push([topX+(r()-.5)*R*.12,yy,(yy-cy)/R*.5]);}}}
   else if(sh==='weep'){for(let k=0;k<16;k++){const sx=topX+(r()-.5)*R*1.6,sy=cy-R*(.2+r()*.6),L=R*(.8+r()*.9),bend=(sx-topX)*.25;for(let q=0;q<N/16;q++){const t=r();pts.push([sx+bend*t*t+(r()-.5),sy+L*t,t*2-1]);}}}
   else{let tries=0;while(pts.length<N&&tries<N*6){tries++;let px,py;if(tips.length&&r()<(F[6]<.9?.92:.82)){const t=tips[(r()*tips.length)|0],rad=R*(.32+.18*((t[0]*13.7)%1+1)%1);const a=r()*6.283,d=Math.sqrt(r());px=t[0]+Math.cos(a)*d*rad*1.15;py=t[1]+Math.sin(a)*d*rad*.85-rad*.15;}else{px=topX+(r()*2-1)*R*1.3;py=cy+(r()*2-1)*R*1.8;if(r()<.5)continue;}
       if(!env(px,py)&&!(tips.length&&r()<.25&&inEnv(sh,(px-topX)/(R*1.25),(py-cy)/(R*1.25))))continue;pts.push([px,py,((px-topX)*.15+(py-cy))/R]);}}
@@ -362,12 +369,12 @@ function drawTree(g,x,y,s,S,sea,r,u){const [key,,sh,tr0,R0,bark,sum,spr,aut,ev,g
   /* canopy volume: soft shaded leaf masses under the individual leaves, so crowns read as rounded clumps of foliage, not loose dots */
   if(pts.length>8&&sh!=='weep'){const cl=[];const cone=sh==='cone'||sh==='column'||sh==='flame';
     if(sh==='pine'&&0){const seen=new Set();for(const p of pts){const k=Math.round(p[1]/(R*.5));if(seen.has(k))continue;seen.add(k);let sx=0,sy=0,n=0,mx=0;for(const q of pts)if(Math.round(q[1]/(R*.5))===k){sx+=q[0];sy+=q[1];n++;}const cx2=sx/n,cy2=sy/n;for(const q of pts)if(Math.round(q[1]/(R*.5))===k)mx=Math.max(mx,Math.abs(q[0]-cx2));cl.push([cx2,cy2,mx*.7,mx*.32]);}}
-    else if(cone)cl.push([topX,cy,R*(sh==='column'?.34:.5),R*(sh==='column'?1.3:1.05)]);
+    else if(cone){}
     else{const tt=tips.slice();for(let q=tt.length-1;q>0;q--){const j=(r()*(q+1))|0,t0=tt[q];tt[q]=tt[j];tt[j]=t0;}tt.length=Math.min(7,tt.length);for(const t of tt){if(!inEnv(sh,(t[0]-topX)/(R*WS/Math.sqrt(WS*HS)*.92),(t[1]-cy)/(R*HS/Math.sqrt(WS*HS)*.92)))continue;cl.push([t[0],t[1]-R*.05,R*(.2+r()*.08),R*(.17+r()*.06)]);}}
     for(const [ex,ey,rx,ry] of cl){if(rx<1||ry<1)continue;const nq=Math.round(rx*ry*(LQ>1?.9:.5));for(let q=0;q<nq;q++){const a=r()*6.283,d=Math.sqrt(r()),px=ex+Math.cos(a)*d*rx,py=ey+Math.sin(a)*d*ry,up=(py-ey)/ry+(px-ex)/rx*.1;if(!env(px,py))continue;g.fillStyle=up<-.35?P4[1]:up<.3?cmix(P4[0],P4[1],.45):P4[0];g.beginPath();g.ellipse(px,py,Math.max(.7,rx*.16),Math.max(.6,ry*.14),r()*3,0,6.283);g.fill();}if(1)continue;g.beginPath();
       if(cone){g.moveTo(ex,ey-ry);g.quadraticCurveTo(ex+rx*1.1,ey+ry*.2,ex+rx*.75,ey+ry*.85);g.quadraticCurveTo(ex,ey+ry*1.05,ex-rx*.75,ey+ry*.85);g.quadraticCurveTo(ex-rx*1.1,ey+ry*.2,ex,ey-ry);}else g.ellipse(ex,ey,rx,ry,0,0,6.283);g.fill();}}
   for(const p of pts){g.fillStyle=dark;if(LQ>1)g.fillRect(p[0]+.5,p[1]+.5,.7,.6);else g.fillRect(Math.round(p[0]+1),Math.round(p[1]+1),1,1);}
-  const cone0=sh==='cone'||sh==='column'||sh==='flame',TH=R*(cone0?.42:.62);for(const p of pts){const dx=(p[0]-topX)/R,yy=p[1]-cy+dx*dx*TH*(cone0?1.1:.9)+Math.sin(p[0]*1.7+R*3)*TH*.18,tf=((yy/TH)%1+1)%1,L=p[2]*.9+(r()-.5)*.75+(tf>.8?.22:tf<.15?-.14:0);let c=L>.85?dark:L>.4?P4[0]:L>-.15?P4[1]:L>-.75?P4[2]:L>-1.25?P4[3]:shd(P4[3],.14);
+  const cone0=sh==='cone'||sh==='column'||sh==='flame',TH=R*(cone0?.42:.62);for(const p of pts){const dx=(p[0]-topX)/R,yy=p[1]-cy+dx*dx*TH*(cone0?1.1:.9)+Math.sin(p[0]*1.7+R*3)*TH*.18,tf=cone0?.5:((yy/TH)%1+1)%1,L=p[2]*.9+(r()-.5)*.75+(tf>.8?.22:tf<.15?-.14:0);let c=L>.85?dark:L>.4?P4[0]:L>-.15?P4[1]:L>-.75?P4[2]:L>-1.25?P4[3]:shd(P4[3],.14);
     if(flw&&(flowerAll?r()<.85:r()<(sea===0?.3:.12)))c=r()<.8?flw:shd(flw,-.12);if(frt&&r()<.06)c=frt;
     g.fillStyle=c;if(LQ>1){const q=.85;if(gl==='n')g.fillRect(p[0]-q,p[1],q*2.2,q*.8);else{g.beginPath();g.ellipse(p[0],p[1],q,q*.62,(p[0]*7%3)-1,0,6.283);g.fill();}continue;}const X=Math.round(p[0]),Y=Math.round(p[1]);
     if(gl==='n'){if(sh==='cone'||sh==='pine'||sh==='column'||sh==='flame')g.fillRect(X-1,Y,r()<.5?3:2,1);else g.fillRect(X,Y,1,r()<.6?2:1);}
