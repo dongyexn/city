@@ -279,6 +279,23 @@ kbd{font:600 10px var(--f-body);background:var(--chip-on);border-radius:5px;padd
 .tile span,.sw span,.btn,.pill,.lbl,.sh,.kp2 .lbl,#ctx button,.ch,.tool,.palItem span,.tgTab,.keys span,.net .lbl,.fin>span{white-space:nowrap}
 .tile.arm{background:var(--accent-soft);color:var(--accent)}.tile.warn.arm{background:rgba(239,111,91,.16);color:var(--warn)}
 @media (prefers-reduced-motion: reduce){*{transition:none!important}}
+/* ===== phone landscape: one compact HUD row, small minimap, icon-only tools, panels fit the short screen ===== */
+@media (orientation:landscape) and (max-height:520px) and (min-width:600px){
+  #hud{gap:5px;top:calc(env(safe-area-inset-top,0px) + 6px);flex-wrap:nowrap}
+  .hgrp{min-height:32px;padding:2px 8px;border-radius:11px}
+  .hwx,.hstats .lbl,.hfill{display:none!important}
+  .city{font-size:14px!important}.date{font-size:11.5px}.wx{font-size:11px;padding:1px 6px 1px 4px}
+  .hend{width:auto!important;margin-left:auto}.hend .btn{padding:3px 8px;min-height:26px}
+  .hspd .seg button,.hspd button{padding:2px 7px;min-height:26px}
+  #mini{width:150px;height:75px}#miniWrap{padding:4px;bottom:calc(env(safe-area-inset-bottom,0px) + 6px)}
+  #tools{bottom:calc(env(safe-area-inset-bottom,0px) + 6px);padding:3px 5px;gap:2px;right:calc(max(12px,env(safe-area-inset-right,0px) + 10px) + 170px);max-width:calc(100% - 200px)}
+  .tool span{display:none}.tool{min-width:38px;padding:2px 3px}.tool img{width:24px;height:27px}
+  .tgTab{padding:2px 8px;min-height:24px}
+  #menu,#side{top:calc(env(safe-area-inset-top,0px) + 46px);max-height:calc(100% - 56px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));overflow-y:auto}
+  #palette{bottom:calc(env(safe-area-inset-bottom,0px) + var(--tbh,70px) + 10px)}#palGrid{max-height:34vh}
+  #info{bottom:calc(env(safe-area-inset-bottom,0px) + var(--tbh,70px) + 10px);max-height:calc(100% - var(--tbh,70px) - 60px);overflow-y:auto}
+  #hint{display:none}
+}
 </style>
 
 <canvas id="view" aria-label="도시 지도"></canvas>
