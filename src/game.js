@@ -3257,7 +3257,7 @@ vec3 grassP(vec2 p,float mf,float fd){
   if(w>.15&&mf>1.){vec4 h=rn(floor(p*30.)+vec2(3.,9.));float lf=step(.72,h.r)*w*smoothstep(1.4,2.6,mf);col=mix(col,(uSea>1.5&&uSea<2.5?vec3(.5,.32,.16):vec3(.32,.28,.18))*(.8+h.g*.4),lf*.3);}
   return col;}
 vec3 sandP(vec2 p,float e,float mf0){float mf=clamp(mf0,0.,1.),n1=vn(p*3.1+vec2(1.,5.)),n2=vn(p*8.3+vec2(7.,2.));vec3 dry=vec3(.76,.7,.54)*(1.-(n1-.5)*.12*mf-(n2-.5)*.07*mf),wet=vec3(.5,.46,.37)*(1.-(n1-.5)*.1*mf);
-  vec3 c=mix(wet,dry,smoothstep(.1,.42,e));float pb=smoothstep(.7,.8,vn(p*5.7+vec2(3.,3.)));return mix(c,vec3(.62,.61,.58),pb*.4*mf);}
+  vec3 c=mix(wet,dry,smoothstep(.1,.42,e));float pb=smoothstep(.62,.9,vn(p*5.7+vec2(3.,3.)))*(.6+.4*vn(p*17.));return mix(c,c*vec3(.9,.9,.92),pb*.5*mf);}
 void main(){
   if(vK>.5){bool xe=vK<2.5;vec3 c=xe?vec3(.43,.33,.22):vec3(.54,.42,.28);float d=clamp(xe?vK-1.:vK-3.,0.,1.);c*=1.-.4*d;o=vec4(c,1.);return;}
   ivec2 ti=clamp(ivec2(floor(vG)),ivec2(0),ivec2(${N-1}));vec4 inf=texelFetch(uTi,ti,0);
@@ -3266,7 +3266,7 @@ void main(){
   vec2 gx=dFdx(vG),gy=dFdy(vG);float fp=max(max(dot(gx,gx),dot(gy,gy)),1e-8),mf=(1./22.)/sqrt(fp)/2.5*uQ;
   vec3 wv3=texture(uWd,(vG+.5)/${HN}.).rgb;vec2 wv=wv3.rg;float wnz=(vn(vG*1.7+vec2(2.,9.))-.5)*.5+(vn(vG*5.3+vec2(7.,1.))-.5)*.16;
   vec2 sdv=texture(uSd,(vG*2.+.5)/${SDN}.).rg;float sd=sdv.r*3.;/* embanked-stream weight, blurred and noise-broken so a stream mouth fades into the river instead of meeting it on a straight tile line */float ef=0.;for(int k=0;k<9;k++){vec2 o=vec2(float(k%3)-1.,float(k/3)-1.)*1.4;ef+=texture(uSd,(vG*2.+o*2.+.5)/${SDN}.).g;}ef=smoothstep(.3,.7,ef/9.+(vn(vG*1.1+vec2(3.,8.))-.5)*.35);bool emb=sdv.g>.5;bool elig=(fl&4)!=0||(fl&1)!=0;
-  float r0=emb?.5:.5+(vn(vG*.31+vec2(9.,3.))-.5)*.36+wnz*.06;bool isW=(fl&4)!=0;if(elig)isW=sd<r0;float dl=sd-r0;
+  float r0=mix(.5+(vn(vG*.31+vec2(9.,3.))-.5)*.36+wnz*.06,.5,ef*ef);bool isW=(fl&4)!=0;if(elig)isW=sd<r0;float dl=sd-r0;
   if(isW){float d=max(r0-sd,(wv.r*12.75-.35)*(1.-ef)),fd=clamp(d/4.5,0.,1.),t=uT;fd=max(fd,clamp(d*.9,0.,.8));fd=mix(fd,min(fd,.32),ef);float e=d;
     if(!emb&&e<.07){vec3 c=sandP(vG,e+.05,mf);c*=1.+clamp(L*1.55,-.42,.36)*1.1;o=vec4(c,1.);return;}
     vec2 p=vG;bool wi=uSea>2.5;
@@ -3300,8 +3300,7 @@ void main(){
         float cr=abs(vn(vG*5.3+vec2(2.,9.))-.5)+abs(vn(vG*11.+vec2(5.,1.))-.5)*.5,cw=fwidth(vG.x)*6.;if(cr<.008+cw)c=mix(c,c*.78,(1.-smoothstep(.002,.008+cw,cr))*zm*smoothstep(.62,.76,vn(vG*1.7+vec2(4.,4.))));}
       else if(lu>.42&&lu<.82&&c.r>c.b+.03){vec2 q=vG*24.;q.x+=floor(q.y)*.5;vec2 qi=floor(q),qf=fract(q);vec4 h=rn(qi+vec2(3.,5.));c*=1.+(h.r-.5)*.1*zm;vec2 w=fwidth(q)+1e-4;float gl=smoothstep(0.,.06+w.x,qf.x)*smoothstep(0.,.08+w.y,qf.y);c=mix(c*.78,c,mix(1.,gl,zm));c*=1.+(vn(vG*60.)-.5)*.05*zm;}
       else if(lu>=.82){float wr=smoothstep(.5,.78,vn(vG*19.+vec2(1.,6.)))*.45+smoothstep(.6,.9,vn(vG*70.))*.25;c=mix(c,vec3(.42,.43,.45),wr*zm);}}}
-  if(elig&&dl<2.4){if(emb){if(dl<.16){vec2 q=vec2((vG.x-vG.y)*8.,(vG.x+vG.y)*12.);vec2 qi=floor(vec2(q.x+floor(q.y)*.5,q.y));vec4 h=rn(qi);vec3 st=vec3(.66,.64,.6)*(.9+h.r*.16);vec2 qf=fract(vec2(q.x+floor(q.y)*.5,q.y));vec2 qw=fwidth(q)+1e-4;st*=mix(.8,1.,smoothstep(.0,.08+qw.x,qf.x)*smoothstep(.0,.1+qw.y,qf.y)*smoothstep(1.,.97-qw.x,qf.x));st*=mix(.7,1.,smoothstep(0.,.16,dl));c=dl>.13?mix(st,c,(dl-.13)/.03):st;}}
-    else{float bw=.75+1.45*vn(vG*.06+vec2(4.,1.)),e=dl/bw+wnz*.3+(vn(vG*.9+vec2(2.,7.))-.5)*.25;if(e<1.25){vec3 sdc=sandP(vG,e,mf);/* grass blades from the lawn texture reach into the sand, tufts thin out over a ragged band — no smooth airbrush ramp */vec2 gq=vec2(vG.x-vG.y,(vG.x+vG.y)*.5)*.25;float gt=dot(texture(uGt,gq).rgb,vec3(.3,.55,.15))*2.-1.,e2=e+gt*.32+(vn(vG*2.7+vec2(5.,1.))-.5)*.34+(vn(vG*8.+vec2(2.,4.))-.5)*.12;float m=smoothstep(.5,.6,e2);sdc=mix(sdc,sdc*vec3(.86,.84,.8),smoothstep(.3,.55,e2)*(1.-m)*.6);c=mix(sdc,c,m);}}}
+  if(elig&&dl<2.4){if(ef<.98){float bw=.75+1.45*vn(vG*.06+vec2(4.,1.)),e=dl/bw+wnz*.3+(vn(vG*.9+vec2(2.,7.))-.5)*.25;if(e<1.25){vec3 sdc=sandP(vG,e,mf);/* grass blades from the lawn texture reach into the sand, tufts thin out over a ragged band — no smooth airbrush ramp */vec2 gq=vec2(vG.x-vG.y,(vG.x+vG.y)*.5)*.25;float gt=dot(texture(uGt,gq).rgb,vec3(.3,.55,.15))*2.-1.,e2=e+gt*.32+(vn(vG*2.7+vec2(5.,1.))-.5)*.34+(vn(vG*8.+vec2(2.,4.))-.5)*.12;float m=smoothstep(.5,.6,e2);sdc=mix(sdc,sdc*vec3(.86,.84,.8),smoothstep(.3,.55,e2)*(1.-m)*.6);c=mix(c,mix(sdc,c,m),1.-ef);}}if(ef>.02&&dl<.16){vec3 cs=c;vec2 q=vec2((vG.x-vG.y)*8.,(vG.x+vG.y)*12.);vec2 qi=floor(vec2(q.x+floor(q.y)*.5,q.y));vec4 h=rn(qi);vec3 st=vec3(.66,.64,.6)*(.9+h.r*.16);vec2 qf=fract(vec2(q.x+floor(q.y)*.5,q.y));vec2 qw=fwidth(q)+1e-4;st*=mix(.8,1.,smoothstep(.0,.08+qw.x,qf.x)*smoothstep(.0,.1+qw.y,qf.y)*smoothstep(1.,.97-qw.x,qf.x));st*=mix(.7,1.,smoothstep(0.,.16,dl));c=dl>.13?mix(st,c,(dl-.13)/.03):st;c=mix(cs,c,ef);}}
   if((fl&32)!=0&&(fl&8)==0){vec2 fr=fract(vG);float gs=0.;
     for(int k=0;k<8;k++){ivec2 dv=k==0?ivec2(-1,0):k==1?ivec2(1,0):k==2?ivec2(0,-1):k==3?ivec2(0,1):k==4?ivec2(-1,-1):k==5?ivec2(1,-1):k==6?ivec2(-1,1):ivec2(1,1);
       ivec2 nt=clamp(ti+dv,ivec2(0),ivec2(${N-1}));int nf=int(texelFetch(uTi,nt,0).b*255.+.5);if((nf&8)==0)continue;
