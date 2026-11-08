@@ -2353,11 +2353,13 @@ function pkPlan(t,cx,cy){const T=PKT[t],r=mulberry(cx*733+cy*97+t*13+7),sd=cx*31
   const nd=i=>{const x=i&NM,y=i>>NS;return Math.hypot(x-cx,y-cy)/(RAD*(.68+.6*fbm(x/5.5,y/5.5,sd,2)));};
   let mh=0;for(const i of cand)if(nd(i)<.55)mh=Math.max(mh,tileAvgH(i&NM,i>>NS));const canWater=mh<=3;
   const C=new Map();for(const i of cand){const x=i&NM,y=i>>NS,n=nd(i),h=hsh(x,y,sd+1);let c='m';
-    if(T.kind==='lake'){if(canWater&&n<.42+(fbm(x/3,y/3,sd+5,2)-.5)*.18)c='L';else if(n>.5&&n<.64)c='y';else if(n>.84&&fbm(x/4,y/4,sd+9,2)>.45)c='o';}
+    /* promenade: one-tile ring on the inner edge of the band (a 2-3 tile band of trail tiles joined into a lattice) */
+    const inner=lim=>{if(n<lim)return false;for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){const j=idx(x+dx,y+dy);if((dx||dy)&&cand.has(j)&&nd(j)<lim)return true;}return false;};
+    if(T.kind==='lake'){if(canWater&&n<.42+(fbm(x/3,y/3,sd+5,2)-.5)*.18)c='L';else if(n<.66&&inner(.52))c='y';else if(n>.84&&fbm(x/4,y/4,sd+9,2)>.45)c='o';}
     else if(T.kind==='wet'){const wn=fbm(x/3.2,y/3.2,sd+3,2);if(canWater&&wn>.53&&n<.85)c='L';else if(deco[i]>=9&&deco[i]<=14)c='o';else if(wn<.38&&n>.6)c='o';}
     else if(T.kind==='forest'){c=(deco[i]>=1&&deco[i]<=16)||fbm(x/4,y/4,sd+2,2)>.42?'o':'m';}
-    else if(T.kind==='sport'){if(n<.62&&((x+y)&1||h<.5))c='x';else if(n>.66&&n<.8)c='y';else if(n>.85&&h<.5)c='o';}
-    else{if(n>.5&&n<.66)c='y';else if(n>.82&&fbm(x/4,y/4,sd+9,2)>.48)c='o';}
+    else if(T.kind==='sport'){if(n<.62&&((x+y)&1||h<.5))c='x';else if(n<.8&&inner(.68))c='y';else if(n>.85&&h<.5)c='o';}
+    else{if(n<.7&&inner(.55))c='y';else if(n>.82&&fbm(x/4,y/4,sd+9,2)>.48)c='o';}
     C.set(i,c);}
   const nb4=i=>{const x=i&NM,y=i>>NS,o=[];for(const [dx,dy] of DIRS){const xx=x+dx,yy=y+dy;if(xx>=0&&yy>=0&&xx<N&&yy<N)o.push(idx(xx,yy));}return o;};
   const walk=(from,to,ch,over)=>{let cur=from,g=0;while(cur!==to&&g++<80){if(C.has(cur)&&(over||C.get(cur)!=='L'))C.set(cur,ch);const x=cur&NM,y=cur>>NS,tx=to&NM,ty=to>>NS;const opts=nb4(cur).filter(j=>C.has(j));if(!opts.length)break;opts.sort((a,b)=>Math.hypot((a&NM)-tx,(a>>NS)-ty)-Math.hypot((b&NM)-tx,(b>>NS)-ty)+(r()-.5)*.8);cur=opts[0];}};
@@ -3906,7 +3908,7 @@ function genCity(seed){const r=mulberry(seed*13+5),SAVE=ROADL,DIR=[[1,0],[-1,0],
   const cNear=(x,y)=>{let m=1e9,k=0;for(let j=0;j<CEN.length;j++){const c=CEN[j],v=Math.hypot(x-c.x,y-c.y)/c.s;if(v<m){m=v;k=j;}}return k;};
   const dN=(x,y)=>{let m=1e9;for(const c of CEN){const v=Math.hypot(x-c.x,y-c.y)/c.s;if(v<m)m=v;}return m/Rw(x,y);},U=(x,y)=>inMap(x,y)&&dN(x,y)<1&&hh(x,y)<=2;
   const RD=(L,a,b)=>{ROADL=L;applyTool('road',a,b);};
-  const DUN=5+((r()*3)|0);const segOK=(a,b,allowW,maxH)=>{const cs=pathCells(a,b);let w=0,nr=0;for(const [x,y] of cs){if(!inMap(x,y))return false;const i=idx(x,y);if(OCEAN[i]&&allowW<45)return false;if(terr[i]===TWA){w++;continue;}if(distR[i]>=0&&distR[i]*MS<DUN+4)nr++;if(hh(x,y)>maxH||kind[i]===K.LMK)return false;}return w<=allowW&&(w>0||nr===0);};
+  const DUN=5+((r()*3)|0);const segOK=(a,b,allowW,maxH)=>{const cs=pathCells(a,b);let w=0,nr=0;for(const [x,y] of cs){if(!inMap(x,y))return false;const i=idx(x,y);if(OCEAN[i])return false;if(terr[i]===TWA){w++;continue;}if(distR[i]>=0&&distR[i]*MS<DUN+4)nr++;if(hh(x,y)>maxH||kind[i]===K.LMK)return false;}return w<=allowW&&(w>0||nr===0);};
   /* 2. arterial grid (6~10 lanes), main axes wider, bridges where they cross the river */
   const lines=(c0,lo,hi)=>{const out=[c0],st=()=>Math.round((34+r()*18)*(CSC<1?.78:1));let p=c0;while(p<hi){p+=st();out.push(p);}p=c0;while(p>lo){p-=st();out.unshift(p);}return out.filter(v=>v>6&&v<N-6);};
   const ext=f=>[Math.min(...CEN.map(c=>c[f]-R*c.s*1.25)),Math.max(...CEN.map(c=>c[f]+R*c.s*1.25))];
@@ -4139,6 +4141,18 @@ function genCity(seed){const r=mulberry(seed*13+5),SAVE=ROADL,DIR=[[1,0],[-1,0],
      let rd=false;for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]])if(kind[idx(x+dx,y+dy)]===K.ROAD)rd=true;if(!rd||dense(x,y)<24)continue;
      const h=(((x>>1)*73856093)^((y>>1)*19349663)^(seed*83492791))>>>0,t=(h%100)/100;deco[i]=t<.55?41:t<.72?42:t<.82?40:deco[i];touch(i);}}
   waterSetback();stripShoreTrees();
+  /* wide roads that run into the sea or a field and just stop (traffic piled up at the stub): cut them back, row by row, to the last crossing */
+  for(let it=0;it<120;it++){let ch=0;for(let i=0;i<NN;i++){if(!isWide(i)||terr[i]===TWA)continue;const x=i&NM,y=i>>NS;if(wideJ(x,y))continue;const {p,ax}=wInfo(i);if(p!==0)continue;const W=RC[lvl[i]].W,dx=ax===0?1:0,dy=ax===0?0:1,row=[];for(let k=0;k<W;k++){const xx=x+(ax===0?0:k),yy=y+(ax===0?k:0);if(!inMap(xx,yy))break;const j=idx(xx,yy);if(!isWide(j))break;row.push([xx,yy,j]);}if(row.length!==W)continue;
+      for(const sg of [-1,1]){if(row.every(([xx,yy])=>{const nx=xx+dx*sg,ny=yy+dy*sg;return nx<0||ny<0||nx>=N||ny>=N||kind[idx(nx,ny)]!==K.ROAD;})){const back=row.every(([xx,yy])=>{const nx=xx-dx*sg,ny=yy-dy*sg;return nx>=0&&ny>=0&&nx<N&&ny<N&&isWide(idx(nx,ny));});if(!back)break;for(const [,,j] of row){clearTile(j);deco[j]=0;if(terr[j]!==TWA)terr[j]=TG;touch(j);}ch++;break;}}}if(!ch)break;compsDirty=true;}
+  /* built clusters left without a street (complexes whose district streets never came, outskirt towers): run a 2-lane access road to the nearest street */
+  for(let it=0;it<60;it++){const dist=new Uint8Array(NN).fill(99),q=[];for(let i=0;i<NN;i++)if(kind[i]===K.ROAD){dist[i]=0;q.push(i);}for(let h=0;h<q.length;h++){const i=q[h];if(dist[i]>=6)continue;const x=i&NM,y=i>>NS;for(const [dx,dy] of DIR){const xx=x+dx,yy=y+dy;if(xx<0||yy<0||xx>=N||yy>=N)continue;const j=idx(xx,yy);if(dist[j]>dist[i]+1){dist[j]=dist[i]+1;q.push(j);}}}
+    let st=-1;for(let i=0;i<NN;i++){const k=kind[i];if(k>=K.RES&&k<=K.IND&&lvl[i]&&dist[i]>4){st=i;break;}}if(st<0)break;
+    /* flood the cluster (buildings + their complex grounds), then BFS outward over open land to a road */
+    const prev=new Int32Array(NN).fill(-2),qq=[],inC=j=>{const k=kind[j];return (k>=K.RES&&k<=K.IND&&lvl[j])||(k===K.PARK&&fix[j]===2)||lmkA[j]>=0;};const cl=[st];prev[st]=-1;for(let h=0;h<cl.length;h++){const i=cl[h],x=i&NM,y=i>>NS;for(const [dx,dy] of DIR){const xx=x+dx,yy=y+dy;if(xx<0||yy<0||xx>=N||yy>=N)continue;const j=idx(xx,yy);if(prev[j]!==-2||!inC(j)||cl.length>900)continue;prev[j]=-1;cl.push(j);}}
+    for(const i of cl)qq.push(i);let hitR=-1;for(let h=0;h<qq.length&&hitR<0;h++){const i=qq[h],x=i&NM,y=i>>NS;for(const [dx,dy] of DIR){const xx=x+dx,yy=y+dy;if(xx<1||yy<1||xx>=N-1||yy>=N-1)continue;const j=idx(xx,yy);if(prev[j]!==-2)continue;if(kind[j]===K.ROAD&&!isElev(j)){prev[j]=i;hitR=j;break;}if(kind[j]!==K.EMPTY||terr[j]===TWA||!isFlat(xx,yy)||hh(xx,yy)>3)continue;prev[j]=i;qq.push(j);}}
+    if(hitR<0){for(const i of cl)if(kind[i]>=K.RES&&kind[i]<=K.IND){clearTile(i);touch(i);}continue;}
+    const path=[];for(let j=prev[hitR];j>=0&&!inC(j);j=prev[j])path.push(j);if(!path.length){/* already adjacent: nothing to lay */for(const i of cl)if(kind[i]>=K.RES&&kind[i]<=K.IND&&dist[i]>4&&!isFoot(i)){clearTile(i);touch(i);}continue;}
+    const pts=path.concat([hitR]).map(j=>[j&NM,j>>NS]);let a0=0;for(let k=2;k<=pts.length;k++){const A=pts[a0],C=pts[k];if(k===pts.length||!(A[0]===C[0]||A[1]===C[1])){RD(2,{x:A[0],y:A[1]},{x:pts[k-1][0],y:pts[k-1][1]});a0=k-1;}}}
   /* lots more than 4 tiles from any street can't be reached: leave them as open ground */
   {const dist=new Uint8Array(NN).fill(99),q=[];for(let i=0;i<NN;i++)if(kind[i]===K.ROAD){dist[i]=0;q.push(i);}for(let h=0;h<q.length;h++){const i=q[h];if(dist[i]>=6)continue;const x=i&NM,y=i>>NS;for(const [dx,dy] of DIR){const xx=x+dx,yy=y+dy;if(xx<0||yy<0||xx>=N||yy>=N)continue;const j=idx(xx,yy);if(dist[j]>dist[i]+1){dist[j]=dist[i]+1;q.push(j);}}}
    for(let i=0;i<NN;i++){const k=kind[i];if(k<K.RES||k>K.IND||dist[i]<=4||fix[i]===2||isFoot(i))continue;clearTile(i);touch(i);}}
