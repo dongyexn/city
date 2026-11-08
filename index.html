@@ -464,9 +464,14 @@ function tileShape(x,y){const a=hv(x,y),b=hv(x+1,y),c=hv(x+1,y+1),d=hv(x,y+1),m=
 function isFlat(x,y){const a=hv(x,y);return hv(x+1,y)===a&&hv(x+1,y+1)===a&&hv(x,y+1)===a;}
 function tileAvgH(x,y){return (hv(x,y)+hv(x+1,y)+hv(x+1,y+1)+hv(x,y+1))/4;}
 function surfH(fx,fy){const x=clamp(Math.floor(fx),0,N-1),y=clamp(Math.floor(fy),0,N-1),u=clamp(fx-x,0,1),v=clamp(fy-y,0,1);const a=hv(x,y),b=hv(x+1,y),c=hv(x+1,y+1),d=hv(x,y+1);return a*(1-u)*(1-v)+b*u*(1-v)+c*u*v+d*(1-u)*v;}
-function relax(){for(let it=0;it<2;it++){
-  for(let y=0;y<HN;y++)for(let x=0;x<HN;x++){const i=y*HN+x;let h=H[i];if(x>0)h=Math.min(h,H[i-1]+1);if(y>0){h=Math.min(h,H[i-HN]+1);if(x>0)h=Math.min(h,H[i-HN-1]+1);if(x<HN-1)h=Math.min(h,H[i-HN+1]+1);}H[i]=h;}
-  for(let y=HN-1;y>=0;y--)for(let x=HN-1;x>=0;x--){const i=y*HN+x;let h=H[i];if(x<HN-1)h=Math.min(h,H[i+1]+1);if(y<HN-1){h=Math.min(h,H[i+HN]+1);if(x<HN-1)h=Math.min(h,H[i+HN+1]+1);if(x>0)h=Math.min(h,H[i+HN-1]+1);}H[i]=h;}}}
+/* keep=false only while carving the first terrain; afterwards sea-cliff feet (water-edge vertices under a ≥3 step) are left alone so bluffs survive edits */
+let CLIFV=null;function clRule(){const CL=new Uint8Array(HN*HN);const tw=(x,y)=>x>=0&&y>=0&&x<N&&y<N&&terr[y*N+x]===TWA;for(let y=0;y<HN;y++)for(let x=0;x<HN;x++){const v=y*HN+x;if(H[v]!==0||!(tw(x-1,y-1)||tw(x,y-1)||tw(x-1,y)||tw(x,y)))continue;for(let dy=-1;dy<=1&&!CL[v];dy++)for(let dx=-1;dx<=1;dx++){const xx=x+dx,yy=y+dy;if(xx>=0&&yy>=0&&xx<HN&&yy<HN&&H[yy*HN+xx]>=3){CL[v]=1;break;}}}return CL;}
+function relax(keep){let CL=null;if(keep!==false&&CLIFV)CL=CLIFV;else if(keep!==false){CL=new Uint8Array(HN*HN);const tw=(x,y)=>x>=0&&y>=0&&x<N&&y<N&&terr[y*N+x]===TWA;for(let y=0;y<HN;y++)for(let x=0;x<HN;x++){const v=y*HN+x;if(H[v]!==0||!(tw(x-1,y-1)||tw(x,y-1)||tw(x-1,y)||tw(x,y)))continue;for(let dy=-1;dy<=1&&!CL[v];dy++)for(let dx=-1;dx<=1;dx++){const xx=x+dx,yy=y+dy;if(xx>=0&&yy>=0&&xx<HN&&yy<HN&&H[yy*HN+xx]>=3){CL[v]=1;break;}}}}
+  const c=n=>CL&&CL[n]?1e9:H[n]+1;for(let it=0;it<2;it++){
+  for(let y=0;y<HN;y++)for(let x=0;x<HN;x++){const i=y*HN+x;let h=H[i];if(x>0)h=Math.min(h,c(i-1));if(y>0){h=Math.min(h,c(i-HN));if(x>0)h=Math.min(h,c(i-HN-1));if(x<HN-1)h=Math.min(h,c(i-HN+1));}H[i]=h;}
+  for(let y=HN-1;y>=0;y--)for(let x=HN-1;x>=0;x--){const i=y*HN+x;let h=H[i];if(x<HN-1)h=Math.min(h,c(i+1));if(y<HN-1){h=Math.min(h,c(i+HN));if(x<HN-1)h=Math.min(h,c(i+HN+1));if(x>0)h=Math.min(h,c(i+HN-1));}H[i]=h;}}}
+/* tile lift added by the island plateau (genMap); generation compares heights relative to it */
+let LIFTV=null;function liftT(x,y){if(!LIFTV)return 0;const v=y*HN+x;return(LIFTV[v]+LIFTV[v+1]+LIFTV[v+HN]+LIFTV[v+HN+1])/4;}
 
 /* ================= sprite toolkit (4x resolution: tile 128x64) ================= */
 const SW=128,SOH=(TOPM+16)*SR,SCX=64,SCY=TOPM*SR+32;
@@ -622,7 +627,7 @@ function quantizeCrop(c,extra){const g=c.getContext('2d'),W=c.width,Hh=c.height,
   if(x1<0)return[0,0,2,2];x0=Math.max(0,(x0-1)&~1);y0=Math.max(0,(y0-1)&~1);let w=x1-x0+2,h=y1-y0+2;w+=w&1;h+=h&1;return[x0,y0,Math.min(w,W-x0),Math.min(h,Hh-y0)];}
 function cropC(src,b){const c=mk(b[2],b[3]);c.getContext('2d').drawImage(src,-b[0],-b[1]);return c;}
 function half(src){const c=mk(Math.ceil(src.width/2),Math.ceil(src.height/2)),x=c.getContext('2d');x.imageSmoothingEnabled=true;x.imageSmoothingQuality='high';x.drawImage(src,0,0,c.width,c.height);return c;}
-let PSC=1,SNOWG=null;var CURFAC=null,DROPOK=0,GCELLS=[];
+let PSC=1,SNOWG=null,HANOKC=null;var CURFAC=null,DROPOK=0,GCELLS=[];
 function finSnow(o,sn,b){const c=cropC(sn,b),x=c.getContext('2d');x.globalCompositeOperation='destination-in';x.drawImage(o.c,0,0);o.sn2=half(c);o.sn=o.sn2;}
 function oszpS(draw,seed,sz,ds,noShadow){TSALT=0;ds=ds||1;const ps=sz/ds,W2=SW*sz,c=mk(W2,SOH),g=c.getContext('2d',{willReadFrequently:true}),l=mk(W2,SOH),lg=l.getContext('2d',{willReadFrequently:true}),sn=mk(W2,SOH),r=mulberry(seed),st={lit:false,emit:[],noShadow,sn:true};
   OX=W2/2;OY=SCY-32-(sz-1)*64;PUV=ps;RX=RX0*ps;RY=RY0*ps;SNOWG=sn.getContext('2d');MAING=g;
@@ -1025,6 +1030,10 @@ function kPal(r,L){return{wall:rp(r,L>=4?KW.white.concat(KW.cream,KW.pastel):KW.
   acc:rp(r,['#3f7fd6','#2fa36b','#d96a3a','#7a5ec2','#2a9aa8','#c9a54a','#8e3f4a','#5a8f3a']),acc2:rp(r,['#f2b233','#a8c8e8','#e8a8b8','#bfe0a8','#d9d2c0']),numc:rp(r,['#4a4f57','#2f5a8a','#8a3a2e','#3a6a4a']),
   sg:(r()*3)|0,den:rr(r,9,13),bal:L>=4||r()<.4,base:r()<.6?rp(r,['#c9b79a','#b5a690','#9a9590','#d2c3a8']):null,roof:rp(r,['#5a6a7a','#7a5a46','#3f6e5a','#4a4f57'])};}
 /* RES 1: 단독주택 */
+function kHouseT(v){const r=mulberry(7700+v*31);return rp(r,['yang','yang','yang','giwa','giwa','jeon','sangga','hanok']);}
+/* 기와지붕 디자인: 한옥마을 섹터 밖에서는 쓰지 않는다 */
+function isGiwa(k,L,v){if(L!==1||(k!==K.RES&&k!==K.COM))return false;const e=catOf(k,L)[v];if(!e)return false;if(e.n==='한옥 카페')return true;if(e.n==='단독주택'){const t=kHouseT(e.s*7+1);return t==='giwa'||t==='hanok';}if(e.n==='시골집')return e.s%4===2;return false;}
+const GSUB={};function giwaSub(k){let g=GSUB[k];if(g)return g;const n=catOf(k,1).length,o=[];for(let v=0;v<n;v++)if(!isGiwa(k,1,v))o.push(v);g=GSUB[k]=[];for(let v=0;v<n;v++)g.push(isGiwa(k,1,v)?o[(v*7)%o.length]:-1);return g;}
 function kHouse(v){const r=mulberry(7700+v*31),t=rp(r,['yang','yang','yang','giwa','giwa','jeon','sangga','hanok']);
   if(t==='hanok')return(g,lg,r2,st)=>{const lot=BX(.1,.14,.9,.9,0,0);wall2(g,lot,7,'#d8d2c4',1);box(g,BX(.14,.24,.86,.8,0,5),'#b8b0a2',{edge:false});const b=BX(.18,.28,.82,.76,5,19);box(g,b,'#f3eee2',{edge:false,noao:1});
     for(const a of [.18,.34,.5,.66,.82])poly(g,fq(b,0,a-.01,a+.01,5,19),'#6e4a2e');for(const a of [.28,.52,.76])poly(g,fq(b,1,a-.01,a+.01,5,19),'#8a5d38');
@@ -1467,6 +1476,8 @@ function buildSprites(){
   {const r=mulberry(74),b=hex('#bdb9b0'),e=hex('#a5a198');SP.svc=tex(gsp((fx,fy)=>(fx<.03||fx>.97||fy<.03||fy>.97)?e:(r()<.05?e:b)));}
   {const r=mulberry(78),b=hex('#cbc5b6'),j=hex('#b4ae9f');SP.stone=tex(gsp((fx,fy)=>((Math.abs(fx*6-Math.round(fx*6))<.05)||(Math.abs(fy*6-Math.round(fy*6))<.05))?j:(r()<.08?j:b)));}
   {const r=mulberry(76),b=hex('#8a6a48'),d=hex('#6e5338'),l=hex('#a8885f');SP.dirt=tex(gsp(()=>{const v=r();return v<.15?d:v<.25?l:b;}));}
+  /* 해안 절벽 암반: grey-brown rock, lichen flecks, dark cracks */
+  {const r=mulberry(77),C=[hex('#8f877b'),hex('#7d766d'),hex('#a49c8f'),hex('#6a645d'),hex('#5a554f')];SP.cliffT=[0,1].map(k=>tex(gsp((fx,fy)=>{const n=vn(fx*5+k*3,fy*5,91+k),n2=vn(fx*14,fy*14,97+k),v=r();if(n2>.78)return C[4];if(v<.05)return hex('#8a9a6a');return n>.62?C[2]:n<.38?C[3]:v<.5?C[0]:C[1];})));}
   SP.road=[0,1].map(tp=>{const arr=[];for(let m=0;m<16;m++){const r=mulberry(80+m+tp*40),A=hex('#484b51'),A2=hex('#51545a'),B1=hex('#b9a898'),B2=hex('#a8988a'),Cb=hex('#d6d3cc'),M=hex('#e9c94a'),Wt=hex('#ecece6'),Md=hex('#bdbab2');
     const n=m&1,e=m&2,s=m&4,w=m&8,cnt=(n?1:0)+(e?1:0)+(s?1:0)+(w?1:0),t=tp?.1:.14,c=t+.018;
     arr[m]=tex(gsp((fx,fy,px,py)=>{const blk=PV(fx,fy,B1,B2);
@@ -2465,7 +2476,7 @@ function buildFacGround(){const rw=(axis,side)=>{const A=hex('#4b4e54'),A2=hex('
 const LMKI=id=>LMKT.findIndex(T=>T.id===id);
 function catIdx(k,L,names){const a=catOf(k,L),o=[];a.forEach((e,i)=>{if(names.includes(e.n))o.push(i);});return o.length?o:[0];}
 function catName(k,L,v){const a=catOf(k,Math.min(L,k===K.IND?4:5));return a[v%a.length].n;}
-function genOutskirts(r,cx,cy,R,dN,seed){const hh=(x,y)=>tileAvgH(x,y),inMap=(x,y)=>x>=6&&y>=6&&x<N-6&&y<N-6,RD=(L,a,b)=>{ROADL=L;applyTool('road',a,b);};
+function genOutskirts(r,cx,cy,R,dN,seed){const hh=(x,y)=>tileAvgH(x,y)-liftT(x,y),inMap=(x,y)=>x>=6&&y>=6&&x<N-6&&y<N-6,RD=(L,a,b)=>{ROADL=L;applyTool('road',a,b);};
   const free=i=>terr[i]!==TWA&&kind[i]===K.EMPTY&&!(deco[i]>=30),W1=N+1,IB=new Int32Array(W1*W1),IH=new Float64Array(W1*W1),IQ=new Float64Array(W1*W1);
   const rebuild=()=>{for(let y=0;y<N;y++){let rb=0,rh=0,rq=0;for(let x=0;x<N;x++){const i=idx(x,y);rb+=free(i)?0:1;const h=hh(x,y);rh+=h;rq+=h*h;const o=(y+1)*W1+x+1;IB[o]=IB[o-W1]+rb;IH[o]=IH[o-W1]+rh;IQ[o]=IQ[o-W1]+rq;}}};
   const rs=(A,x0,y0,w,h)=>A[(y0+h)*W1+x0+w]-A[y0*W1+x0+w]-A[(y0+h)*W1+x0]+A[y0*W1+x0];
@@ -2763,7 +2774,14 @@ const PKT=[{name:'근린공원',rad:4.6,kind:'nb',amen:['p','z','v','u']},{name:
 const PKC='movxzyd';
 function pkChar(i){if(fix[i]!==2)return'';const v=vari[i];if(kind[i]!==K.PARK||v<20)return'';return CXA[cxIdx(v)];}
 const TRAILC=new Map();
-function trailSpr(m,sea,deck,lamp,cm){const key=m*80+sea*4+(deck?2:0)+(lamp?1:0)+(cm?40:0);let o=TRAILC.get(key);if(o)return o;
+/* 천변 산책로 + 러닝트랙: red rubber running lane with white lane lines beside a pale paved footpath, lamps now and then */
+function runTrack(g,lg,st,m,lamp){const arms=[[1,.5,0],[2,1,.5],[4,.5,1],[8,0,.5]].filter(a=>m&a[0]);if(!arms.length)arms.push([1,.5,0],[4,.5,1]);const H=.4,ws=.3;
+  const strip=(a,o0,o1,col)=>{const [b,u,v]=a,al=b===1||b===4,lo=Math.min(al?.5:u,al?v:.5),hi=Math.max(al?.5:u,al?v:.5),ex=.5+ws;const q=al?[P(.5+o0,lo,H),P(.5+o1,lo,H),P(.5+o1,hi,H),P(.5+o0,hi,H)]:[P(lo,.5+o0,H),P(hi,.5+o0,H),P(hi,.5+o1,H),P(lo,.5+o1,H)];poly(g,q,col);};
+  for(const a of arms)strip(a,-ws,ws,'#d9d3c6');poly(g,[P(.5-ws,.5-ws,H),P(.5+ws,.5-ws,H),P(.5+ws,.5+ws,H),P(.5-ws,.5+ws,H)],'#d9d3c6');
+  for(const a of arms){strip(a,-.04,ws-.03,'#c4583e');strip(a,.11,.12,'rgba(255,255,255,.75)');strip(a,-.04,-.03,'rgba(255,255,255,.85)');strip(a,ws-.04,ws-.03,'rgba(255,255,255,.85)');}
+  if(lamp)lampAt(g,lg,st,.5-ws+.03,.5-ws+.03,1);}
+function trailSpr(m,sea,deck,lamp,cm,trk){const key=m*80+sea*4+(deck?2:0)+(lamp?1:0)+(cm?40:0)+(trk?5000:0);let o=TRAILC.get(key);if(o)return o;
+  if(trk){o=osp((g,lg,r,st)=>runTrack(g,lg,st,m,lamp),56000+key);TRAILC.set(key,o);return o;}
   o=osp((g,lg,r,st)=>{const w=deck?.2:.13,H=deck?3:.4,c0=deck?'#a8865c':'#c8b48e',c1=deck?'#8a6a44':'#b49e78';const arms=[[1,.5,0],[2,1,.5],[4,.5,1],[8,0,.5]].filter(a=>m&a[0]);
     const quad=(u0,v0,u1,v1,col)=>poly(g,[P(u0,v0,H),P(u1,v0,H),P(u1,v1,H),P(u0,v1,H)],col);
     if(deck){for(const a of arms){if(a[0]===1||a[0]===4){const v0=a[0]===1?0:.5-w,v1=a[0]===1?.5+w:1;box(g,BX(.5-w,v0,.5+w,v1,0,H),c0,{noao:1,edge:false,T:c0});for(let v=v0;v<v1;v+=.06)poly(g,[P(.5-w,v,H+.01),P(.5+w,v,H+.01),P(.5+w,v+.008,H+.01),P(.5-w,v+.008,H+.01)],c1);}
@@ -2796,7 +2814,7 @@ function buildPkSprites(){SP.pka={};for(const a of 'muvxz'){SP.pka[a]=[0,1,2,3].
 function pkObj(i){const c=pkChar(i);if(!c)return undefined;const x=i&NM,y=i>>NS,hsh2=(Math.imul(i,2654435761)>>>0);
   if(c==='o')return forestGet(SEASON,hsh2%3,[0,2,3][(hsh2>>4)%3],(hsh2>>6)&1);
   if(c==='y'||c==='d'){const ok=(xx,yy)=>{if(xx<0||yy<0||xx>=N||yy>=N)return false;const j=idx(xx,yy),cc=pkChar(j);return c==='y'?(cc==='y'||cc==='u'||cc==='z'||cc==='d'||kind[j]===K.ROAD):(cc==='d'||cc==='y'||(terr[j]!==TWA&&kind[j]!==K.EMPTY));};
-    let m=0;if(ok(x,y-1))m|=1;if(ok(x+1,y))m|=2;if(ok(x,y+1))m|=4;if(ok(x-1,y))m|=8;let cm=0;if(c==='y'&&(m===3||m===6||m===12||m===9)){const dx=(m&2)?1:-1,dy=(m&1)?-1:1;if(!ok(x+dx,y+dy))cm=1;}return trailSpr(m,SEASON,c==='d',c==='y'&&hsh2%5===0,cm);}
+    let m=0;if(ok(x,y-1))m|=1;if(ok(x+1,y))m|=2;if(ok(x,y+1))m|=4;if(ok(x-1,y))m|=8;let cm=0;if(c==='y'&&(m===3||m===6||m===12||m===9)){const dx=(m&2)?1:-1,dy=(m&1)?-1:1;if(!ok(x+dx,y+dy))cm=1;}return trailSpr(m,SEASON,c==='d',c==='y'&&hsh2%5===0,cm,c==='y'&&deco[i]===60);}
   if(c==='u'){const cu=(xx,yy)=>xx>=0&&yy>=0&&pkChar(idx(xx,yy))==='u';if(cu(x-1,y)||cu(x,y-1))return SP.pkPlaza[SEASON][hsh2%2];}
   if(c==='m'){/* lawn on the beach band: grass only, no trees on sand */let sh=false;for(let dy=-2;dy<=2&&!sh;dy++)for(let dx=-2;dx<=2;dx++){const xx=x+dx,yy=y+dy;if(xx>=0&&yy>=0&&xx<N&&yy<N&&terr[idx(xx,yy)]===TWA){sh=true;break;}}if(sh)return null;return SP.pkM[SEASON][(hsh2>>3)%6];}if(SP.pka[c])return SP.pka[c][SEASON];return undefined;}
 function pkFree(i,nat){const k=kind[i];if(k===K.ROAD||k===K.LMK)return false;if(terr[i]===TWA)return false;if(k===K.EMPTY)return true;if(k>=K.RES&&k<=K.IND&&!lvl[i])return true;if(k===K.PARK&&fix[i]!==2)return true;return false;}
@@ -2806,7 +2824,9 @@ function pkPlan(t,cx,cy){const T=PKT[t],r=mulberry(cx*733+cy*97+t*13+7),sd=cx*31
   if(T.river){const WDt=new Float32Array(NN).fill(99),q=[];for(let y=Math.max(0,cy-30);y<Math.min(N,cy+30);y++)for(let x=Math.max(0,cx-30);x<Math.min(N,cx+30);x++){const i=idx(x,y);if(terr[i]===TWA&&kind[i]!==K.ROAD){WDt[i]=0;q.push(i);}}
     for(let h=0;h<q.length;h++){const i=q[h],x=i&NM,y=i>>NS;if(WDt[i]>=5)continue;for(const [dx,dy] of DIRS){const xx=x+dx,yy=y+dy;if(xx<0||yy<0||xx>=N||yy>=N)continue;const j=idx(xx,yy);if(WDt[j]>WDt[i]+1){WDt[j]=WDt[i]+1;q.push(j);}}}
     for(let y=Math.max(0,cy-24);y<Math.min(N,cy+24);y++)for(let x=Math.max(0,cx-24);x<Math.min(N,cx+24);x++){const i=idx(x,y);if(WDt[i]>=1&&WDt[i]<=5&&pkFree(i)&&Math.hypot(x-cx,y-cy)<21*(.8+.4*fbm(x/6,y/6,sd,2)))cand.add(i);}
-    const res=[];for(const i of cand){const x=i&NM,y=i>>NS,d=WDt[i],h=hsh(x,y,sd);let c=d===3?'y':'m';if(d!==3){if(h<.05)c='x';else if(h<.09)c='v';else if(h<.12)c='z';else if(d>=4&&h<.4)c='o';}res.push([x,y,c]);}return res;}
+    /* the promenade follows the 2-tile contour; where it steps diagonally, take the inland tile too so the path stays joined */
+    const isP=j=>cand.has(j)&&WDt[j]===2,extra=new Set();for(const i of cand){if(!isP(i))continue;const x=i&NM,y=i>>NS;for(const [dx,dy] of [[1,1],[1,-1],[-1,1],[-1,-1]]){const xx=x+dx,yy=y+dy;if(!inMap(xx,yy)||!isP(idx(xx,yy)))continue;const a=idx(xx,y),b=idx(x,yy);if(isP(a)||isP(b)||extra.has(a)||extra.has(b))continue;const pick=[a,b].filter(j=>cand.has(j)).sort((p,q)=>WDt[q]-WDt[p])[0];if(pick!==undefined)extra.add(pick);}}
+    const res=[];for(const i of cand){const x=i&NM,y=i>>NS,d=WDt[i],h=hsh(x,y,sd);let c=d===2||extra.has(i)?'y':'m';if(c!=='y'){if(h<.05)c='x';else if(h<.09)c='v';else if(h<.12)c='z';else if(d>=4&&h<.4)c='o';}res.push([x,y,c]);}return res;}
   const R2=Math.ceil(RAD*1.4);for(let y=cy-R2;y<=cy+R2;y++)for(let x=cx-R2;x<=cx+R2;x++){if(x<0||y<0||x>=N||y>=N)continue;const i=idx(x,y);if(inShape(x,y)&&pkFree(i,nat))cand.add(i);}
   const ci=idx(cx,cy);if(!cand.has(ci)){let b=null,bd=1e9;for(const i of cand){const d=Math.hypot((i&NM)-cx,(i>>NS)-cy);if(d<bd){bd=d;b=i;}}if(b===null)return[];cand=floodSet(cand,b);}else cand=floodSet(cand,ci);
   const nd=i=>{const x=i&NM,y=i>>NS;return Math.hypot(x-cx,y-cy)/(RAD*(.68+.6*fbm(x/5.5,y/5.5,sd,2)));};
@@ -2836,7 +2856,7 @@ function floodSet(S,start){const out=new Set([start]),q=[start];while(q.length){
 function placePark(t,b){const T=PKT[t],plan=pkPlan(t,b.x,b.y);if(plan.length<4)return toast(T.river?'물가 근처 빈 땅에 놓아 주세요':'공원을 만들 빈 땅이 부족합니다');
   const wq=[];let x0=N,y0=N,x1=0,y1=0;for(const [x,y,c] of plan){const i=idx(x,y);x0=Math.min(x0,x);y0=Math.min(y0,y);x1=Math.max(x1,x);y1=Math.max(y1,y);clearTile(i);if(c!=='o')deco[i]=0;
     if(c==='L'||c==='d'){/* piers dropped: the deck reads as a stray path square on the water */terr[i]=TWA;wq.push(i);kind[i]=K.EMPTY;vari[i]=T.kind==='lake'?250:0;fix[i]=0;}
-    else{if(terr[i]!==TG&&terr[i]!==TSA)terr[i]=TG;kind[i]=K.PARK;lvl[i]=1;fix[i]=2;vari[i]=20+CXA.indexOf(c);deco[i]=0;}}
+    else{if(terr[i]!==TG&&terr[i]!==TSA)terr[i]=TG;kind[i]=K.PARK;lvl[i]=1;fix[i]=2;vari[i]=20+CXA.indexOf(c);deco[i]=T.river&&c==='y'?60:0;}}
   /* trail spurs that only ran out to a pier now dead-end at the water: trim them back to lawn */
   {const isY=j=>kind[j]===K.PARK&&fix[j]===2&&vari[j]===20+CXA.indexOf('y'),wet=(x,y)=>{for(const [dx,dy] of DIRS){const xx=x+dx,yy=y+dy;if(xx>=0&&yy>=0&&xx<N&&yy<N&&terr[idx(xx,yy)]===TWA)return true;}return false;};
    for(let pass=0;pass<12;pass++){let ch2=0;for(const [x,y] of plan){const i=idx(x,y);if(!isY(i))continue;let nb=0;for(const [dx,dy] of DIRS){const xx=x+dx,yy=y+dy;if(xx<0||yy<0||xx>=N||yy>=N)continue;const j=idx(xx,yy);if(isY(j)||kind[j]===K.ROAD||pkChar(j)==='u'||pkChar(j)==='z')nb++;}if(nb<=1&&wet(x,y)){vari[i]=20+CXA.indexOf('m');ch2++;}}if(!ch2)break;}}
@@ -2903,11 +2923,19 @@ let OCEAN=new Uint8Array(NN);function genMap(seed){alloc();const r=mulberry(seed
       if(!ok||path.length<12*S)continue;for(const i of path){terr[i]=TWA;TRIB[i]=1;}
       for(let k=0;k<path.length;k+=2){const i=path[k],x2=i&NM,y2=i>>NS;for(const [dx,dy] of [[1,0],[0,1]]){const xx=x2+dx,yy=y2+dy;if(xx<N&&yy<N&&fbm(xx/9,yy/9,seed+59,2)>.45){terr[idx(xx,yy)]=TWA;TRIB[idx(xx,yy)]=1;}}}}}
   for(let i=0;i<NN;i++)if(terr[i]===TWA){const x=i&NM,y=i>>NS;H[y*HN+x]=H[y*HN+x+1]=H[(y+1)*HN+x]=H[(y+1)*HN+x+1]=0;}
-  relax();
+  relax(false);
+  /* 섬 고원: the island stands a few steps above the sea. Along rocky stretches of coast the land drops straight into the water (해안 절벽);
+     beaches, rivers and lakes keep a 2-tile flat shore (sand / 둔치) and then a gentle 1-step ramp */
+  {const P=5,tw=(x,y)=>x>=0&&y>=0&&x<N&&y<N&&terr[y*N+x]===TWA,cliffW=(x,y)=>tw(x,y)&&OCN[y*N+x]&&fbm(x/28,y/28,seed+401,2)<.5,D=new Uint8Array(HN*HN).fill(255),q=[];LIFTV=new Uint8Array(HN*HN);
+   for(let y=0;y<HN;y++)for(let x=0;x<HN;x++){const ts=[[x-1,y-1],[x,y-1],[x-1,y],[x,y]];if(ts.some(([a,b])=>tw(a,b)&&!cliffW(a,b))){D[y*HN+x]=0;q.push(y*HN+x);}}
+   for(let h=0;h<q.length;h++){const v=q[h];if(D[v]>=P)continue;const x=v%HN,y=(v/HN)|0;for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){const xx=x+dx,yy=y+dy;if(xx<0||yy<0||xx>=HN||yy>=HN)continue;const j=yy*HN+xx;if(D[j]>D[v]+1){D[j]=D[v]+1;q.push(j);}}}
+   for(let y=0;y<HN;y++)for(let x=0;x<HN;x++){const v=y*HN+x;if(tw(x-1,y-1)||tw(x,y-1)||tw(x-1,y)||tw(x,y))continue;const l=Math.min(P,Math.max(0,D[v]-2));LIFTV[v]=l;H[v]+=l;}
+   CLIFV=new Uint8Array(HN*HN);for(let y=0;y<HN;y++)for(let x=0;x<HN;x++)if(cliffW(x-1,y-1)||cliffW(x,y-1)||cliffW(x-1,y)||cliffW(x,y))CLIFV[y*HN+x]=1;
+   relax(true);}
   const TD=new Float32Array(NN).fill(99);{const q=[];for(let i=0;i<NN;i++)if(TRIB[i]){TD[i]=0;q.push(i);}for(let h=0;h<q.length;h++){const i=q[h],x=i&NM,y=i>>NS;if(TD[i]>=16*S)continue;for(const [dx,dy] of DIRS){const xx=x+dx,yy=y+dy;if(xx<0||yy<0||xx>=N||yy>=N)continue;const j=idx(xx,yy);if(TD[j]>TD[i]+1){TD[j]=TD[i]+1;q.push(j);}}}}
-  for(let i=0;i<NN;i++){if(terr[i]!==TG)continue;const x=i&NM,y=i>>NS;if(!isFlat(x,y)||hv(x,y)>0)continue;let wn=false;for(const [dx,dy] of DIRS){const xx=x+dx,yy=y+dy;if(xx>=0&&yy>=0&&xx<N&&yy<N&&terr[idx(xx,yy)]===TWA){wn=true;break;}}
+  for(let i=0;i<NN;i++){if(terr[i]!==TG)continue;const x=i&NM,y=i>>NS;if(!isFlat(x,y)||hv(x,y)-(LIFTV?LIFTV[y*HN+x]:0)>0)continue;let wn=false;for(const [dx,dy] of DIRS){const xx=x+dx,yy=y+dy;if(xx>=0&&yy>=0&&xx<N&&yy<N&&terr[idx(xx,yy)]===TWA){wn=true;break;}}
     let oc=false;for(const [dx,dy] of DIRS){const xx=x+dx,yy=y+dy;if(xx>=0&&yy>=0&&xx<N&&yy<N&&OCN[idx(xx,yy)]){oc=true;break;}}if(wn&&(distR[i]<2.5||(oc&&fbm(x/18,y/18,seed+223,2)>.36)))terr[i]=TSA;else{const dt=TD[i]/S,near=(distR[i]>1&&distR[i]<30)||dt<14;if(near){const f=fbm(x/9/S,y/9/S,seed+61,2),f2=fbm(x/6/S,y/6/S,seed+67,2);if(f>(dt<14?.4:.47))terr[i]=TPAD;else if(f2>.62)terr[i]=TFLD;}}}
-  for(let i=0;i<NN;i++){const x=i&NM,y=i>>NS,t=terr[i];if(t===TFLD){if(r()<.28)deco[i]=17;continue;}if(t!==TG&&t!==TSA)continue;const hh=tileAvgH(x,y)*24/HMAX,flat=isFlat(x,y);
+  for(let i=0;i<NN;i++){const x=i&NM,y=i>>NS,t=terr[i];if(t===TFLD){if(r()<.28)deco[i]=17;continue;}if(t!==TG&&t!==TSA)continue;const hh=(tileAvgH(x,y)-liftT(x,y))*24/HMAX,flat=isFlat(x,y);
     if(t===TSA){if(r()<.35)deco[i]=18+((r()*2)|0);continue;}
     const op=fbm(x/26/S,y/26/S,seed+97,3),D=fbm(x/16/S,y/16/S,seed+81,3)+(hh>=2?.12:hh>=1?.04:-.1)+Math.min(.12,hh*.015)+(flat?0:.05)-(hh>15?.14:0)-(op>.56?(op-.56)*1.6:0)+(r()-.5)*.05;
     if(hh>12&&r()<(hh>16?.14:.05))deco[i]=15+((r()*2)|0);else if(D>.6){const sp=fbm(x/13/S,y/13/S,seed+91,3)+(hh>8?.08:0)+(r()-.5)*.06;deco[i]=sp>.56?9:sp<.44?10:11;}else if(D>.53)deco[i]=12;else if(D>.47)deco[i]=13+((r()*2)|0);else if(D>.41){if(r()<.75)deco[i]=18+((r()*4)|0);}else if(r()<.22)deco[i]=r()<.7?18:19;}
@@ -2971,7 +2999,7 @@ function landAt(i){const x=i&NM,y=i>>NS;return Math.min(255,F.lv[(y>>2)*CN+(x>>2
 /* buildings keep a setback from rivers, lakes and the sea: nothing is built on a tile touching water (8-neighbourhood) */
 function nearWater(x,y){for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){const xx=x+dx,yy=y+dy;if(xx<0||yy<0||xx>=N||yy>=N)continue;if(terr[idx(xx,yy)]===TWA)return true;}return false;}
 /* beaches and sand bars carry no trees: natural tiles within 2 tiles of water keep only low grass/reeds */
-function stripShoreTrees(){for(let i=0;i<NN;i++){if(kind[i]!==K.EMPTY)continue;const d=deco[i];if(!d||(d>=24&&d!==50))continue;if(terr[i]===TWA){deco[i]=0;touch(i);continue;}const x=i&NM,y=i>>NS;let w=false;for(let dy=-2;dy<=2&&!w;dy++)for(let dx=-2;dx<=2;dx++){const xx=x+dx,yy=y+dy;if(xx>=0&&yy>=0&&xx<N&&yy<N&&terr[idx(xx,yy)]===TWA){w=true;break;}}if(!w)continue;deco[i]=0;touch(i);}}
+function stripShoreTrees(){for(let i=0;i<NN;i++){if(kind[i]!==K.EMPTY)continue;const d=deco[i];if(!d||(d>=24&&d!==50)||d===15||d===16)continue;if(terr[i]===TWA){deco[i]=0;touch(i);continue;}const x=i&NM,y=i>>NS;let w=false;for(let dy=-2;dy<=2&&!w;dy++)for(let dx=-2;dx<=2;dx++){const xx=x+dx,yy=y+dy;if(xx>=0&&yy>=0&&xx<N&&yy<N&&terr[idx(xx,yy)]===TWA){w=true;break;}}if(!w)continue;deco[i]=0;touch(i);}}
 function waterSetback(){for(let i=0;i<NN;i++){const k=kind[i];if(k<K.RES||k>K.IND)continue;const x=i&NM,y=i>>NS;if(!nearWater(x,y))continue;clearTile(i);if(terr[i]!==TWA){terr[i]=TG;deco[i]=0;}touch(i);}}
 let slice=0;
 function growSlice(){if(!FX.grow&&!growForce)return;const s0=slice*4096;slice=(slice+1)%(NN/4096);const dem=sim.dem;
@@ -3033,8 +3061,9 @@ const COST={road:10,res:5,com:5,ind:5,power:3000,water:2000,police:800,fire:800,
 function terraform(cells,delta){const q=[],changed=new Set();
   for(const [x,y] of cells)for(const [dx,dy] of [[0,0],[1,0],[0,1],[1,1]]){const i=(y+dy)*HN+x+dx;if(changed.has(i))continue;const nh=clamp(H[i]+delta,0,HMAX);if(nh!==H[i]){H[i]=nh;q.push(i);changed.add(i);}}
   propagate(q,changed,delta);afterTerrain(changed);}
+const vWet=(x,y)=>{for(const [a,b] of [[x-1,y-1],[x,y-1],[x-1,y],[x,y]])if(a>=0&&b>=0&&a<N&&b<N&&terr[b*N+a]===TWA)return true;return false;};
 function propagate(q,changed,delta){while(q.length){const i=q.pop(),x=i%HN,y=(i/HN)|0,h=H[i];for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){if(!dx&&!dy)continue;const xx=x+dx,yy=y+dy;if(xx<0||yy<0||xx>=HN||yy>=HN)continue;const j=yy*HN+xx;
-  if(delta>0&&H[j]<h-1){H[j]=h-1;q.push(j);changed.add(j);}else if(delta<0&&H[j]>h+1){H[j]=h+1;q.push(j);changed.add(j);}}}}
+  if(delta>0&&H[j]<h-1){/* never lift the water's edge (keeps sea cliffs and shorelines) */if(vWet(xx,yy))continue;H[j]=h-1;q.push(j);changed.add(j);}else if(delta<0&&H[j]>h+1){H[j]=h+1;q.push(j);changed.add(j);}}}}
 function afterTerrain(changed){const tiles=new Set();for(const i of changed){const x=i%HN,y=(i/HN)|0;for(const [dx,dy] of [[0,0],[-1,0],[0,-1],[-1,-1]]){const tx=x+dx,ty=y+dy;if(tx>=0&&ty>=0&&tx<N&&ty<N)tiles.add(ty*N+tx);}}
   for(const t of tiles){const x=t&NM,y=t>>NS,flat=isFlat(x,y),m=hv(x,y);
     if(terr[t]===TWA&&(!flat||m>0))terr[t]=TG;if(terr[t]===TSA&&(!flat||m>0))terr[t]=TG;
@@ -3111,7 +3140,7 @@ function isGate(j){return fix[j]===2&&kind[j]===K.PARK&&vari[j]>=20&&CXA[cxIdx(v
 function roadMask(x,y){let m=0;const i=idx(x,y),me=isElev(i),R=(j,a)=>{if(isGate(j))return true;if(kind[j]!==K.ROAD)return false;const e=isElev(j);if(e&&me)return elAx(j)===a&&elAx(i)===a;if(e)return elX(j)?true:elAx(j)===a;if(me&&!elX(i))return elAx(i)===a;return true;};if(y>0&&R(i-N,1))m|=1;if(x<N-1&&R(i+1,0))m|=2;if(y<N-1&&R(i+N,1))m|=4;if(x>0&&R(i-1,0))m|=8;return m;}
 function isShallow(x,y){for(const [dx,dy] of DIRS){const xx=x+dx,yy=y+dy;if(xx>=0&&yy>=0&&xx<N&&yy<N&&terr[idx(xx,yy)]!==TWA)return true;}return false;}
 function landMask(x,y){let m=0;if(y>0&&terr[idx(x,y-1)]!==TWA)m|=1;if(x<N-1&&terr[idx(x+1,y)]!==TWA)m|=2;if(y<N-1&&terr[idx(x,y+1)]!==TWA)m|=4;if(x>0&&terr[idx(x-1,y)]!==TWA)m|=8;return m;}
-function objOf(i){const k=kind[i];if(lmkA[i]>=0&&k!==K.LMK){if(lmkA[i]!==i)return null;if(fix[i]===2){if(k===K.PARK){if(vari[i]===20&&SP.cxgV)return SP.cxgV[SEASON][(Math.imul(i,2654435761)>>>28)%3];return vari[i]>=40?SP.cxaR[vari[i]-40][SEASON]:SP.cxa[vari[i]-20][SEASON];}return SP.cxb[vari[i]-CXB];}const a2=SP.bld[k]&&SP.bld[k][lvl[i]];return a2?a2[vari[i]%a2.length]:null;}if(fix[i]===2){if(k===K.PARK&&vari[i]>=20){const po=pkObj(i);if(po!==undefined)return po;const v=vari[i];if(CXA[cxIdx(v)]==='p')return SP.cxa1p[SEASON];return v>=40?SP.cxaR[v-40][SEASON]:SP.cxa[v-20][SEASON];}if((k===K.RES||k===K.COM)&&vari[i]>=CXB)return SP.cxb[vari[i]-CXB];}if(k>=K.RES&&k<=K.IND){const L=lvl[i];if(L){const a=SP.bld[k][Math.min(L,5)];return a[vari[i]%a.length];}return deco[i]?decoSprite(deco[i],i):null;}
+function objOf(i){const k=kind[i];if(lmkA[i]>=0&&k!==K.LMK){if(lmkA[i]!==i)return null;if(fix[i]===2){if(k===K.PARK){if(vari[i]===20&&SP.cxgV)return SP.cxgV[SEASON][(Math.imul(i,2654435761)>>>28)%3];return vari[i]>=40?SP.cxaR[vari[i]-40][SEASON]:SP.cxa[vari[i]-20][SEASON];}return SP.cxb[vari[i]-CXB];}const a2=SP.bld[k]&&SP.bld[k][lvl[i]];return a2?a2[vari[i]%a2.length]:null;}if(fix[i]===2){if(k===K.PARK&&vari[i]>=20){const po=pkObj(i);if(po!==undefined)return po;const v=vari[i];if(CXA[cxIdx(v)]==='p')return SP.cxa1p[SEASON];return v>=40?SP.cxaR[v-40][SEASON]:SP.cxa[v-20][SEASON];}if((k===K.RES||k===K.COM)&&vari[i]>=CXB)return SP.cxb[vari[i]-CXB];}if(k>=K.RES&&k<=K.IND){const L=lvl[i];if(L){const a=SP.bld[k][Math.min(L,5)];let v=vari[i]%a.length;if(L===1&&k!==K.IND){const gs=giwaSub(k);if(gs[v]>=0){const x=i&NM,y=i>>NS,H=HANOKC;if(!(H&&x>=H.x0&&x<=H.x1&&y>=H.y0&&y<=H.y1))v=gs[v];}}return a[v];}return deco[i]?decoSprite(deco[i],i):null;}
   if(k>=K.POWER&&k<=K.FIRE)return SP.svcObj[k];if(k===K.PARK)return SP.parkObj[SEASON][vari[i]%3];if(k===K.ROAD)return roadDeco(i);if(k===K.LMK)return lvl[i]===1?lmkGet(vari[i],SEASON):null;if(k===K.EMPTY&&deco[i])return decoSprite(deco[i],i);return null;}
 function objBase(i){const x=i&NM,y=i>>NS,k=kind[i];if((k===K.PARK&&fix[i]===2)||(k===K.EMPTY||k===K.ROAD||((k>=K.RES&&k<=K.IND)&&!lvl[i])))return tileAvgH(x,y)*E;return hv(x,y)*E;}
 function groundTex(i){const x=i&NM,y=i>>NS,k=kind[i],h=((x*73856093)^(y*19349663))>>>0,t=terr[i];
@@ -3121,7 +3150,7 @@ function groundTex(i){const x=i&NM,y=i>>NS,k=kind[i],h=((x*73856093)^(y*19349663
   if(k===K.EMPTY&&deco[i]>=30&&SP.fg)return SP.fg[SEASON][Math.min(13,deco[i]-30)];
   if(k===K.RES)return lvl[i]?SP.paveR[SEASON]:SP.lot[SEASON][k];if(k===K.COM)return lvl[i]?SP.paveC:SP.lot[SEASON][k];if(k===K.IND)return lvl[i]?SP.paveI:SP.lot[SEASON][k];
   if(k===K.PARK)return SP.parkG[SEASON];if(k>=K.POWER)return SP.svc;if(t===TSA)return SP.sand[h&1];if(t===TPAD)return SP.paddy[SEASON][(x>>2^y>>3)&1];if(t===TFLD)return SP.field[SEASON];
-  if(SEASON===3&&tileAvgH(x,y)>11)return SP.snowG;if(deco[i]>=9&&deco[i]<=11)return SP.floor[SEASON];const hq=hsh(x,y,(sim.seed|0)+3),nv=vn(x/5,y/5,(sim.seed|0)+5),vr=hq<.07?2:hq<.26?1:nv>.62?3:0;return SP.grass[SEASON][vr*2+(h&1)];}
+  if(k===K.EMPTY&&SP.cliffT){const a0=hv(x,y),a1=hv(x+1,y),a2=hv(x+1,y+1),a3=hv(x,y+1);if(Math.max(a0,a1,a2,a3)-Math.min(a0,a1,a2,a3)>=3)return SP.cliffT[h&1];}if(SEASON===3&&tileAvgH(x,y)>11)return SP.snowG;if(deco[i]>=9&&deco[i]<=11)return SP.floor[SEASON];const hq=hsh(x,y,(sim.seed|0)+3),nv=vn(x/5,y/5,(sim.seed|0)+5),vr=hq<.07?2:hq<.26?1:nv>.62?3:0;return SP.grass[SEASON][vr*2+(h&1)];}
 const SDN=2*N+1;let SDF=new Float32Array(SDN*SDN),SDS=new Uint8Array(SDN*SDN),WCV=new Float32Array(HN*HN),LDV=new Float32Array(HN*HN),VL=new Float32Array(HN*HN),VP=new Float32Array(HN*HN),VT=new Float32Array(HN*HN),WD=new Float32Array(HN*HN),vfDirty=true,vtSeed=-1;
 function computeVF(){const HSM=smoothH(3),H2=(a,b)=>HSM[clamp(b,0,N)*HN+clamp(a,0,N)];
   for(let y=0;y<HN;y++)for(let x=0;x<HN;x++){const hx=(H2(x+1,y)-H2(x-1,y))*.35+(H2(x+2,y)-H2(x-2,y))*.075,hy=(H2(x,y+1)-H2(x,y-1))*.35+(H2(x,y+2)-H2(x,y-2))*.075,k=E/16*2,nx=-hx*k,ny=-hy*k,l=Math.hypot(nx,ny,1);
@@ -3437,7 +3466,11 @@ function buildOverlay(){if(overlay==='none')return;if(overlay==='util'){const x=
 /* ================= agents ================= */
 let cars=[],peds=[],spawnList=[],spawnDirty=true;
 const roadAt=(x,y)=>x>=0&&y>=0&&x<N&&y<N&&kind[y*N+x]===K.ROAD&&vari[y*N+x]!==104;
-let spawnHot=[],SUBW=[];function buildSpawn(){spawnHot=[];SUBW=[];for(let i=0;i<NN;i++)if(kind[i]===K.LMK&&LMKT[vari[i]]&&LMKT[vari[i]].id==='subway')SUBW.push([i&NM,i>>NS]);for(let i=0;i<NN;i++){if(kind[i]!==K.ROAD)continue;const x=i&NM,y=i>>NS;for(const [dx,dy] of DIRS){const xx=x+dx,yy=y+dy;if(xx<0||yy<0||xx>=N||yy>=N)continue;const j=yy*N+xx;if(isGate(j)||(kind[j]===K.LMK&&LMKT[vari[j]]&&LMKT[vari[j]].id==='subway')){spawnHot.push(i);break;}}}spawnList=[];for(let i=0;i<NN;i++){if(kind[i]!==K.ROAD)continue;const x=i&NM,y=i>>NS;for(const [dx,dy] of DIRS){const xx=x+dx,yy=y+dy;if(xx<0||yy<0||xx>=N||yy>=N)continue;const j=yy*N+xx,k=kind[j];if((k>=K.RES&&k<=K.IND&&lvl[j]>0)||(k>=K.POWER&&k<=K.LMK)){spawnList.push(i);break;}}}spawnDirty=false;}
+let spawnHot=[],SUBW=[];function buildSpawn(){spawnHot=[];SUBW=[];for(let i=0;i<NN;i++)if(kind[i]===K.LMK&&LMKT[vari[i]]&&LMKT[vari[i]].id==='subway')SUBW.push([i&NM,i>>NS]);for(let i=0;i<NN;i++){if(kind[i]!==K.ROAD)continue;const x=i&NM,y=i>>NS;for(const [dx,dy] of DIRS){const xx=x+dx,yy=y+dy;if(xx<0||yy<0||xx>=N||yy>=N)continue;const j=yy*N+xx;if(isGate(j)||(kind[j]===K.LMK&&LMKT[vari[j]]&&LMKT[vari[j]].id==='subway')){spawnHot.push(i);break;}}}spawnList=[];for(let i=0;i<NN;i++){if(kind[i]!==K.ROAD)continue;const x=i&NM,y=i>>NS;for(const [dx,dy] of DIRS){const xx=x+dx,yy=y+dy;if(xx<0||yy<0||xx>=N||yy>=N)continue;const j=yy*N+xx,k=kind[j];if((k>=K.RES&&k<=K.IND&&lvl[j]>0)||(k>=K.POWER&&k<=K.LMK)){spawnList.push(i);break;}}}spawnCom=[];LITR=new Uint8Array(NN);const isAtt=j=>(kind[j]===K.COM&&lvl[j]>0)||(kind[j]===K.LMK&&LMKT[vari[j]]&&LEIS.has(LMKT[vari[j]].id));for(let i=0;i<NN;i++){if(!isAtt(i))continue;const x=i&NM,y=i>>NS;for(let dy=-3;dy<=3;dy++)for(let dx=-3;dx<=3;dx++){const xx=x+dx,yy=y+dy;if(inMap(xx,yy))LITR[idx(xx,yy)]=1;}}for(const i of spawnList){const x=i&NM,y=i>>NS;for(const [dx,dy] of DIRS){const xx=x+dx,yy=y+dy;if(inMap(xx,yy)&&isAtt(idx(xx,yy))){spawnCom.push(i);break;}}}spawnDirty=false;}
+/* 상업·여가 목적지: cars (and pedestrians at night) head for shops and leisure, so traffic gathers there and housing streets stay quiet */
+const LEIS=new Set(['themepark','outlet','bigcafe','resort','museum','culture','stadium','market','conv','busterm','skypark','supertall','library','gym','univ','tower','palace']);let spawnCom=[],LITR=null;
+const isNight=()=>{const h=hourNow();return h>=19||h<6;};
+function comGoal(x,y){let best=null,bd=1e9;for(let t=0;t<8;t++){const i=spawnCom[(Math.random()*spawnCom.length)|0],d=Math.hypot((i&NM)-x,(i>>NS)-y);if(d>=5&&d<bd&&d<60){bd=d;best=[i&NM,i>>NS];}}return best;}
 function canMove(fx,fy,tx,ty,ped){const ti=idx(tx,ty),fi=idx(fx,fy),dax=tx!==fx?0:1;if(isElev(ti)&&!elX(ti)&&(ped||elAx(ti)!==dax))return false;if(isElev(fi)&&!elX(fi)&&elAx(fi)!==dax)return false;if(!isWide(ti)||wideJ(tx,ty))return true;const {p,ax}=wInfo(ti),W=RC[lvl[ti]].W,dx=tx-fx,dy=ty-fy,along=ax===0?dx!==0:dy!==0;if(!along)return false;
   if(ped)return p===0||p===W-1;const d=ax===0?dx:-dy,half=W/2;if(p<half&&p+1>half)return false;if(d>0&&p+.5<half)return false;if(d<0&&p+.5>half)return false;return true;}
 function pickNext(x,y,fx,fy,ped,goal){const ci=idx(x,y);if(isElev(ci)){const sx=x+(x-fx),sy=y+(y-fy);if(roadAt(sx,sy)&&canMove(x,y,sx,sy,ped))return[sx,sy];if(!elX(ci))return roadAt(fx,fy)?[fx,fy]:null;}const opts=[];for(const [dx,dy] of DIRS){const a=x+dx,b=y+dy;if(roadAt(a,b)&&!(a===fx&&b===fy)&&canMove(x,y,a,b,ped))opts.push([a,b]);}
@@ -3445,8 +3478,8 @@ function pickNext(x,y,fx,fy,ped,goal){const ci=idx(x,y);if(isElev(ci)){const sx=
 const VIEWB={x0:0,y0:0,x1:N,y1:N};function viewBox(){const hw=Wc/2/zoom,hh=Hc/2/zoom,cs=[[camX-hw,camY-hh],[camX+hw,camY-hh],[camX-hw,camY+hh+40],[camX+hw,camY+hh+40]].map(([a,b])=>w2t(a,b));VIEWB.x0=Math.min(...cs.map(c=>c[0]))-4;VIEWB.x1=Math.max(...cs.map(c=>c[0]))+4;VIEWB.y0=Math.min(...cs.map(c=>c[1]))-4;VIEWB.y1=Math.max(...cs.map(c=>c[1]))+4;}
 const inView=(x,y,m)=>x>=VIEWB.x0-m&&x<=VIEWB.x1+m&&y>=VIEWB.y0-m&&y<=VIEWB.y1+m;
 function pickSpawn(L){let i=L[(Math.random()*L.length)|0];for(let t=0;t<10;t++){if(inView(i&NM,i>>NS,0))return i;i=L[(Math.random()*L.length)|0];}return i;}
-function spawnAgent(ped){if(!spawnList.length)return null;const rush=Math.abs(tod-.33)<.05||Math.abs(tod-.75)<.05,L=(ped&&rush&&spawnHot.length&&Math.random()<.6)?spawnHot:spawnList,i=pickSpawn(L),x=i&NM,y=i>>NS;if(ped&&isWide(i)){const w=wInfo(i);if(w.p!==0&&w.p!==RC[lvl[i]].W-1)return null;}const opts=DIRS.filter(([dx,dy])=>roadAt(x+dx,y+dy)&&canMove(x,y,x+dx,y+dy,ped));if(!opts.length)return null;const d=opts[(Math.random()*opts.length)|0],nx=x+d[0],ny=y+d[1],n2=pickNext(nx,ny,x,y,ped);if(!n2)return null;
-  const goal=(ped&&rush&&SUBW.length&&Math.random()<.7)?SUBW.reduce((best,q)=>{const d=Math.hypot(q[0]-x,q[1]-y);return d<best[1]?[q,d]:best;},[null,40])[0]:null;return{goal,x,y,px:x-d[0],py:y-d[1],nx,ny,n2x:n2[0],n2y:n2[1],t:Math.random()*.5,sp:ped?.06+Math.random()*.04:.45+Math.random()*.35,c:(Math.random()*8)|0,side:Math.random()<.5?1:-1,ph:Math.random()*10,bus:!ped&&Math.random()<.06};}
+function spawnAgent(ped){if(!spawnList.length)return null;const rush=Math.abs(tod-.33)<.05||Math.abs(tod-.75)<.05,nt=ped&&isNight(),L=(ped&&rush&&spawnHot.length&&Math.random()<.6)?spawnHot:(spawnCom.length&&Math.random()<(ped?(nt?.88:.35):.65))?spawnCom:spawnList,i=pickSpawn(L),x=i&NM,y=i>>NS;if(ped&&isWide(i)){const w=wInfo(i);if(w.p!==0&&w.p!==RC[lvl[i]].W-1)return null;}const opts=DIRS.filter(([dx,dy])=>roadAt(x+dx,y+dy)&&canMove(x,y,x+dx,y+dy,ped));if(!opts.length)return null;const d=opts[(Math.random()*opts.length)|0],nx=x+d[0],ny=y+d[1],n2=pickNext(nx,ny,x,y,ped);if(!n2)return null;
+  const goal=(ped&&rush&&SUBW.length&&Math.random()<.7)?SUBW.reduce((best,q)=>{const d=Math.hypot(q[0]-x,q[1]-y);return d<best[1]?[q,d]:best;},[null,40])[0]:(spawnCom.length&&Math.random()<(ped?(nt?.6:0):.75))?comGoal(x,y):null;return{goal,x,y,px:x-d[0],py:y-d[1],nx,ny,n2x:n2[0],n2y:n2[1],t:Math.random()*.5,sp:ped?.06+Math.random()*.04:.45+Math.random()*.35,c:(Math.random()*8)|0,side:Math.random()<.5?1:-1,ph:Math.random()*10,bus:!ped&&Math.random()<.06};}
 function hasBusStop(x,y){if(!roadAt(x,y)||terr[idx(x,y)]===TWA)return false;const m=roadMask(x,y);if(m!==5&&m!==10)return false;const h=((x*73856093)^(y*19349663))>>>0;return (h>>7)%6===4;}
 function pedHold(a){if(a.t<.3)return false;const ni=idx(a.nx,a.ny),ci=idx(a.x,a.y);if(!(isWide(ni)&&wideJ(a.nx,a.ny))||(isWide(ci)&&wideJ(a.x,a.y)))return false;const J=juncInfo(a.nx,a.ny),ax=a.nx!==a.x?0:1;return sigPhase(J.x0*2,J.y0*2)!==ax;}
 function stepAgent(a,dt,ped){if(a.wait>0){a.wait-=dt;a.v=0;return roadAt(a.x,a.y)&&roadAt(a.nx,a.ny);}if(ped){if(a.act&&a.act.t>0){a.act.t-=dt;if(a.act.t<=0)a.act=null;return roadAt(a.x,a.y)&&roadAt(a.nx,a.ny);}if(pedHold(a)){a.hold=1;return roadAt(a.x,a.y)&&roadAt(a.nx,a.ny);}a.hold=0;pedActTick(a,dt);a.t+=a.sp*(a.role==='jog'?1.9:a.role==='old'?.65:1)*dt;}else{const tv=carTarget(a);a.v=a.v===undefined?tv:a.v+(tv-a.v)*Math.min(1,dt*(tv<a.v?6:1.6));a.t+=a.v*dt;}let guard=0;while(a.t>=1&&guard++<4){a.t-=1;a.px=a.x;a.py=a.y;a.x=a.nx;a.y=a.ny;a.nx=a.n2x;a.ny=a.n2y;if(!roadAt(a.x,a.y)||!roadAt(a.nx,a.ny))return false;if(a.goal&&Math.hypot(a.x-a.goal[0],a.y-a.goal[1])<1.6)return false;const n=pickNext(a.nx,a.ny,a.x,a.y,ped,a.goal);if(!n)return false;a.n2x=n[0];a.n2y=n[1];if(a.bus&&hasBusStop(a.x,a.y)){a.wait=2+Math.random()*2.5;a.t=0;break;}}
@@ -3467,8 +3500,8 @@ function carOff(a,tg,r){if(a.lo===undefined)a.lo=tg;/* U-turn: mirror the offset
 function agentPos(a,ped){const t=a.t;if(ped){const h1=t<.5,T=h1?[a.x,a.y]:[a.nx,a.ny],F=h1?[a.px,a.py]:[a.x,a.y],X=h1?[a.nx,a.ny]:[a.n2x,a.n2y],u=h1?t+.5:t-.5;
     if(isX(T[0],T[1]))return pedTrav(T[0],T[1],F[0],F[1],X[0],X[1],u,a.side);}
   const r=t<.5?trav(a.x,a.y,a.px,a.py,a.nx,a.ny,t+.5):trav(a.nx,a.ny,a.x,a.y,a.n2x,a.n2y,t-.5),o=ped?.42*a.side:carOff(a,lvl[idx(a.x,a.y)]===1?(a.ln===undefined?(a.ln=Math.random()<.5?0:1):a.ln)?.29:.115:.19,r);const out=[r[0]-r[3]*o,r[1]+r[2]*o,r[2],r[3]];
-  if(ped){const tx=Math.floor(r[0]),ty=Math.floor(r[1]);if(tx>=0&&ty>=0&&tx<N&&ty<N){const ti=idx(tx,ty);if(!isWide(ti)&&kind[ti]===K.ROAD&&!isElev(ti)){const m=roadMask(tx,ty),fx=out[0]-tx,fy=out[1]-ty;if(m===5||m===1||m===4)out[0]=tx+(fx<.5?.07:.93);else if(m===10||m===2||m===8)out[1]=ty+(fy<.5?.07:.93);}
-    if(isWide(ti)&&!wideJ(tx,ty)){const {p,ax}=wInfo(ti),W=RC[lvl[ti]].W;const f=p===0?.08:p===W-1?.92:.5;if(ax===0)out[1]=ty+f;else out[0]=tx+f;}
+  if(ped){const tx=Math.floor(r[0]),ty=Math.floor(r[1]);if(tx>=0&&ty>=0&&tx<N&&ty<N){const ti=idx(tx,ty);if(!isWide(ti)&&kind[ti]===K.ROAD&&!isElev(ti)){const m=roadMask(tx,ty),fx=out[0]-tx,fy=out[1]-ty;/* 가로수 줄기 비켜 걷기: tile middle (where the street tree stands) → step toward the building edge */if(m===5||m===1||m===4){const k=.05*Math.max(0,1-Math.abs(fy-.5)/.14);out[0]=tx+(fx<.5?.07-k:.93+k);}else if(m===10||m===2||m===8){const k=.05*Math.max(0,1-Math.abs(fx-.5)/.14);out[1]=ty+(fy<.5?.07-k:.93+k);}}
+    if(isWide(ti)&&!wideJ(tx,ty)){const {p,ax}=wInfo(ti),W=RC[lvl[ti]].W,al=ax===0?out[0]-tx:out[1]-ty,k=.055*Math.max(0,1-Math.abs(al-.5)/.14);const f=p===0?.08-k:p===W-1?.92+k:.5;if(ax===0)out[1]=ty+f;else out[0]=tx+f;}
     /* inside a big junction: walk only along its edges, where the crosswalks are */
     else if(isWide(ti)&&wideJ(tx,ty)){const J=juncInfo(tx,ty),xa=J.x0-.22,xb=J.x1+1.22,ya=J.y0-.22,yb=J.y1+1.22;if(Math.abs(out[2])>=Math.abs(out[3]))out[1]=(out[1]-ya<yb-out[1])?ya:yb;else out[0]=(out[0]-xa<xb-out[0])?xa:xb;}}}
   else if(!a.bus){const tx=Math.floor(out[0]),ty=Math.floor(out[1]);let tgt=0;if(inMap(tx,ty)){const ti=idx(tx,ty);if(isWide(ti)&&!wideJ(tx,ty)&&kind[ti]===K.ROAD){const {p,ax}=wInfo(ti),L=RC[lvl[ti]].L,W=RC[lvl[ti]].W,Y=crossLayout(L,W),c=(ax===0?out[1]-ty:out[0]-tx)+p,hl=L/2;if(a.ln===undefined)a.ln=(Math.random()*8)|0;const k=a.ln%hl,lat=c<W/2?W/2-Y.md/2-Y.lw*(k+.5):W/2+Y.md/2+Y.lw*(k+.5);a.wlat=(ax===0?ty:tx)-p+lat;a.wax=ax;tgt=1;}}
@@ -3485,7 +3518,7 @@ function updateAgents(dt){if(spawnDirty)buildSpawn();const mult=SPMUL[sim.speed]
   if(mult&&zoom>=3){cars=cars.filter(a=>inView(a.x,a.y,14)||Math.random()>.04);peds=peds.filter(a=>inView(a.x,a.y,10)||Math.random()>.05);}
   if(mult){for(let n=0;n<3&&cars.length<tc;n++){const a=spawnAgent(false);if(a)cars.push(a);else break;}for(let n=0;n<3&&peds.length<tp;n++){const a=spawnAgent(true);if(a)peds.push(a);else break;}}
   if(cars.length>tc+10)cars=cars.filter((a,k)=>k<tc||Math.random()<.97);if(peds.length>tp+10)peds=peds.filter((a,k)=>k<tp||Math.random()<.97);
-  if(!d)return;buildOcc();cars=cars.filter(a=>stepAgent(a,d,false));peds=peds.filter(a=>stepAgent(a,d,true));for(const p of peds)p.ph+=d*8;}
+  if(!d)return;if(LITR&&isNight())peds=peds.filter(a=>LITR[idx(a.x,a.y)]||Math.random()>.006);buildOcc();cars=cars.filter(a=>stepAgent(a,d,false));peds=peds.filter(a=>stepAgent(a,d,true));for(const p of peds)p.ph+=d*8;}
 
 /* ================= weather ================= */
 let WXA=.55;try{const v=parseFloat(localStorage.getItem('pixelcity.wxa'));if(v>=0&&v<=1)WXA=v;}catch(err){}
@@ -3584,7 +3617,7 @@ const PROPDEF={
  bikerack:(g,al)=>{for(let k=0;k<4;k++){const u=al?0:k*.045,v=al?k*.045:0;g.save();g.translate((u-v)*16,(u+v)*8);PROPDEF.mini(g,al);g.restore();}},
  mini:(g,al)=>{const d=al?[.05,0]:[0,.05];pLine(g,0,0,[0,0,1],[d[0],d[1],1],'#3a8a4a',.5);g.strokeStyle='#222';g.lineWidth=.25;for(const t of [0,1]){g.beginPath();g.ellipse((d[0]*t-d[1]*t)*16,(d[0]*t+d[1]*t)*8-1,.8,.8,0,0,6.283);g.stroke();}},
  pigeons:(g,al,v)=>{for(let k=0;k<4;k++){const u=((v*7+k*13)%10)/100,vv=((v*3+k*17)%10)/100;pDot(g,0,0,u,vv,.4,.45,.3,k%2?'#8a8e96':'#6a6e76');}},
- exer:(g)=>{pShadow(g,0,0,.04,.02,2.4);pLine(g,0,0,[0,0,0],[0,0,4],'#e8c23a',.5);pLine(g,0,0,[.08,0,0],[.08,0,4],'#e8c23a',.5);pLine(g,0,0,[0,0,4],[.08,0,4],'#2f6fd6',.5);pPerson(g,0,0,.04,.01,'#d64a3a',0);},
+ exer:(g)=>{pShadow(g,0,0,.04,.02,2.4);pLine(g,0,0,[0,0,0],[0,0,4],'#e8c23a',.5);pLine(g,0,0,[.08,0,0],[.08,0,4],'#e8c23a',.5);pLine(g,0,0,[0,0,4],[.08,0,4],'#2f6fd6',.5);},
  manhole:(g)=>{pDot(g,0,0,0,0,.05,1.2,.6,'#4a4c50');pDot(g,0,0,0,0,.06,.9,.45,'#5a5c60');},
  kids:(g,al,v)=>{const cs=['#e8574c','#f2b233','#3a8ad8','#5ab85a','#e87aa0'];for(let k=0;k<3;k++){const u=((v*5+k*7)%9)/100,vv=((v*3+k*11)%9)/100,x=(u-vv)*16,y=(u+vv)*8;pShadow(g,0,0,u,vv,.6);g.fillStyle='#2a2e3a';g.fillRect(x-.35,y-1,.7,1);g.fillStyle=cs[(v+k)%5];g.fillRect(x-.4,y-2.3,.8,1.3);g.fillStyle='#e8c8a8';g.fillRect(x-.32,y-2.9,.64,.6);}},
  stroller:(g,al,v)=>{pPerson(g,0,0,0,0,['#5a6a8a','#d8c8a8','#e87aa0'][v%3],0,'#4a3020');const d=al?[0,.05]:[.05,0];pBox(g,0,0,d[0]-.015,d[1]-.015,.03,.03,1,2.4,['#2f4a6a','#d8d4c8'][v%2]);pDot(g,0,0,d[0],d[1],.5,.45,.45,'#222');},
@@ -3598,9 +3631,9 @@ const PSZ={bike:.7,mini:.68,bikerack:.66,delivery:.66,scooter:.55,trike:.8,crate
 function putProp(g,wx,wy,u,v,t,al,vr){if(t==='pcar'){const o=vehSprite([0,0,1,5,0,9][vr%6],(vr*5+3)%16,al?4:0,HQON?5:2),x=wx+(u-v)*16,y=wy+(u+v)*8;g.drawImage(o.c,x-o.ox/SR*VSC,y-o.oy/SR*VSC,o.w/SR*VSC,o.h/SR*VSC);return;}
   /* vector, in world space, scaled to people (1 unit ≈ 1 m) — crisp at every zoom like the walkers */
   const ks=PROPS*(PSZ[t]||1);g.save();g.translate(wx+(u-v)*16,wy+(u+v)*8);g.scale(ks,ks);PROPDEF[t](g,al,vr%6);g.restore();}
-const PROP_RES=[['bike',8],['plant',14],['bins',8],['parcel',6],['ac',8],['laundry',5],['jars',4],['basin',4],['pyeong',3],['trike',3],['cat',3],['ped',6],['nopark',4],['delivery',3],['clothbox',2],['kick',2]],
-  PROP_COM=[['sign',12],['table',10],['crates',8],['delivery',8],['plant',8],['bench',4],['parasol',5],['vending',5],['freezer',4],['cart',3],['gas',3],['banner',6],['ped',8],['nopark',6],['pojang',2],['booth',2],['kick',3]],
-  PROP_WALK=[['ped',14],['pair',5],['dog',4],['bollard',3],['hydrant',2],['streetbin',3],['bikerack',2],['manhole',3],['postbox',2],['kick',3],['delivery',2],['clothbox',1],['shelter',1]],PROP_PARK=[['ped',6],['pair',4],['dog',4],['bench',4],['pigeons',3],['exer',2],['bike',2]];
+const PROP_RES=[['bike',8],['plant',14],['bins',8],['parcel',6],['ac',8],['laundry',5],['jars',4],['basin',4],['pyeong',3],['trike',3],['cat',3],['nopark',4],['delivery',3],['clothbox',2],['kick',2]],
+  PROP_COM=[['sign',12],['table',10],['crates',8],['delivery',8],['plant',8],['bench',4],['parasol',5],['vending',5],['freezer',4],['cart',3],['gas',3],['banner',6],['nopark',6],['pojang',2],['booth',2],['kick',3]],
+  PROP_WALK=[['bollard',5],['hydrant',2],['streetbin',3],['bikerack',2],['manhole',3],['postbox',2],['kick',3],['delivery',2],['clothbox',1],['shelter',1]],PROP_PARK=[['bench',6],['pigeons',3],['exer',2],['bike',2]];
 const pickW=(L,x)=>{let tot=0;for(const e of L)tot+=e[1];let a=x*tot;for(const e of L){if((a-=e[1])<0)return e[0];}return L[0][0];};
 /* 전신주와 전선: concrete poles every other tile on one side of local streets, sagging wires, pole transformers */
 /* 전신주와 전선: concrete pole on the sidewalk kerb every other tile, crossarm with insulators, 3 power lines + lower telecom bundle, pole transformer, 홍보물 */
@@ -3626,8 +3659,8 @@ function drawProps(g,x,y,i){const k=kind[i];const wx=(x-y)*16,wy=(x+y)*8-objBase
     if(lvl[i]===1)fenceRun(g,wx,wy,al,.5,.04,.96,1.05,'#f2f0e8','#f2c230');if(SZ[i])for(const sd of [.11,.89])fenceRun(g,wx,wy,al,sd,.04,.96,1.15,'#f2c230','#f2c230');for(let q=0;q<2;q++){if(r()<.4)continue;const t=.12+q*.5+r()*.25,sd=r()<.5?.07:.93,[u,v]=al?[sd,t]:[t,sd];putProp(g,wx,wy,u,v,pickW(PROP_WALK,r()),al,(r()*6)|0);}return;}
   if(k===K.PARK){const cl=fix[i]===2&&vari[i]>=20?CXA[cxIdx(vari[i])]:'';
     if(cl==='q'||cl==='r'){const al=hsh(x,y,5)<.5?1:0;for(let q=0;q<2;q++){if(r()<.35)continue;const t=.28+q*.44,[u,v]=al?[t,.5]:[.5,t];putProp(g,wx,wy,u,v,'pcar',al,(r()*6)|0);}return;}
-    if(cl==='p'){putProp(g,wx,wy,.4+r()*.2,.4+r()*.2,'kids',0,(r()*6)|0);if(r()<.5)putProp(g,wx,wy,.15,.8,'ped',0,(r()*6)|0);return;}
-    if(cl==='w'){if(r()<.5)putProp(g,wx,wy,.3+r()*.4,.3+r()*.4,pickW([['ped',6],['pair',3],['stroller',3],['dog',2],['bike',1]],r()),r()<.5?1:0,(r()*6)|0);return;}
+    if(cl==='p'){if(r()<.5)putProp(g,wx,wy,.15,.8,'bench',0,(r()*6)|0);return;}
+    if(cl==='w'){if(r()<.5)putProp(g,wx,wy,.3+r()*.4,.3+r()*.4,pickW([['bench',3],['streetbin',2],['bike',1]],r()),r()<.5?1:0,(r()*6)|0);return;}
     if(r()<.5)return;putProp(g,wx,wy,.2+r()*.6,.2+r()*.6,pickW(PROP_PARK,r()),r()<.5?1:0,(r()*6)|0);return;}
   if(!((k===K.RES||k===K.COM)&&lvl[i]))return;const rE=x+1<N&&kind[idx(x+1,y)]===K.ROAD,rS=y+1<N&&kind[idx(x,y+1)]===K.ROAD;if(!rE&&!rS)return;
   const al=rE?1:0,L=k===K.COM?PROP_COM:PROP_RES,n=k===K.COM?4:3;
@@ -4334,8 +4367,8 @@ function setPhoto(on){document.body.classList.toggle('photo',on);$('photoExit').
 /* ================= save / load ================= */
 function b64(u){let s='';for(let i=0;i<u.length;i+=8192)s+=String.fromCharCode.apply(null,u.subarray(i,i+8192));return btoa(s);}
 function unb64(s){const b=atob(s),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u;}
-function serialize(){return{v:6,N,fx:b64(fix),lm:b64(new Uint8Array(lmkA.buffer)),sim:Object.assign({},sim,{hist:sim.hist.slice()}),cam:[camX,camY,zoom],wx:WX.mode,a:[b64(terr),b64(kind),b64(lvl),b64(vari),b64(deco)],h:b64(H),rl:b64(RL),stn:b64(STN)};}
-function deserialize(s){if(!s||s.v!==6||s.N!==N){if(s&&s.v)setTimeout(()=>toast('이전 버전 도시는 호환 안 됨'),400);return false;}alloc();[terr,kind,lvl,vari,deco]=s.a.map(unb64);roadComp=new Int32Array(NN).fill(-1);accC=new Int32Array(NN).fill(-1);if(s.h)H=unb64(s.h);if(s.lm){const u=unb64(s.lm);lmkA=new Int32Array(u.buffer,0,NN);}if(s.fx)fix=unb64(s.fx);RL=s.rl?unb64(s.rl):new Uint8Array(NN);STN=s.stn?unb64(s.stn):new Uint8Array(NN);rebuildRailLines();BOVC.clear();ROADVER++;setTimeout(initBoats,0);
+function serialize(){return{v:6,N,fx:b64(fix),lm:b64(new Uint8Array(lmkA.buffer)),sim:Object.assign({},sim,{hist:sim.hist.slice()}),cam:[camX,camY,zoom],wx:WX.mode,a:[b64(terr),b64(kind),b64(lvl),b64(vari),b64(deco)],h:b64(H),rl:b64(RL),stn:b64(STN),hk:HANOKC};}
+function deserialize(s){if(!s||s.v!==6||s.N!==N){if(s&&s.v)setTimeout(()=>toast('이전 버전 도시는 호환 안 됨'),400);return false;}alloc();[terr,kind,lvl,vari,deco]=s.a.map(unb64);roadComp=new Int32Array(NN).fill(-1);accC=new Int32Array(NN).fill(-1);if(s.h)H=unb64(s.h);if(s.lm){const u=unb64(s.lm);lmkA=new Int32Array(u.buffer,0,NN);}if(s.fx)fix=unb64(s.fx);HANOKC=s.hk||null;CLIFV=clRule();RL=s.rl?unb64(s.rl):new Uint8Array(NN);STN=s.stn?unb64(s.stn):new Uint8Array(NN);rebuildRailLines();BOVC.clear();ROADVER++;setTimeout(initBoats,0);
   Object.assign(sim,s.sim);[camX,camY,zoom]=s.cam;if(s.v===1)zoom=Math.min(8,zoom*2);calcWnear(0,0,N-1,N-1);afterLoad();if(s.wx)setWeather(s.wx);return true;}
 function connectWater(){let ch=0;const W=(x,y)=>x>=0&&y>=0&&x<N&&y<N&&terr[idx(x,y)]===TWA,nat=(x,y)=>{const i=idx(x,y);return kind[i]===K.EMPTY;};
   for(let pass=0;pass<2;pass++)for(let y=0;y<N;y++)for(let x=0;x<N;x++){if(!W(x,y))continue;for(const [dx,dy] of [[1,1],[1,-1]]){const xx=x+dx,yy=y+dy;if(!W(xx,yy)||W(xx,y)||W(x,yy))continue;let px=-1,py=-1;if(xx<N&&nat(xx,y)){px=xx;py=y;}else if(yy>=0&&yy<N&&nat(x,yy)){px=x;py=yy;}if(px<0)continue;const i=idx(px,py);terr[i]=TWA;deco[i]=0;H[py*HN+px]=H[py*HN+px+1]=H[(py+1)*HN+px]=H[(py+1)*HN+px+1]=0;ch++;}}
@@ -4355,7 +4388,7 @@ let newArm=0;$('bNew').addEventListener('click',()=>{const b=$('bNew');if(Date.n
 let randArm=0;$('bRand').addEventListener('click',()=>{const b=$('bRand');if(Date.now()-randArm>3000){randArm=Date.now();b.classList.add('arm');b.querySelector('span').textContent='한 번 더';setTimeout(()=>{b.classList.remove('arm');b.querySelector('span').textContent='랜덤 도시';},3000);return;}randArm=0;b.classList.remove('arm');b.querySelector('span').textContent='랜덤 도시';$('loading').hidden=false;$('loading').textContent='도시를 짓는 중…';setTimeout(()=>{clearUndo&&clearUndo();newCity((Math.random()*1e6)|0,'rand');$('loading').hidden=true;$('cityName').value=sim.name;dirtySave();toast(sim.name+'');},30);});
 const CNAMES=['해온시','청림시','다온시','새솔시','한별시','누리시','가람시','온빛시','미르시','라온시','은하시','푸른시'];
 function genCity(seed){const r=mulberry(seed*13+5),SAVE=ROADL,DIR=[[1,0],[-1,0],[0,1],[0,-1]];
-  const inMap=(x,y)=>x>=4&&y>=4&&x<N-4&&y<N-4,hh=(x,y)=>tileAvgH(x,y);
+  const inMap=(x,y)=>x>=4&&y>=4&&x<N-4&&y<N-4,hh=(x,y)=>tileAvgH(x,y)-liftT(x,y);
   /* 1. centre: flat lowland on a river bank (Korean cities grow from river ports) */
   let cx=N/2,cy=N/2,bs=-1e9;for(let t=0;t<4000;t++){const x=(40*MS|0)+((r()*(N-80*MS))|0),y=(40*MS|0)+((r()*(N-80*MS))|0),i=idx(x,y);if(terr[i]===TWA||hh(x,y)>1)continue;const dr=distR[i];if(dr<6||dr>40)continue;let fl=0;for(let k=0;k<24;k++){const a=k/24*6.283,xx=Math.round(x+Math.cos(a)*30),yy=Math.round(y+Math.sin(a)*30);if(inMap(xx,yy)&&hh(xx,yy)<=2&&terr[idx(xx,yy)]!==TWA)fl++;}
     const sc=fl*3-Math.abs(dr-16)*.6-Math.hypot(x-N/2,y-N/2)/6+r()*4;if(sc>bs){bs=sc;cx=x;cy=y;}}
@@ -4603,6 +4636,26 @@ function genCity(seed){const r=mulberry(seed*13+5),SAVE=ROADL,DIR=[[1,0],[-1,0],
   /* wide roads that run into the sea or a field and just stop (traffic piled up at the stub): cut them back, row by row, to the last crossing */
   for(let it=0;it<120;it++){let ch=0;for(let i=0;i<NN;i++){if(!isWide(i)||terr[i]===TWA)continue;const x=i&NM,y=i>>NS;if(wideJ(x,y))continue;const {p,ax}=wInfo(i);if(p!==0)continue;const W=RC[lvl[i]].W,dx=ax===0?1:0,dy=ax===0?0:1,row=[];for(let k=0;k<W;k++){const xx=x+(ax===0?0:k),yy=y+(ax===0?k:0);if(!inMap(xx,yy))break;const j=idx(xx,yy);if(!isWide(j))break;row.push([xx,yy,j]);}if(row.length!==W)continue;
       for(const sg of [-1,1]){if(row.every(([xx,yy])=>{const nx=xx+dx*sg,ny=yy+dy*sg;return nx<0||ny<0||nx>=N||ny>=N||kind[idx(nx,ny)]!==K.ROAD;})){const back=row.every(([xx,yy])=>{const nx=xx-dx*sg,ny=yy-dy*sg;return nx>=0&&ny>=0&&nx<N&&ny<N&&isWide(idx(nx,ny));});if(!back)break;for(const [,,j] of row){clearTile(j);deco[j]=0;if(terr[j]!==TWA)terr[j]=TG;touch(j);}ch++;break;}}}if(!ch)break;compsDirty=true;}
+  /* 물가 이격: nothing is built hard against the water. Lots within 2 tiles of a shore and streets running along the water's edge are cleared
+     (bridges and their approaches stay); riverbanks become 둔치 parks with a riverside promenade + running track, sea coasts a sand beach or a rocky bluff */
+  {const WD=new Uint8Array(NN).fill(99),SEA=new Uint8Array(NN),q=[];for(let i=0;i<NN;i++)if(terr[i]===TWA&&kind[i]!==K.ROAD&&vari[i]!==250){WD[i]=0;SEA[i]=OCEAN[i]?1:0;q.push(i);}
+   for(let h=0;h<q.length;h++){const i=q[h];if(WD[i]>=4)continue;const x=i&NM,y=i>>NS;for(const [dx,dy] of DIR){const xx=x+dx,yy=y+dy;if(!inMap(xx,yy))continue;const j=idx(xx,yy);if(terr[j]===TWA)continue;if(WD[j]>WD[i]+1){WD[j]=WD[i]+1;SEA[j]=SEA[i];q.push(j);}}}
+   const rmR=[];   const bridgeAdj=i=>{const x=i&NM,y=i>>NS;for(const [dx,dy] of DIR){const xx=x+dx,yy=y+dy;if(!inMap(xx,yy))continue;const j=idx(xx,yy);if(kind[j]===K.ROAD&&terr[j]===TWA)return true;}return false;};
+   for(let i=0;i<NN;i++){const w=WD[i];if(w<1||w>2||terr[i]===TWA)continue;const k=kind[i];
+     if(k>=K.RES&&k<=K.IND&&lvl[i]&&!isFoot(i)&&fix[i]!==2){clearTile(i);touch(i);}
+     else if(k===K.ROAD&&w===1&&!isWide(i)&&!isElev(i)&&!bridgeAdj(i)&&!RL[i]){rmR.push([i,lvl[i],vari[i]]);clearTile(i);vari[i]=0;touchN(i);}}
+   /* a shore street that was the only link between two parts of the network stays (whole run, so traffic still gets through) */
+   {const comp=new Int32Array(NN).fill(-1);let nc=0;for(let s0=0;s0<NN;s0++){if(kind[s0]!==K.ROAD||comp[s0]>=0)continue;const qq=[s0];comp[s0]=nc;for(let h=0;h<qq.length;h++){const i=qq[h],x=i&NM,y=i>>NS;for(const [dx,dy] of DIR){const xx=x+dx,yy=y+dy;if(!inMap(xx,yy))continue;const j=idx(xx,yy);if(kind[j]===K.ROAD&&comp[j]<0){comp[j]=nc;qq.push(j);}}}nc++;}
+    const RM=new Map(rmR.map(e=>[e[0],e])),seen=new Set();for(const [i0] of rmR){if(seen.has(i0))continue;const grp=[i0],cs=new Set();seen.add(i0);for(let h=0;h<grp.length;h++){const i=grp[h],x=i&NM,y=i>>NS;for(const [dx,dy] of DIR){const xx=x+dx,yy=y+dy;if(!inMap(xx,yy))continue;const j=idx(xx,yy);if(RM.has(j)&&!seen.has(j)){seen.add(j);grp.push(j);}else if(kind[j]===K.ROAD)cs.add(comp[j]);}}
+      if(cs.size>=2)for(const i of grp){const e=RM.get(i);kind[i]=K.ROAD;lvl[i]=e[1];vari[i]=e[2];deco[i]=0;touchN(i);}}compsDirty=true;}
+   /* riverbank parks every ~30 tiles along stretches that run through town */
+   const pts=[];for(let i=0;i<NN;i++){if(WD[i]!==2||SEA[i]||kind[i])continue;const x=i&NM,y=i>>NS;let town=0;for(let dy=-11;dy<=11&&!town;dy+=2)for(let dx=-11;dx<=11;dx+=2){const xx=x+dx,yy=y+dy;if(inMap(xx,yy)){const k=kind[idx(xx,yy)];if((k>=K.RES&&k<=K.IND)||k===K.ROAD){town=1;break;}}}if(town&&hsh(x,y,seed+313)<.25)pts.push([x,y]);}
+   const got=[];for(const [x,y] of pts){if(got.some(([a,b])=>Math.hypot(a-x,b-y)<30))continue;const i=idx(x,y);if(kind[i]||terr[i]===TWA)continue;got.push([x,y]);placePark(5,{x,y});}
+   /* a street joining a bridge from the side, on the water tile itself, makes a junction over the water: cut that side spur */
+   for(let i=0;i<NN;i++){if(terr[i]!==TWA||kind[i]!==K.ROAD||isWide(i))continue;const x=i&NM,y=i>>NS,m=roadMask(x,y);if(m===5||m===10)continue;const ax=(m&5)===5?1:(m&10)===10?0:-1;if(ax<0)continue;
+     for(const [dx,dy] of ax?[[1,0],[-1,0]]:[[0,1],[0,-1]]){const xx=x+dx,yy=y+dy;if(!inMap(xx,yy))continue;const j=idx(xx,yy);if(kind[j]===K.ROAD&&terr[j]!==TWA&&!isWide(j)&&!isElev(j)){clearTile(j);vari[j]=0;touchN(j);}}touchN(i);}
+   /* sea coast: sand on the low, calm stretches (the cliffs are terrain, made in genMap) */
+   for(let i=0;i<NN;i++){const w=WD[i];if(!SEA[i]||w<1||w>2||terr[i]===TWA||kind[i])continue;const x=i&NM,y=i>>NS;if(isFlat(x,y)&&hv(x,y)===0){terr[i]=TSA;deco[i]=w===2&&hsh(x,y,7)<.3?18+((hsh(x,y,8)*2)|0):0;touch(i);}}}
   /* built clusters left without a street (complexes whose district streets never came, outskirt towers): run a 2-lane access road to the nearest street */
   for(let it=0;it<60;it++){const dist=new Uint8Array(NN).fill(99),q=[];for(let i=0;i<NN;i++)if(kind[i]===K.ROAD){dist[i]=0;q.push(i);}for(let h=0;h<q.length;h++){const i=q[h];if(dist[i]>=6)continue;const x=i&NM,y=i>>NS;for(const [dx,dy] of DIR){const xx=x+dx,yy=y+dy;if(xx<0||yy<0||xx>=N||yy>=N)continue;const j=idx(xx,yy);if(dist[j]>dist[i]+1){dist[j]=dist[i]+1;q.push(j);}}}
     let st=-1;for(let i=0;i<NN;i++){const k=kind[i];if(k>=K.RES&&k<=K.IND&&lvl[i]&&dist[i]>4){st=i;break;}}if(st<0)break;
@@ -4615,6 +4668,13 @@ function genCity(seed){const r=mulberry(seed*13+5),SAVE=ROADL,DIR=[[1,0],[-1,0],
   /* lots more than 4 tiles from any street can't be reached: leave them as open ground */
   {const dist=new Uint8Array(NN).fill(99),q=[];for(let i=0;i<NN;i++)if(kind[i]===K.ROAD){dist[i]=0;q.push(i);}for(let h=0;h<q.length;h++){const i=q[h];if(dist[i]>=6)continue;const x=i&NM,y=i>>NS;for(const [dx,dy] of DIR){const xx=x+dx,yy=y+dy;if(xx<0||yy<0||xx>=N||yy>=N)continue;const j=idx(xx,yy);if(dist[j]>dist[i]+1){dist[j]=dist[i]+1;q.push(j);}}}
    for(let i=0;i<NN;i++){const k=kind[i];if(k<K.RES||k>K.IND||dist[i]<=4||fix[i]===2||isFoot(i))continue;clearTile(i);touch(i);}}
+  /* 한옥마을: the outermost old/village district becomes the one hanok sector; tiled roofs appear nowhere else */
+  {const hc=cells.filter(c=>(c.t==='old'||c.t==='vil')&&!c.k&&(c.x1-c.x0)*(c.y1-c.y0)>=120).sort((p,q)=>q.d-p.d)[0],inH=(x,y)=>hc&&x>=hc.x0&&x<=hc.x1&&y>=hc.y0&&y<=hc.y1;
+   const GV={};for(const k of [K.RES,K.COM]){const n=catOf(k,1).length;GV[k]={g:[],o:[]};for(let v=0;v<n;v++)(isGiwa(k,1,v)?GV[k].g:GV[k].o).push(v);}
+   for(let i=0;i<NN;i++){const k=kind[i];if((k!==K.RES&&k!==K.COM)||!lvl[i]||isFoot(i)||fix[i]===2)continue;const x=i&NM,y=i>>NS,h=hsh(x,y,991);
+     if(inH(x,y)){if(lvl[i]<=2&&GV[k].g.length){lvl[i]=1;vari[i]=GV[k].g[(h*GV[k].g.length)|0];touch(i);}}
+     else if(lvl[i]===1&&isGiwa(k,1,vari[i])){vari[i]=GV[k].o[(h*GV[k].o.length)|0];touch(i);}}
+   HANOKC=hc?{x0:hc.x0,y0:hc.y0,x1:hc.x1,y1:hc.y1}:null;}
   genRail(cx,cy,seed);
   /* …one that still ends (rail viaducts excepted): rows that serve nothing are dropped (a bridge or boulevard to nowhere); what is left back to its last junction becomes a two-lane access road */
   {const srv=j=>{const k=kind[j];return (k>=K.RES&&k<=K.IND&&lvl[j])||k===K.LMK||(k>=K.POWER&&k<=K.PARK)||isFoot(j)||(deco[j]>=40&&deco[j]<=42);};
@@ -4627,7 +4687,7 @@ function genCity(seed){const r=mulberry(seed*13+5),SAVE=ROADL,DIR=[[1,0],[-1,0],
     const fill=(j,a,b,k)=>{if(terr[j]===TWA)return;for(const o of [-(k+1),W-k,-(k+2),W-k+1]){const u=ax?a+o:a,v=ax?b:b+o;if(!inMap(u,v))continue;const e=idx(u,v);if(kind[e]===K.EMPTY&&terr[e]===terr[j]&&deco[e]<=14){deco[j]=deco[e];return;}}};/* the cleared strip takes the vegetation beside it */
     rows.forEach((R,q)=>R.forEach(([a,b],k)=>{const j=idx(a,b);if(q>=cut&&k===off){lvl[j]=0;vari[j]=0;deco[j]=0;}else{clearTile(j);fill(j,a,b,k);}touchN2(j);}));}stripShoreTrees();}
   compsDirty=true;ROADL=SAVE;return[Math.round(cx),Math.round(cy)];}
-function newCity(seed,blank){Object.assign(sim,{day:0,month:0,year:2027,speed:1,tax:[9,9,9],dem:[.7,.4,.6],pop:0,jc:0,ji:0,inc:0,exp:0,spent:0,hist:[],pw:0,wt:0,avgLv:0,name:'뉴타운',seed});
+function newCity(seed,blank){HANOKC=null;Object.assign(sim,{day:0,month:0,year:2027,speed:1,tax:[9,9,9],dem:[.7,.4,.6],pop:0,jc:0,ji:0,inc:0,exp:0,spent:0,hist:[],pw:0,wt:0,avgLv:0,name:'뉴타운',seed});
   RL=new Uint8Array(NN);STN=new Uint8Array(NN);RLINES=[];TRAINS=[];BOATS=[];RLC.clear();BOVC.clear();ROADVER++;
   genMap(seed);let c;if(blank==='rand'){c=genCity(seed);}else if(blank){const p=findSpot(20);c=[p[0]+10,p[1]+10];}else{c=starter();}
   recomputeComps();fields();
