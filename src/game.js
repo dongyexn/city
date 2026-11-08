@@ -2289,8 +2289,11 @@ function pkPlan(t,cx,cy){const T=PKT[t],r=mulberry(cx*733+cy*97+t*13+7),sd=cx*31
 function floodSet(S,start){const out=new Set([start]),q=[start];while(q.length){const i=q.pop(),x=i&NM,y=i>>NS;for(const [dx,dy] of DIRS){const xx=x+dx,yy=y+dy;if(xx<0||yy<0||xx>=N||yy>=N)continue;const j=idx(xx,yy);if(S.has(j)&&!out.has(j)){out.add(j);q.push(j);}}}return out;}
 function placePark(t,b){const T=PKT[t],plan=pkPlan(t,b.x,b.y);if(plan.length<4)return toast(T.river?'물가 근처 빈 땅에 놓아 주세요':'공원을 만들 빈 땅이 부족합니다');
   const wq=[];let x0=N,y0=N,x1=0,y1=0;for(const [x,y,c] of plan){const i=idx(x,y);x0=Math.min(x0,x);y0=Math.min(y0,y);x1=Math.max(x1,x);y1=Math.max(y1,y);clearTile(i);if(c!=='o')deco[i]=0;
-    if(c==='L'||c==='d'){terr[i]=TWA;wq.push(i);if(c==='L'){kind[i]=K.EMPTY;vari[i]=T.kind==='lake'?250:0;fix[i]=0;}else{kind[i]=K.PARK;lvl[i]=1;fix[i]=2;vari[i]=20+CXA.indexOf('d');}}
+    if(c==='L'||c==='d'){/* piers dropped: the deck reads as a stray path square on the water */terr[i]=TWA;wq.push(i);kind[i]=K.EMPTY;vari[i]=T.kind==='lake'?250:0;fix[i]=0;}
     else{if(terr[i]!==TG&&terr[i]!==TSA)terr[i]=TG;kind[i]=K.PARK;lvl[i]=1;fix[i]=2;vari[i]=20+CXA.indexOf(c);deco[i]=0;}}
+  /* trail spurs that only ran out to a pier now dead-end at the water: trim them back to lawn */
+  {const isY=j=>kind[j]===K.PARK&&fix[j]===2&&vari[j]===20+CXA.indexOf('y'),wet=(x,y)=>{for(const [dx,dy] of DIRS){const xx=x+dx,yy=y+dy;if(xx>=0&&yy>=0&&xx<N&&yy<N&&terr[idx(xx,yy)]===TWA)return true;}return false;};
+   for(let pass=0;pass<12;pass++){let ch2=0;for(const [x,y] of plan){const i=idx(x,y);if(!isY(i))continue;let nb=0;for(const [dx,dy] of DIRS){const xx=x+dx,yy=y+dy;if(xx<0||yy<0||xx>=N||yy>=N)continue;const j=idx(xx,yy);if(isY(j)||kind[j]===K.ROAD||pkChar(j)==='u'||pkChar(j)==='z')nb++;}if(nb<=1&&wet(x,y)){vari[i]=20+CXA.indexOf('m');ch2++;}}if(!ch2)break;}}
   for(const i of wq){const x=i&NM,y=i>>NS;H[y*HN+x]=H[y*HN+x+1]=H[(y+1)*HN+x]=H[(y+1)*HN+x+1]=0;}if(wq.length)relax();
   const ch=new Set();for(let y=y0-2;y<=y1+3;y++)for(let x=x0-2;x<=x1+3;x++)if(x>=0&&y>=0&&x<=N&&y<=N)ch.add(y*HN+x);afterTerrain(ch);calcWnear(x0,y0,x1,y1);
   for(let y=y0-1;y<=y1+1;y++)for(let x=x0-1;x<=x1+1;x++)if(x>=0&&y>=0&&x<N&&y<N)touch(idx(x,y));compsDirty=true;ovDirty=true;sim.spent+=plan.length*60;toast(T.name+'');}
@@ -2319,7 +2322,10 @@ let OCEAN=new Uint8Array(NN);function genMap(seed){alloc();const r=mulberry(seed
   {const nl=1+((r()*3)|0);for(let k=0;k<nl;k++){const a=r()*6.283,d=IR*(.45+r()*.35);LB.push({x:LB[0].x+Math.cos(a)*d,y:LB[0].y+Math.sin(a)*d,r:IR*(.32+r()*.28),e:1+r()*.6,a:r()*6.283});}}
   const isl=(x,y)=>{const qx=x+(fbm(x/80,y/80,seed+211,2)-.5)*60,qy=y+(fbm(x/80,y/80,seed+213,2)-.5)*60;let m=1e9;for(const L of LB){const dx=qx-L.x,dy=qy-L.y,c=Math.cos(L.a),s2=Math.sin(L.a),u=(dx*c+dy*s2)*L.e,v=-dx*s2+dy*c;m=Math.min(m,Math.hypot(u,v)/L.r);}
     return m+(fbm(x/46,y/46,seed+217,3)-.5)*.45+(fbm(x/14,y/14,seed+219,2)-.5)*.08;};
-  const OCN=new Uint8Array(NN);OCEAN=OCN;for(let y=0;y<N;y++)for(let x=0;x<N;x++)if(isl(x+.5,y+.5)>=1||x<3||y<3||x>=N-3||y>=N-3){const i=idx(x,y);OCN[i]=1;terr[i]=TWA;}
+  /* offshore islets (separate rng so the main island is unchanged): 2-5 small isles a short sea channel away from the coast */
+  const ISL=[];{const r2=mulberry(seed*7+91),n=2+((r2()*4)|0);for(let t=0;t<400&&ISL.length<n;t++){const rr=N*(.025+r2()*.045),x=14+rr+r2()*(N-28-2*rr),y=14+rr+r2()*(N-28-2*rr);const m=isl(x,y);if(m<1.25||m>2.2)continue;let ok=true;for(let k=0;k<12&&ok;k++){const a=k/12*6.283;if(isl(x+Math.cos(a)*rr*1.6,y+Math.sin(a)*rr*1.6)<1.12)ok=false;}if(!ok||ISL.some(q=>Math.hypot(q.x-x,q.y-y)<q.r+rr+10))continue;ISL.push({x,y,r:rr,e:1+r2()*.5,a:r2()*6.283});}}
+  const islA=(x,y)=>{let m=isl(x,y);for(const L of ISL){const dx=x-L.x,dy=y-L.y,c=Math.cos(L.a),s2=Math.sin(L.a),u=(dx*c+dy*s2)*L.e,v=-dx*s2+dy*c;m=Math.min(m,Math.hypot(u,v)/L.r+(fbm(x/18,y/18,seed+227,2)-.5)*.5);}return m;};
+  const OCN=new Uint8Array(NN);OCEAN=OCN;for(let y=0;y<N;y++)for(let x=0;x<N;x++)if(islA(x+.5,y+.5)>=1||x<3||y<3||x>=N-3||y>=N-3){const i=idx(x,y);OCN[i]=1;terr[i]=TWA;}
   /* rivers: rise inland and meander down to a random stretch of coast, widening toward the mouth; sometimes a second, smaller river */
   const rw=(2.4+r()*1.4)*S;distR.fill(1e9);
   const trace=(wmul)=>{let src=null;for(let t=0;t<400;t++){const x=N*.15+r()*N*.7,y=N*.15+r()*N*.7;if(isl(x,y)<.5){src=[x,y];break;}}if(!src)return;
@@ -2336,7 +2342,7 @@ let OCEAN=new Uint8Array(NN);function genMap(seed){alloc();const r=mulberry(seed
     const ring=clamp((dd-.92)/.5,0,1),spur=Math.pow(rg,4)*clamp((dd-.55)/.4,0,1);
     let m=Math.max(ring*ring*(3-2*ring)*mh,spur*mh*.55);
     const hn=fbm(wx/30,wy/30,seed+31,3);if(hn>.64&&dd<.95){const f=clamp((hn-.64)/.14,0,1);m=Math.max(m,f*f*(3-2*f)*(2+4*rg)*S*.7);}
-    const vf=clamp((dr-2)/16,0,1),cv=isl(x,y),cf=clamp((1-cv)/.22,0,1);m*=cf*cf*(3-2*cf);H[y*HN+x]=clamp(Math.round(m*vf*vf*(3-2*vf)),0,HMAX);}
+    const vf=clamp((dr-2)/16,0,1),cv=islA(x,y),cf=clamp((1-cv)/.22,0,1);m*=cf*cf*(3-2*cf);H[y*HN+x]=clamp(Math.round(m*vf*vf*(3-2*vf)),0,HMAX);}
   const TRIB=new Uint8Array(NN);{const srcs=[];for(let t=0;t<3000&&srcs.length<6;t++){const x=4+((r()*(N-8))|0),y=4+((r()*(N-8))|0),h=tileAvgH(x,y);if(h<HMAX*.25||h>HMAX*.55||distR[idx(x,y)]<24)continue;if(srcs.some(p=>Math.hypot(p[0]-x,p[1]-y)<40*S))continue;srcs.push([x,y]);}
     for(const [sx,sy] of srcs){let x=sx,y=sy,ok=false;const seen=new Set();const path=[];for(let st=0;st<600*S;st++){const i=idx(x,y);if(terr[i]===TWA){ok=true;break;}path.push(i);seen.add(i);let best=null,bc=1e9;
         for(const [dx,dy] of DIRS){const xx=x+dx,yy=y+dy;if(xx<1||yy<1||xx>=N-1||yy>=N-1)continue;const j=idx(xx,yy);if(seen.has(j))continue;const c=tileAvgH(xx,yy)*1.6+distR[j]*.09+(fbm(xx/7/S,yy/7/S,seed+57,2)-.5)*3;if(c<bc){bc=c;best=[xx,yy];}}
