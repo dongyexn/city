@@ -1,0 +1,17 @@
+{
+  "name": "픽셀 도시",
+  "short_name": "픽셀 도시",
+  "description": "섬 위에 펼쳐진 한국 도시를 구경하고 꾸미는 감상형 도시 게임",
+  "lang": "ko",
+  "start_url": "./",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "any",
+  "background_color": "#0d1015",
+  "theme_color": "#0d1015",
+  "icons": [
+    {"src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
+    {"src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
+    {"src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+  ]
+}
