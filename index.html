@@ -1258,9 +1258,9 @@ LMKT.forEach(T=>{if(T.norm){T.ds=1;return;}T.ds=T.sz;if(T.id!=='subway')T.sz*=2;
 const RDC=new Map();
 function lampAt(g,lg,st,u,v,dir){const p=P(u,v,0),x=Math.round(p[0]),y=Math.round(p[1]);g.fillStyle='#4a4e55';g.fillRect(x,y-30,1,30);const dx=dir;g.fillRect(dx>0?x:x-5,y-30,6,1);g.fillStyle='#f1e4b8';g.fillRect(dx>0?x+4:x-5,y-29,2,1);
   const gx=dx>0?x+5:x-4,gr=lg.createRadialGradient(gx,y-28,0,gx,y-20,24);gr.addColorStop(0,'rgba(255,214,150,.62)');gr.addColorStop(.35,'rgba(255,190,120,.18)');gr.addColorStop(1,'rgba(255,170,90,0)');lg.fillStyle=gr;lg.fillRect(gx-24,y-52,48,60);st.lit=true;}
-function signalAt(g,lg,st,u,v,ax,r){const p=P(u,v,0),x=Math.round(p[0]),y=Math.round(p[1]);g.fillStyle='#d9d6cf';g.fillRect(x,y-24,1,24);const q=P(u+ax[0],v+ax[1],0),qx=Math.round(q[0]),qy=Math.round(q[1])-24;g.strokeStyle='#d9d6cf';g.lineWidth=1;g.beginPath();g.moveTo(x,y-24);g.lineTo(qx,qy);g.stroke();
-  /* 4-light horizontal head: red · yellow · left arrow · green */g.fillStyle='#2b2f36';g.fillRect(qx-6,qy-.2,12,3.4);const on=(r()*4)|0,cols=['#ff4a3a','#f2b233','#2fd36a','#2fd36a'];for(let k=0;k<4;k++){g.fillStyle=k===on?cols[k]:'#46494f';g.beginPath();g.arc(qx-4.5+k*3,qy+1.5,1.1,0,6.283);g.fill();}g.fillStyle='#1a1d22';g.fillRect(qx-6,qy-.6,12,.5);lg.fillStyle=cols[on];lg.fillRect(qx-6+on*3,qy-.5,3,4);st.lit=true;
-  pedSignal(g,lg,st,u+ax[1]*.4+(ax[0]?0:.06),v+ax[0]*.4+.06,on>=2);}
+function signalAt(g,lg,st,u,v,ax,r){const p=P(u,v,0),x=Math.round(p[0]),y=Math.round(p[1]);g.fillStyle='#d9d6cf';g.fillRect(x,y-24,1,24);const q=P(u+ax[0],v+ax[1],0),qx=q[0],qy=q[1]-24;g.strokeStyle='#d9d6cf';g.lineWidth=.9;g.beginPath();g.moveTo(x,y-24);g.lineTo(qx,qy);g.stroke();
+  /* 4-light horizontal head hung under the arm end, lying along the arm (faces the approach): red · yellow · left arrow · green */const L=Math.hypot(ax[0],ax[1]),du=ax[0]/L,dv=ax[1]/L,hp=t=>P(u+du*(L-.02-t*.2),v+dv*(L-.02-t*.2),0);const a0=hp(0),a1=hp(1);g.strokeStyle='#2b2f36';g.lineWidth=3.2;g.lineCap='butt';g.beginPath();g.moveTo(a0[0],a0[1]-22.4);g.lineTo(a1[0],a1[1]-22.4);g.stroke();
+  const on=(r()*4)|0,cols=['#ff4a3a','#f2b233','#2fd36a','#2fd36a'];for(let k=0;k<4;k++){const p2=hp((k+.5)/4);g.fillStyle=k===on?cols[k]:'#46494f';g.beginPath();g.arc(p2[0],p2[1]-22.4,.95,0,6.283);g.fill();if(k===on){lg.fillStyle=cols[k];lg.fillRect(p2[0]-1.6,p2[1]-24,3.2,3.2);}}st.lit=true;}
 /* Korean road signs on a galvanised post: 0 최고속도 50, 1 주정차금지, 2 횡단보도, 3 일방통행, 4 서행 */
 function signPost(g,u,v,k){const p=P(u,v,0),x=p[0],y=p[1],H=19;g.fillStyle='#9aa0a6';g.fillRect(x-.4,y-H,.9,H);g.fillStyle='#6b7077';g.fillRect(x+.2,y-H,.3,H);const cy=y-H-2.6;
   const disc=(fill,ring)=>{g.fillStyle=ring;g.beginPath();g.arc(x,cy,3.1,0,6.283);g.fill();g.fillStyle=fill;g.beginPath();g.arc(x,cy,2.3,0,6.283);g.fill();};
@@ -1279,7 +1279,10 @@ function decoSpr(m,t,sea,vr,sp,shp,half){shp=shp||0;const n=m&1,e=m&2,s=m&4,w=m&
   if(cnt<3&&!NS&&!EW&&vr>1)return null;
   const spc=STREETSP[(sp&15)%STREETSP.length],fvv=sp>>4;
   return osp((g,lg,r,st)=>{const items=[];
-    if(cnt>=3){const ax=.2;items.push([sw*.5,sw*.5,()=>signalAt(g,lg,st,sw*.5,sw*.5,[ax,0],r)]);items.push([1-sw*.5,1-sw*.5,()=>signalAt(g,lg,st,1-sw*.5,1-sw*.5,[-ax,0],r)]);}
+    if(cnt>=3){const k0=sw*.55,k1=1-sw*.55,A=.3,ph=r()<.5;
+      /* corners: [u,v, arms that meet there, mast direction (into the approach on that corner's right-hand side)] */
+      for(const [u,v,a1,a2,ax] of [[k0,k0,n,w,[A,0]],[k1,k0,n,e,[0,A]],[k1,k1,s,e,[-A,0]],[k0,k1,s,w,[0,-A]]]){if(!(ax[0]>0?n:ax[1]>0?e:ax[0]<0?s:w))continue;items.push([u,v,()=>signalAt(g,lg,st,u,v,ax,r)]);}
+      for(const [u,v,a1,a2,o1,o2] of [[k0,k0,n,w,[.08,0],[0,.08]],[k1,k0,n,e,[-.08,0],[0,.08]],[k1,k1,s,e,[-.08,0],[0,-.08]],[k0,k1,s,w,[.08,0],[0,-.08]]]){if(a1)items.push([u+o1[0],v+o1[1]-.02,()=>pedSignal(g,lg,st,u+o1[0],v+o1[1]-.02,ph)]);if(a2)items.push([u+o2[0]-.02,v+o2[1],()=>pedSignal(g,lg,st,u+o2[0]-.02,v+o2[1],!ph)]);}}
     else if(NS||EW){const pos=NS?[[sw*.5,.5],[1-sw*.5,.5]]:[[.5,sw*.5],[.5,1-sw*.5]];
       pos.forEach(([u,v],k)=>{if(!(vr===4&&k===1))items.push([u,v,()=>streetTree(g,u,v,spc,sea,r,fvv+k)]);});
       if(vr===0||vr===3){const [u,v]=NS?[sw*.5,.12]:[.12,sw*.5];items.push([u,v,()=>lampAt(g,lg,st,u,v,NS?1:-1)]);}
@@ -1458,9 +1461,9 @@ function buildSprites(){
       const lx=Math.abs(fx-.5),ly=Math.abs(fy-.5),vert=(n&&fy<.5)||(s&&fy>.5),hor=(w&&fx<.5)||(e&&fx>.5);
       if(cnt<=2){if(vert){if(tp&&lx<.028)return lx>.02?M:Md;if(!tp&&lx<.016&&lx>.004)return M;const lanes=tp?[.15,.27]:[.19];for(const L of lanes)if(Math.abs(lx-L)<.006&&((fy*12|0)&1))return Wt;}
         if(hor){if(tp&&ly<.028)return ly>.02?M:Md;if(!tp&&ly<.016&&ly>.004)return M;const lanes=tp?[.15,.27]:[.19];for(const L of lanes)if(Math.abs(ly-L)<.006&&((fx*12|0)&1))return Wt;}}
-      else{const z=v=>((Math.floor(v*40))&1);const ins=.36-(tp?.04:0);
-        if(((n&&fy<.17&&fy>c)||(s&&fy>.83&&fy<1-c))&&lx<ins&&z(fx))return Wt;if(((w&&fx<.17&&fx>c)||(e&&fx>.83&&fx<1-c))&&ly<ins&&z(fy))return Wt;
-        if((n&&fy>.175&&fy<.19&&fx<.5&&fx>c)||(s&&fy<.825&&fy>.81&&fx>.5&&fx<1-c)||(w&&fx>.175&&fx<.19&&fy>.5&&fy<1-c)||(e&&fx<.825&&fx>.81&&fy<.5&&fy>c))return Wt;
+      else{/* 횡단보도: full kerb-to-kerb, bars parallel to traffic; stop line on the approach half behind it */const z=v=>((Math.floor(v*36))&1),ins=.5-c-.012,z0=c+.012,z1=.2;
+        if(((n&&fy<z1&&fy>z0)||(s&&fy>1-z1&&fy<1-z0))&&lx<ins&&z(fx))return Wt;if(((w&&fx<z1&&fx>z0)||(e&&fx>1-z1&&fx<1-z0))&&ly<ins&&z(fy))return Wt;
+        if((n&&fy>.215&&fy<.23&&fx<.5&&fx>c)||(s&&fy<.785&&fy>.77&&fx>.5&&fx<1-c)||(w&&fx>.215&&fx<.23&&fy>.5&&fy<1-c)||(e&&fx<.785&&fx>.77&&fy<.5&&fy>c))return Wt;
         /* 좌회전 유도선: dotted arcs from each approach's inner lane into the crossing street (right-hand traffic), inside the stop lines */
         if(fx>.2&&fx<.8&&fy>.2&&fy<.8){const R=.5+(tp?.075:.1);for(const [ok,cx,cy] of [[s&&w,0,1],[n&&e,1,0],[e&&s,1,1],[w&&n,0,0]]){if(!ok)continue;const d=Math.hypot(fx-cx,fy-cy);if(Math.abs(d-R)<.01){const a=Math.atan2(fy-cy,fx-cx);if(((a*16/Math.PI)%2+2)%2<1.1)return Wt;}}}}
       return r()<.07?A2:A;}));}return arr;});
