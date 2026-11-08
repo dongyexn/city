@@ -935,7 +935,7 @@ function pedSprite(shirt,frame){const c=mk(3,7),g=c.getContext('2d');g.fillStyle
 
 /* ---- sprite registry ---- */
 function roadCornerTex(tp,m,diag,sea){const gc=sea==null?null:speck(950+m+tp*5+sea*11,GRASS[sea][0],GRASS[sea][1],GRASS[sea][2],.1,.07),r=mulberry(900+m*7+tp*3+(diag?50:0)),A=hex('#484b51'),A2=hex('#51545a'),B1=hex('#b9a898'),B2=hex('#a8988a'),Cb=hex('#d6d3cc'),M=hex('#e9c94a'),Wt=hex('#ecece6'),Md=hex('#bdbab2');
-  const cx=(m&2)?1:0,cy=(m&1)?0:1,sc=diag?(tp?.87:.92):1,asph=(tp?.382:.342)*sc,curb=(tp?.4:.36)*sc,lanes=(tp?[.15,.27]:[.19]).map(v=>v*sc);
+  const cx=(m&2)?1:0,cy=(m&1)?0:1,sc=diag?(tp?.87:.92):1,asph=(tp?.382:.342)*sc,curb=(tp?.4:.36)*sc,lanes=(tp?[.205]:[]).map(v=>v*sc);
   return tex(gsp((fx,fy,px,py)=>{const dx=fx-cx,dy=fy-cy;let e,al;if(diag){e=Math.abs(Math.abs(dx)+Math.abs(dy)-.5)/Math.SQRT2;al=Math.abs(dx)-Math.abs(dy)+.5;}else{e=Math.abs(Math.hypot(dx,dy)-.5);al=Math.atan2(Math.abs(dy),Math.abs(dx))/(Math.PI/2);}
     if(gc&&e>curb+.13)return gc();if(e>curb)return PV(fx,fy,B1,B2);if(e>asph)return Cb;
     if(tp){if(e<.04)return e>.03?M:(e<.012?M:Md);}else if(e<.022&&e>.002)return M;
@@ -943,7 +943,7 @@ function roadCornerTex(tp,m,diag,sea){const gc=sea==null?null:speck(950+m+tp*5+s
 /* road bands along an arbitrary centreline: shared markings so straight tiles, fillets and diagonals line up */
 const FIL_R=1,FIL_TL=FIL_R*Math.tan(Math.PI/8);
 function bandFn(tp,pts,seed,mode,gc,sMap){const r=mulberry(seed),A=hex('#484b51'),A2=hex('#51545a'),B1=hex('#b9a898'),B2=hex('#a8988a'),Cb=hex('#d6d3cc'),M=hex('#e9c94a'),Wt=hex('#ecece6'),Md=hex('#bdbab2');
-  const t=tp?.1:.14,curb=.5-t,asph=curb-.018,lanes=tp?[.15,.27]:[.19],segs=[];let tot=0;for(let k=0;k<pts.length-1;k++){const P0=pts[k],P1=pts[k+1],l=Math.hypot(P1[0]-P0[0],P1[1]-P0[1]);if(l<1e-9)continue;segs.push([P0,P1,l,tot,Math.min(P0[0],P1[0]),Math.max(P0[0],P1[0]),Math.min(P0[1],P1[1]),Math.max(P0[1],P1[1])]);tot+=l;}
+  const t=tp?.1:.14,curb=.5-t,asph=curb-.018,lanes=tp?[.205]:[],segs=[];let tot=0;for(let k=0;k<pts.length-1;k++){const P0=pts[k],P1=pts[k+1],l=Math.hypot(P1[0]-P0[0],P1[1]-P0[1]);if(l<1e-9)continue;segs.push([P0,P1,l,tot,Math.min(P0[0],P1[0]),Math.max(P0[0],P1[0]),Math.min(P0[1],P1[1]),Math.max(P0[1],P1[1])]);tot+=l;}
   return(fx,fy)=>{let e=9,al=0;for(const [P0,P1,l,t0,x0,x1,y0,y1] of segs){const bx=x0-fx>0?x0-fx:fx-x1>0?fx-x1:0,by=y0-fy>0?y0-fy:fy-y1>0?fy-y1:0;if(bx*bx+by*by>=e*e)continue;const dx=P1[0]-P0[0],dy=P1[1]-P0[1];let q=((fx-P0[0])*dx+(fy-P0[1])*dy)/(l*l);q=q<0?0:q>1?1:q;const d=Math.hypot(P0[0]+dx*q-fx,P0[1]+dy*q-fy);if(d<e){e=d;al=t0+q*l;}}
     if(e>=curb){if(mode===0&&e>curb+.13)return gc();return PV(fx,fy,B1,B2);}if(e>=asph)return Cb;
     if(tp){if(e<.028)return e>.02?M:Md;}else if(e<.016&&e>.004)return M;const sv=sMap?sMap(al):al;for(const L of lanes)if(Math.abs(e-L)<.006&&((Math.floor(sv*12))&1))return Wt;return r()<.07?A2:A;};}
@@ -982,7 +982,7 @@ function roadVarTex(tp,ns,kind2,end){const r=mulberry(960+tp*7+(ns?1:0)*3+kind2*
   return tex(gsp((fx,fy,px,py)=>{const o=(py*128+px)*4,c=[bc[o],bc[o+1],bc[o+2]];const a=ns?fy:fx,l=ns?fx-.5:fy-.5,t=tp?.1:.14,c2=t+.018;if(Math.abs(l)>.5-c2)return c;
     if(kind2===0){if(Math.abs(a-.5)<.09&&Math.abs(l)<.5-c2-.02&&((Math.floor((ns?fx:fy)*40))&1))return Wt;return c;}
     const e=end?1-a:a,side=end?-1:1,ll=l*side;
-    for(const L of (tp?[.08,.21,.33]:[.1,.27])){const d=ll-L;if(e>.06&&e<.3&&Math.abs(d)<.013)return Wt;if(e>.02&&e<=.06&&Math.abs(d)<.045*(e-.02)/.04+.002)return Wt;}
+    for(const L of (tp?[.115,.29]:[.19])){const d=ll-L;if(e>.06&&e<.3&&Math.abs(d)<.013)return Wt;if(e>.02&&e<=.06&&Math.abs(d)<.045*(e-.02)/.04+.002)return Wt;}
     if(e>.04&&e<.055&&ll>0&&ll<.5-c2-.01)return Wt;return c;}));}
 function touchN2(i){const x=i&NM,y=i>>NS;for(let dy=-2;dy<=2;dy++)for(let dx=-2;dx<=2;dx++){if(Math.abs(dx)+Math.abs(dy)>2)continue;const xx=x+dx,yy=y+dy;if(xx>=0&&yy>=0&&xx<N&&yy<N)touch(yy*N+xx);}}
 
@@ -1030,13 +1030,13 @@ function buildSprites(){
       if((fy<t&&!n)||(fx>1-t&&!e)||(fy>1-t&&!s)||(fx<t&&!w))return blk;
       if((fy<c&&!n)||(fx>1-c&&!e)||(fy>1-c&&!s)||(fx<c&&!w))return Cb;
       const lx=Math.abs(fx-.5),ly=Math.abs(fy-.5),vert=(n&&fy<.5)||(s&&fy>.5),hor=(w&&fx<.5)||(e&&fx>.5);
-      if(cnt<=2){if(vert){if(tp&&lx<.028)return lx>.02?M:Md;if(!tp&&lx<.016&&lx>.004)return M;const lanes=tp?[.15,.27]:[.19];for(const L of lanes)if(Math.abs(lx-L)<.006&&((fy*12|0)&1))return Wt;}
-        if(hor){if(tp&&ly<.028)return ly>.02?M:Md;if(!tp&&ly<.016&&ly>.004)return M;const lanes=tp?[.15,.27]:[.19];for(const L of lanes)if(Math.abs(ly-L)<.006&&((fx*12|0)&1))return Wt;}}
-      else{/* 횡단보도: full kerb-to-kerb, bars parallel to traffic; stop line on the approach half behind it */const z=v=>((Math.floor(v*36))&1),ins=.5-c-.012,z0=c+.012,z1=.2;
+      if(cnt<=2){if(vert){if(tp&&lx<.028)return lx>.02?M:Md;if(!tp&&lx<.016&&lx>.004)return M;const lanes=tp?[.205]:[];for(const L of lanes)if(Math.abs(lx-L)<.006&&((fy*12|0)&1))return Wt;}
+        if(hor){if(tp&&ly<.028)return ly>.02?M:Md;if(!tp&&ly<.016&&ly>.004)return M;const lanes=tp?[.205]:[];for(const L of lanes)if(Math.abs(ly-L)<.006&&((fx*12|0)&1))return Wt;}}
+      else{/* 횡단보도: full kerb-to-kerb, bars parallel to traffic; stop line on the approach half behind it */const z=v=>((Math.floor(v*36))&1),ins=.5-t-.015,z0=.015,z1=.13;
         if(((n&&fy<z1&&fy>z0)||(s&&fy>1-z1&&fy<1-z0))&&lx<ins&&z(fx))return Wt;if(((w&&fx<z1&&fx>z0)||(e&&fx>1-z1&&fx<1-z0))&&ly<ins&&z(fy))return Wt;
-        if((n&&fy>.215&&fy<.23&&fx<.5&&fx>c)||(s&&fy<.785&&fy>.77&&fx>.5&&fx<1-c)||(w&&fx>.215&&fx<.23&&fy>.5&&fy<1-c)||(e&&fx<.785&&fx>.77&&fy<.5&&fy>c))return Wt;
+        
         /* 좌회전 유도선: dotted arcs from each approach's inner lane into the crossing street (right-hand traffic), inside the stop lines */
-        if(fx>.2&&fx<.8&&fy>.2&&fy<.8){const R=.5+(tp?.075:.1);for(const [ok,cx,cy] of [[s&&w,0,1],[n&&e,1,0],[e&&s,1,1],[w&&n,0,0]]){if(!ok)continue;const d=Math.hypot(fx-cx,fy-cy);if(Math.abs(d-R)<.01){const a=Math.atan2(fy-cy,fx-cx);if(((a*16/Math.PI)%2+2)%2<1.1)return Wt;}}}}
+        if(fx>.28&&fx<.72&&fy>.28&&fy<.72){const R=.5+(tp?.115:.19)-(tp?0:.02);for(const [ok,cx,cy] of [[s&&w,0,1],[n&&e,1,0],[e&&s,1,1],[w&&n,0,0]]){if(!ok)continue;const d=Math.hypot(fx-cx,fy-cy);if(Math.abs(d-R)<.01){const a=Math.atan2(fy-cy,fx-cx);if(((a*16/Math.PI)%2+2)%2<1.1)return Wt;}}}}
       return r()<.07?A2:A;}));}return arr;});
   SP.roadC=[0,1].map(tp=>[false,true].map(dg=>{const o={};for(const m of [3,6,12,9])o[m]=roadCornerTex(tp,m,dg);return o;}));SP.roadD=[0,1,2,3].map(sea=>[0,1].map(tp=>{const o={};for(const m of [3,6,12,9]){o[m]={};for(const [a,b] of [[0,0],[0,1],[0,2],[1,0],[2,0]])o[m][a*3+b]=diagTex(tp,m,[a,b],sea);}return o;}));SP.roadF=[0,1,2,3].map(sea=>[0,1].map(tp=>{const o={};for(const ns of [0,1])for(const end of [0,1])for(const turn of [-1,1])o[ns*4+end*2+(turn>0?1:0)]=filletStraightTex(tp,!!ns,end,turn,sea);return o;}));
   SP.rab=[];for(let p=0;p<9;p++)SP.rab[p]=rabTex(p,0);for(const p of [1,3,5,7])SP.rab[p+9]=rabTex(p,1);SP.roadX=[0,1].map(tp=>[roadVarTex(tp,true,0,0),roadVarTex(tp,false,0,0)]);SP.roadAr=[true,false].map(ns=>[0,1].map(e=>roadVarTex(1,ns,1,e)));
@@ -2938,7 +2938,7 @@ function pedTrav(Tx,Ty,Fx,Fy,Xx,Xy,u,sd){const cx=Tx+.5,cy=Ty+.5,ix=Tx-Fx,iy=Ty-
   let d=u*L;for(let k=0;k<ls.length;k++){if(d<=ls[k]||k===ls.length-1){const f=ls[k]?Math.min(1,d/ls[k]):0,A=pts[k],B=pts[k+1],l=ls[k]||1;return[A[0]+(B[0]-A[0])*f,A[1]+(B[1]-A[1])*f,(B[0]-A[0])/l,(B[1]-A[1])/l];}d-=ls[k];}return[X[0],X[1],ox,oy];}
 function agentPos(a,ped){const t=a.t;if(ped){const h1=t<.5,T=h1?[a.x,a.y]:[a.nx,a.ny],F=h1?[a.px,a.py]:[a.x,a.y],X=h1?[a.nx,a.ny]:[a.n2x,a.n2y],u=h1?t+.5:t-.5;
     if(isX(T[0],T[1]))return pedTrav(T[0],T[1],F[0],F[1],X[0],X[1],u,a.side);}
-  const r=t<.5?trav(a.x,a.y,a.px,a.py,a.nx,a.ny,t+.5):trav(a.nx,a.ny,a.x,a.y,a.n2x,a.n2y,t-.5),o=ped?.42*a.side:(lvl[idx(a.x,a.y)]===1?.2:.17);const out=[r[0]-r[3]*o,r[1]+r[2]*o,r[2],r[3]];
+  const r=t<.5?trav(a.x,a.y,a.px,a.py,a.nx,a.ny,t+.5):trav(a.nx,a.ny,a.x,a.y,a.n2x,a.n2y,t-.5),o=ped?.42*a.side:(lvl[idx(a.x,a.y)]===1?(a.ln===undefined?(a.ln=Math.random()<.5?0:1):a.ln)?.29:.115:.19);const out=[r[0]-r[3]*o,r[1]+r[2]*o,r[2],r[3]];
   if(ped){const tx=Math.floor(r[0]),ty=Math.floor(r[1]);if(tx>=0&&ty>=0&&tx<N&&ty<N){const ti=idx(tx,ty);if(!isWide(ti)&&kind[ti]===K.ROAD&&!isElev(ti)){const m=roadMask(tx,ty),fx=out[0]-tx,fy=out[1]-ty;if(m===5||m===1||m===4)out[0]=tx+(fx<.5?.07:.93);else if(m===10||m===2||m===8)out[1]=ty+(fy<.5?.07:.93);}
     if(isWide(ti)&&!wideJ(tx,ty)){const {p,ax}=wInfo(ti),W=RC[lvl[ti]].W;const f=p===0?.08:p===W-1?.92:.5;if(ax===0)out[1]=ty+f;else out[0]=tx+f;}
     /* inside a big junction: walk only along its edges, where the crosswalks are */
