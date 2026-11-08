@@ -212,7 +212,7 @@ body{font-size:12.5px;letter-spacing:-.005em}
   --zr:#4cc06a; --zc:#57a3ea; --zi:#e8ad34; --warn:#ef6f5b; color-scheme:dark}
 .panel,.hgrp{background:var(--glass)!important;-webkit-backdrop-filter:blur(10px)!important;backdrop-filter:blur(10px)!important;border:1px solid var(--glass-brd)!important;box-shadow:0 8px 22px var(--shadow)!important}
 .panel{border-radius:14px}.hgrp{border-radius:13px}
-#view{filter:saturate(1) brightness(.96) contrast(1.09) hue-rotate(-3deg)}
+#view{filter:saturate(1.04) brightness(.93) contrast(1.1) hue-rotate(-3deg)}
 @media (min-width:721px){.hend{width:254px;margin-left:auto;gap:6px;padding:6px 8px}.hend .btn{flex:1 1 0;justify-content:center;padding:5px 6px}}
 .seg,.btn,.ddBtn,.wx,.pill,.track,#codeBox,.palItem,.tool{border-color:transparent!important}
 .seg{background:rgba(255,255,255,.04)}
@@ -3457,12 +3457,15 @@ function buildDynShadows(S,vl,vr,vt,vb){const mw=(vr-vl)*.3,mh=(vb-vt)*.3,wl=vl-
     /* footprint diamond swept along the sun: the convex hull of 8 points is a hexagon, emitted directly */
     const ax=(x+ins-(y+ins))*16,ay=(x+y+2*ins)*8-gz,bx=(x+1-ins-(y+ins))*16,by=(x+y+1)*8-gz,cx2=(x+1-ins-(y+1-ins))*16,cy2=(x+y+2-2*ins)*8-gz,dx2=(x+ins-(y+1-ins))*16,dy2=by;
     const P=[[ax,ay],[bx,by],[cx2,cy2],[dx2,dy2],[ax+dx,ay+dy],[bx+dx,by+dy],[cx2+dx,cy2+dy],[dx2+dx,dy2+dy]];const H=hull(P);t.moveTo(H[0][0],H[0][1]);for(let k=1;k<H.length;k++)t.lineTo(H[k][0],H[k][1]);t.closePath();}
-  t.fill();t.fillStyle='#1a2a1c';t.fill(FP);Object.assign(SHD,{S,wl,wt,wr,wb});}
+  t.fill();t.fillStyle='#1a2a1c';t.fill(FP);
+  /* soft penumbra: blur the cast once per rebuild (scaled with zoom, capped) */
+  {const bp=clamp(1.4*S*res,1,8);if(!SHD.tmp||SHD.tmp.width!==SHD.cv.width||SHD.tmp.height!==SHD.cv.height)SHD.tmp=mk(SHD.cv.width,SHD.cv.height);const x=SHD.tmp.getContext('2d');x.setTransform(1,0,0,1,0,0);x.clearRect(0,0,SHD.tmp.width,SHD.tmp.height);if('filter' in x){x.filter='blur('+bp.toFixed(1)+'px)';x.drawImage(SHD.cv,0,0);x.filter='none';t.setTransform(1,0,0,1,0,0);t.clearRect(0,0,SHD.cv.width,SHD.cv.height);t.drawImage(SHD.tmp,0,0);}}
+  Object.assign(SHD,{S,wl,wt,wr,wb});}
 function hull(P){P.sort((a,b)=>a[0]-b[0]||a[1]-b[1]);const cr=(o,a,b)=>(a[0]-o[0])*(b[1]-o[1])-(a[1]-o[1])*(b[0]-o[0]),lo=[],up=[];for(const p of P){while(lo.length>=2&&cr(lo[lo.length-2],lo[lo.length-1],p)<=0)lo.pop();lo.push(p);}for(let i=P.length-1;i>=0;i--){const p=P[i];while(up.length>=2&&cr(up[up.length-2],up[up.length-1],p)<=0)up.pop();up.push(p);}up.pop();lo.pop();return lo.concat(up);}
 function drawDynShadows(g,S,ox,oy,vl,vr,vt,vb){const amt=shAmt();if(amt<.05)return;const tq=Math.round(tod*192);
   const out=vl<SHD.wl||vr>SHD.wr||vt<SHD.wt||vb>SHD.wb,stale=SHD.S!==S||SHD.tq!==tq||(SHD.v!==BHV&&frameNo-SHD.last>20);
   if(!SHD.cv||out||stale){SHD.tq=tq;SHD.v=BHV;SHD.last=frameNo;buildDynShadows(S,vl,vr,vt,vb);}
-  g.save();g.setTransform(1,0,0,1,0,0);g.globalAlpha=.5*amt;g.imageSmoothingEnabled=true;g.drawImage(SHD.cv,SHD.wl*S+ox,SHD.wt*S+oy,SHD.cv.width/SHD.res,SHD.cv.height/SHD.res);g.restore();}
+  g.save();g.setTransform(1,0,0,1,0,0);g.globalAlpha=.42*amt;g.imageSmoothingEnabled=true;g.drawImage(SHD.cv,SHD.wl*S+ox,SHD.wt*S+oy,SHD.cv.width/SHD.res,SHD.cv.height/SHD.res);g.restore();}
 var HQON=false;const FRONTS=[];
 const RQ=[],TB=new Map(),P4=[];function renderNear(S,ox,oy,vl,vr,vt,vb,dt,deadline,n){P4.length=0;HQON=S/SR>1.3&&!FX.perf;HQ.want=Math.min(6,Math.max(3,Math.ceil(S/SR*.9)));
   const k=clamp(lodBase(S),0,2);
@@ -3720,7 +3723,7 @@ function glTex2(w,h,ifmt,fmt,filt,data){const t=gl.createTexture();gl.bindTextur
 function glInit(){if(!gl||!(window.WebGL2RenderingContext&&gl instanceof WebGL2RenderingContext))return false;try{
   ppInit();if(!PP.ok)return false;
   GT.prog=glprog(TVS,TFS,['aG','aH','aK','aD']);
-  GT.comp=glprog('attribute vec2 p;varying vec2 uv;void main(){uv=p*.5+.5;gl_Position=vec4(p,0.,1.);}','precision highp float;varying vec2 uv;uniform sampler2D s,b;uniform vec3 t,bt;uniform float n;void main(){vec4 tr=texture2D(s,uv);vec3 c=tr.rgb;if(tr.a<.999){vec3 sk=mix(bt,t,uv.y);vec2 cl=floor(gl_FragCoord.xy/2.);float h=fract(sin(dot(cl,vec2(12.9898,78.233)))*43758.5453);if(n>.2&&h>.9975&&uv.y>.25)sk+=vec3((n-.2)*1.3*(h-.9975)*400.);c=mix(sk,c,tr.a);}vec4 ov=texture2D(b,vec2(uv.x,1.-uv.y));c=mix(c,ov.rgb,ov.a);gl_FragColor=vec4(c,1.);}',['p']);
+  GT.comp=glprog('attribute vec2 p;varying vec2 uv;void main(){uv=p*.5+.5;gl_Position=vec4(p,0.,1.);}','precision highp float;varying vec2 uv;uniform sampler2D s,b;uniform vec3 t,bt;uniform float n;void main(){vec4 tr=texture2D(s,uv);vec3 c=tr.rgb;if(tr.a<.999){vec3 sk=mix(bt,t,uv.y);vec2 cl=floor(gl_FragCoord.xy/2.);float h=fract(sin(dot(cl,vec2(12.9898,78.233)))*43758.5453);if(n>.2&&h>.9975&&uv.y>.25)sk+=vec3((n-.2)*1.3*(h-.9975)*400.);c=mix(sk,c,tr.a);}vec4 ov=texture2D(b,vec2(uv.x,1.-uv.y));vec3 oc=ov.rgb;float ol=dot(oc,vec3(.3,.59,.11));oc=mix(vec3(ol),oc,1.1);oc=pow(max(oc,vec3(0.)),vec3(1.18))*.92;c=mix(c,oc,ov.a);gl_FragColor=vec4(c,1.);}',['p']);
   const NV=HN*HN+4*HN;GT.nv=NV;const G=new Float32Array(NV*2),Kf=new Float32Array(NV);
   for(let y=0;y<HN;y++)for(let x=0;x<HN;x++){const i=y*HN+x;G[i*2]=x;G[i*2+1]=y;}
   const S0=HN*HN,S1=S0+2*HN;for(let j=0;j<HN;j++){let i=S0+2*j;G[i*2]=N;G[i*2+1]=j;Kf[i]=1;G[i*2+2]=N;G[i*2+3]=j;Kf[i+1]=2;i=S1+2*j;G[i*2]=j;G[i*2+1]=N;Kf[i]=3;G[i*2+2]=j;G[i*2+3]=N;Kf[i+1]=4;}
@@ -3795,7 +3798,7 @@ function ppInit(){if(!gl||PP.ok)return;try{
       float t=smoothstep(.24,.62,abs(uv.y-fy))*tilt;c=mix(c,bl,t);
       vec3 br=max(bl-vec3(.72-.26*night),0.);c+=br*bloom;
       float hz=smoothstep(.3,1.,1.-uv.y)*haze;c=mix(c,vec3(.80,.86,.95),hz*.16);
-      float l=dot(c,vec3(.299,.587,.114));c=mix(vec3(l),c,1.+.16*grade);c=(c-.5)*(1.+.1*grade)+.5;
+      float l=dot(c,vec3(.299,.587,.114));c=mix(vec3(l),c,1.+.22*grade);c=(c-.5)*(1.+.15*grade)+.5;
       c+=grade*(vec3(.04,.02,-.025)*smoothstep(.45,1.,l)*(1.+warm)+vec3(-.02,.0,.04)*(1.-smoothstep(0.,.45,l)));
       vec2 q=(uv-.5)*vec2(1.2,1.);c*=1.-dot(q,q)*vig;
       gl_FragColor=vec4(clamp(c,0.,1.),1.);}`);
