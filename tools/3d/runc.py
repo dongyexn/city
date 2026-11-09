@@ -11,7 +11,7 @@ async def main():
             path=os.path.join(D,route.request.url.split('http://l/')[1].split('?')[0]);ct=mimetypes.guess_type(path)[0] or 'text/plain'
             if path.endswith('.js'):ct='application/javascript'
             await route.fulfill(path=path,content_type=ct)
-        await pg.route('http://l/**',h);await pg.add_init_script('window.NOCURB=%d'%int(os.environ.get('NOCURB','0')));await pg.goto('http://l/city3d.html');await pg.wait_for_function('window.ready===1',timeout=300000)
+        await pg.route('http://l/**',h);await pg.add_init_script('window.NOCURB=%d;window.MS2=%d'%(int(os.environ.get('NOCURB','0')),int(os.environ.get('MS2','0'))));await pg.goto('http://l/city3d.html');await pg.wait_for_function('window.ready===1',timeout=300000)
         for n,v in views.items():
             d=await pg.evaluate('render(%d,1600,1000,%s)'%(sd,json.dumps(v)));print(n,await pg.evaluate('JSON.stringify(window.STAT)'));open(os.path.join(D,'c_%d_%s.png'%(sd,n)),'wb').write(base64.b64decode(d.split(',')[1]))
         await b.close()
