@@ -2201,6 +2201,8 @@ function genOutskirts(r,cx,cy,R,dN,seed){const hh=(x,y)=>tileAvgH(x,y)-liftT(x,y
   /* 4. large facilities */
   const place=(id,x0,y0)=>{const t=LMKI(id);placeLmk(t,x0+((LMKT[t].sz-1)>>1),y0+((LMKT[t].sz-1)>>1),1);};
   const nrS=(x,y)=>{const d=nearNR(x,y);return d<255?-Math.abs(d-6)*.25:-12;};
+  /* 땅으로 이어진 도로까지 거리(물 건너 섬은 255): 외딴 섬·숲에 진입로 없는 시설이 놓이지 않게 */
+  let LRD=null;const lrdUp=()=>{LRD=new Uint8Array(NN).fill(255);const q=[];for(let i=0;i<NN;i++)if(kind[i]===K.ROAD){LRD[i]=0;q.push(i);}for(let h=0;h<q.length;h++){const i=q[h];if(LRD[i]>=40)continue;const x=i&NM,y=i>>NS;for(const [dx,dy] of DIRS){const xx=x+dx,yy=y+dy;if(!inMap(xx,yy))continue;const j=idx(xx,yy);if(terr[j]===TWA||LRD[j]<=LRD[i]+1)continue;LRD[j]=LRD[i]+1;q.push(j);}}},farRd=(x,y)=>LRD[idx(clamp(x|0,0,N-1),clamp(y|0,0,N-1))]>36;
   {const s=site(56,22,{d0:1.5,d1:4.5,var:.9,maxH:5,score:(x,y)=>dN(x,y)*.5+nrS(x,y)*.5,rnd:3,step:1,ok:(x0,y0)=>((x0+y0*3)%4===0)&&AL(x0+16,8)&&AL(y0+1,8)&&AL(x0+12,2)&&AL(y0+3,2)});if(s){flat(s);const {x0,y0,w}=s;
       for(let x=x0+2;x<x0+w-2;x++){const a=idx(x,y0+16),b=idx(x,y0+17);if(free(a)){deco[a]=30;touch(a);}if(free(b)){deco[b]=31;touch(b);}}setG(x0+6,y0+12,w-12,2,34);setG(x0+8,y0+8,8,4,34);setG(x0+26,y0+8,22,4,34);
       place('airport',x0+16,y0+1);place('ctower',x0+12,y0+3);setG(x0+2,y0+1,10,6,41);setG(x0+26,y0+1,4,6,41);connect(x0+6,y0,4,50);}}
@@ -2209,16 +2211,18 @@ function genOutskirts(r,cx,cy,R,dN,seed){const hh=(x,y)=>tileAvgH(x,y)-liftT(x,y
       for(let k=0;k<6;k++){const fx2=x0+9+(k%3)*5,fy2=y0+1+((k/3)|0)*5;if(footFree(fx2&~1,fy2&~1,j=>free(j)))makeFoot(fx2,fy2,K.IND,4,IL[(r()*IL.length)|0],1);}setG(x0+1,y0+11,8,7,43);setG(x0+9,y0+12,16,6,40);
       ROADL=2;applyTool('road',{x:x0,y:y0+9},{x:x0+25,y:y0+9});applyTool('road',{x:x0+8,y:y0},{x:x0+8,y:y0+19});connect(x0+25,y0+9,4,50);}}
   rebuild();
-  {const s=site(18,10,{d0:1.08,d1:2.4,var:2,step:1,ok:(x0,y0)=>((x0+y0)%3===0)&&AL(x0+1,6)&&AL(y0+2,6)&&AL(x0+9,4)&&AL(y0+3,4),score:(x,y)=>{const dr=distR[idx(clamp(x|0,0,N-1),clamp(y|0,0,N-1))];return dr>0&&dr<12?5:-3;}});if(s){flat(s);place('sewage',s.x0+1,s.y0+2);place('incin',s.x0+9,s.y0+3);setG(s.x0+8,s.y0+1,9,2,40);RD(2,{x:s.x0,y:s.y0},{x:s.x0+17,y:s.y0});connect(s.x0+17,s.y0,2,40);}}
+  lrdUp();{const s=site(18,10,{d0:1.08,d1:2.4,var:2,step:1,ok:(x0,y0)=>((x0+y0)%3===0)&&AL(x0+1,6)&&AL(y0+2,6)&&AL(x0+9,4)&&AL(y0+3,4),score:(x,y)=>{const dr=distR[idx(clamp(x|0,0,N-1),clamp(y|0,0,N-1))];return (dr>0&&dr<12?5:-3)+(farRd(x,y)?-1000:0);}});if(s&&!farRd(s.x0+9,s.y0+5)){flat(s);place('sewage',s.x0+1,s.y0+2);place('incin',s.x0+9,s.y0+3);setG(s.x0+8,s.y0+1,9,2,40);RD(2,{x:s.x0,y:s.y0},{x:s.x0+17,y:s.y0});connect(s.x0+17,s.y0,2,40);}}
   rebuild();
-  const one=(id,w,h,o,extra)=>{const sz=LMKT[LMKI(id)].sz;o.ok=(x0,y0)=>AL(x0+1,sz)&&AL(y0+1,sz);o.step=o.step||2;const s=site(w,h,o);if(!s)return null;flat(s);place(id,s.x0+1,s.y0+1);if(extra)extra(s);connect(s.x0+1+((sz)>>1),s.y0+sz+1,o.L||2,46);rebuild();return s;};
+  const one=(id,w,h,o,extra)=>{const sz=LMKT[LMKI(id)].sz;o.ok=(x0,y0)=>AL(x0+1,sz)&&AL(y0+1,sz);o.step=o.step||2;const s=site(w,h,o);if(!s)return null;flat(s);place(id,s.x0+1,s.y0+1);if(extra)extra(s);
+    /* 진입로를 못 내면 시설과 부지 장식을 걷어낸다(길 없는 숲속 리조트 방지) */
+    if(!connect(s.x0+1+((sz)>>1),s.y0+sz+1,o.L||2,46)){removeLmk(lmkA[idx(s.x0+1+((sz-1)>>1),s.y0+1+((sz-1)>>1))]);for(let y=s.y0;y<s.y0+h;y++)for(let x=s.x0;x<s.x0+w;x++){if(!inMap(x,y))continue;const i=idx(x,y);if(!kind[i]&&deco[i]>=39&&deco[i]<=41){deco[i]=0;touch(i);}}rebuild();return null;}rebuild();return s;};
   one('themepark',12,12,{d0:1.08,d1:2.2,var:1.4,score:nrS,L:4},s=>setG(s.x0+1,s.y0+9,10,2,41));
   one('outlet',10,9,{d0:1.2,d1:2.8,var:1.4,score:(x,y)=>nrS(x,y)*2,L:4},s=>setG(s.x0+1,s.y0+7,8,2,41));
   one('dcenter',9,9,{d0:1.2,d1:3,var:1.6,score:nrS});
-  one('resort',10,10,{d0:1.5,d1:5,var:2.5,maxH:10,score:(x,y)=>{let w=0;for(let k=0;k<8;k++){const a=k/8*6.283,xx=clamp(Math.round(x+Math.cos(a)*9),0,N-1),yy=clamp(Math.round(y+Math.sin(a)*9),0,N-1);if(terr[idx(xx,yy)]===TWA)w+=2;w+=Math.min(3,hh(xx,yy)*.2);}return w;}},s=>setG(s.x0+7,s.y0+1,3,6,39));
+  lrdUp();one('resort',10,10,{d0:1.5,d1:5,var:2.5,maxH:10,score:(x,y)=>{/* 물가 점수가 커서 도로 없는 섬이 뽑히던 문제 */let w=farRd(x,y)?-1000:0;for(let k=0;k<8;k++){const a=k/8*6.283,xx=clamp(Math.round(x+Math.cos(a)*9),0,N-1),yy=clamp(Math.round(y+Math.sin(a)*9),0,N-1);if(terr[idx(xx,yy)]===TWA)w+=2;w+=Math.min(3,hh(xx,yy)*.2);}return w;}},s=>setG(s.x0+7,s.y0+1,3,6,39));
   for(let k=0;k<2;k++)one('bigcafe',6,6,{d0:1.12,d1:3,var:2,score:(x,y)=>{const dr=distR[idx(clamp(x|0,0,N-1),clamp(y|0,0,N-1))];return (dr>0&&dr<8?4:0)+nrS(x,y);}},s=>setG(s.x0+1,s.y0+5,5,1,41));
   /* golf course: clubhouse + winding fairways over gentle hills */
-  {const s=site(26,18,{d0:1.6,d1:5,var:6,maxH:12,blk:4,score:(x,y,m)=>m*.3+nrS(x,y)*.3,step:4});if(s){const {x0,y0,w,h}=s;const gx=AL(x0,2)?x0:x0+1,gy=AL(y0,2)?y0:y0+1,c={x0:gx,y0:gy,w:3,h:3,m:hh(gx+1,gy+1)};flat(c);place('golfclub',gx,gy);let x=x0+4,y=y0+2;for(let hole=0;hole<5;hole++){const D=hole%2?[0,1]:[1,0],len=6+((r()*5)|0);for(let s2=0;s2<len;s2++){for(const [ox,oy] of [[0,0],[D[1],D[0]]]){const xx=x+ox,yy=y+oy;if(xx>x0&&yy>y0&&xx<x0+w&&yy<y0+h&&free(idx(xx,yy))){deco[idx(xx,yy)]=36;touch(idx(xx,yy));}}x+=D[0];y+=D[1];if(x>=x0+w-2||y>=y0+h-2)break;}
+  lrdUp();{const s=site(26,18,{d0:1.6,d1:5,var:6,maxH:12,blk:4,score:(x,y,m)=>m*.3+nrS(x,y)*.3+(farRd(x,y)?-1000:0),step:4});if(s&&!farRd(s.x0+1,s.y0+3)){const {x0,y0,w,h}=s;const gx=AL(x0,2)?x0:x0+1,gy=AL(y0,2)?y0:y0+1,c={x0:gx,y0:gy,w:3,h:3,m:hh(gx+1,gy+1)};flat(c);place('golfclub',gx,gy);let x=x0+4,y=y0+2;for(let hole=0;hole<5;hole++){const D=hole%2?[0,1]:[1,0],len=6+((r()*5)|0);for(let s2=0;s2<len;s2++){for(const [ox,oy] of [[0,0],[D[1],D[0]]]){const xx=x+ox,yy=y+oy;if(xx>x0&&yy>y0&&xx<x0+w&&yy<y0+h&&free(idx(xx,yy))){deco[idx(xx,yy)]=36;touch(idx(xx,yy));}}x+=D[0];y+=D[1];if(x>=x0+w-2||y>=y0+h-2)break;}
         if(inMap(x,y)&&free(idx(x,y))){deco[idx(x,y)]=37;touch(idx(x,y));}const bx=x-D[1]-1,by=y-D[0]+1;if(inMap(bx,by)&&free(idx(bx,by))){deco[idx(bx,by)]=38;touch(idx(bx,by));}x=clamp(x+(hole%2?3:-6),x0+2,x0+w-4);y=clamp(y+(hole%2?-6:3),y0+2,y0+h-4);}
       for(let yy=y0;yy<y0+h;yy++)for(let xx=x0;xx<x0+w;xx++){const i=idx(xx,yy);if(free(i)&&!deco[i]&&r()<.18){deco[i]=1+((r()*8)|0);touch(i);}}connect(x0+1,y0+3,2,40);rebuild();}}
   {const s=site(12,8,{d0:1.5,d1:5,var:5,maxH:12,score:(x,y,m)=>m*.2,rnd:6});if(s){setG(s.x0,s.y0,s.w,s.h,35);connect(s.x0,s.y0,2,30);rebuild();}}
@@ -2984,16 +2988,18 @@ function railTool(t,a,b){if(!a||!b)return;
 function railBulldoze(cells){let ch=false;for(const [x,y] of cells){const i=idx(x,y);if(RL[i]){RL[i]=0;STN[i]=0;touch(i);ch=true;}}if(ch)rebuildRailLines();}
 /* 역세권: shops and offices crowd the blocks around a station */
 /* station building beside the road at a station: 역사(2x2) or 복합역사(4x4), entrance on the sidewalk */
-function stationBldg(x0,y0,r){const i0=idx(x0,y0),axs=[];for(const L of RLINES)if((RL[i0]>>L.line)&1&&!axs.includes(L.ax))axs.push(L.ax);if(!axs.length)return false;
+function stationBldg(x0,y0,r){const i0=idx(x0,y0),axs=[],h0=tileAvgH(x0,y0);/* ground level of the station street: a city on a plateau still gets its 역사, a hillside beside it does not */for(const L of RLINES)if((RL[i0]>>L.line)&1&&!axs.includes(L.ax))axs.push(L.ax);if(!axs.length)return false;
   /* one building per station, also where two lines cross (stationArea runs once per line) */
   for(let dy=-7;dy<=7;dy++)for(let dx=-7;dx<=7;dx++){const cx=x0+dx,cy=y0+dy;if(!inMap(cx,cy))continue;const ci=idx(cx,cy);if(kind[ci]===K.LMK&&lmkA[ci]>=0&&(LMKT[vari[lmkA[ci]]]?.id||'').startsWith('rstn'))return false;}
   /* a crossing station tries both lines' axes; when a chunk edge runs right behind the sidewalk the building steps back one tile */
-  const bigs=r()<.4?[1,0]:[0];for(const back of [0,1])for(const ax of axs){const at=(t,o)=>ax?[x0+o,y0+t]:[x0+t,y0+o];
+  const bigs=r()<.4?[1,0]:[0];/* second pass: when 보건소·지구대 and the like line the whole station street, the 역사 takes the place of one of them (only small ones lying wholly inside its footprint) */
+  const smallIn=(j,xa,ya,sz)=>{const a=lmkA[j];if(a<0)return false;const T=LMKT[vari[a]];if(!T||T.sz>2||T.id.startsWith('rstn'))return false;const ax=a&NM,ay=a>>NS;return ax-T.sz+1>=xa&&ay-T.sz+1>=ya&&ax<xa+sz&&ay<ya+sz;};
+  for(const soft of [0,1])for(const back of [0,1])for(const ax of axs){const at=(t,o)=>ax?[x0+o,y0+t]:[x0+t,y0+o];
   for(const big of bigs){const tid=LMKT.findIndex(t=>t.id===(big?'rstnx':'rstn')),sz=LMKT[tid].sz;
   for(const sd of [1,-1]){/* road half-width beside the track: the narrowest column, so a cross street at the station does not push the building down that street */let o=99;for(let dt=-6;dt<=6;dt++){const [cx,cy]=at(dt,0);if(!inMap(cx,cy)||kind[idx(cx,cy)]!==K.ROAD)continue;let q=0;while(Math.abs(q)<12){const [x,y]=at(dt,q+sd);if(!inMap(x,y)||kind[idx(x,y)]!==K.ROAD)break;q+=sd;}if(q&&Math.abs(q)<Math.abs(o))o=q;}if(o===99)continue;const e=o+sd*(1+back);
     for(const off of [0,-1,1,-2,2,-3,3,-4,4,-5,5,-6,6]){const t0=off-(sz>>1),oA=Math.min(e,e+sd*(sz-1)),xa=ax?x0+oA:x0+t0,ya=ax?y0+t0:y0+oA;
       if((xa>>4)!==((xa+sz-1)>>4)||(ya>>4)!==((ya+sz-1)>>4))continue;let ok=true;
-      for(let y=ya;y<ya+sz&&ok;y++)for(let x=xa;x<xa+sz;x++){if(!inMap(x,y)){ok=false;break;}const j=idx(x,y);if(kind[j]===K.ROAD||kind[j]===K.LMK||terr[j]===TWA||RL[j]||tileAvgH(x,y)>3){ok=false;break;}}
+      for(let y=ya;y<ya+sz&&ok;y++)for(let x=xa;x<xa+sz;x++){if(!inMap(x,y)){ok=false;break;}const j=idx(x,y);if(kind[j]===K.ROAD||(kind[j]===K.LMK&&!(soft&&smallIn(j,xa,ya,sz)))||terr[j]===TWA||RL[j]||Math.abs(tileAvgH(x,y)-h0)>1){ok=false;break;}}
       if(!ok)continue;for(let y=ya;y<ya+sz;y++)for(let x=xa;x<xa+sz;x++){const j=idx(x,y);clearTile(j);deco[j]=0;touch(j);}if(back)for(let t=t0;t<t0+sz;t++){const [x,y]=at(t,o+sd);if(inMap(x,y)){const j=idx(x,y);if(kind[j]!==K.ROAD&&kind[j]!==K.LMK&&!RL[j]&&terr[j]!==TWA){clearTile(j);deco[j]=0;touch(j);}}}
       placeLmk(tid,xa+((sz-1)>>1),ya+((sz-1)>>1),1);return true;}}}}
   return false;}
@@ -4336,7 +4342,7 @@ function genCity(seed){const r=mulberry(seed*13+5),SAVE=ROADL,DIR=[[1,0],[-1,0],
       for(const sg of [-1,1]){if(row.every(([xx,yy])=>{const nx=xx+dx*sg,ny=yy+dy*sg;return nx<0||ny<0||nx>=N||ny>=N||kind[idx(nx,ny)]!==K.ROAD;})){const back=row.every(([xx,yy])=>{const nx=xx-dx*sg,ny=yy-dy*sg;return nx>=0&&ny>=0&&nx<N&&ny<N&&isWide(idx(nx,ny));});if(!back)break;for(const [,,j] of row){clearTile(j);deco[j]=0;if(terr[j]!==TWA)terr[j]=TG;touch(j);}ch++;break;}}}if(!ch)break;compsDirty=true;}
   /* 산 레저: on wooded hillsides outside the districts, near a road — auto-camping grounds, a few pensions, a mountain lodge, a reservoir fishing spot, a valley picnic resort */
   {const T=id=>LMKT.findIndex(q=>q.id===id),rdNear=(x0,y0,sz)=>{for(let y=y0-4;y<y0+sz+4;y++)for(let x=x0-4;x<x0+sz+4;x++)if(inMap(x,y)&&kind[idx(x,y)]===K.ROAD)return true;return false;},placed=[];
-   const spot=(sz,minH)=>{let best=null,bs=-1e9;for(let t=0;t<900;t++){const x0=6+((r()*(N-12-sz))|0),y0=6+((r()*(N-12-sz))|0);let ok=true,hs=0,mn=99,mx=-1,tr=0;for(let y=y0;y<y0+sz&&ok;y++)for(let x=x0;x<x0+sz;x++){const i=idx(x,y);if(kind[i]||terr[i]===TWA||cellAt[i]>=0||lmkA[i]>=0){ok=false;break;}const h=hh(x,y);hs+=h;mn=Math.min(mn,h);mx=Math.max(mx,h);if(deco[i]>=1&&deco[i]<=16)tr++;}
+   const spot=(sz,minH)=>{let best=null,bs=-1e9;for(let t=0;t<900;t++){const x0=6+((r()*(N-12-sz))|0),y0=6+((r()*(N-12-sz))|0);if((x0>>4)!==((x0+sz-1)>>4)||(y0>>4)!==((y0+sz-1)>>4))continue;/* placeLmk would snap it onto unchecked tiles (a road) */let ok=true,hs=0,mn=99,mx=-1,tr=0;for(let y=y0;y<y0+sz&&ok;y++)for(let x=x0;x<x0+sz;x++){const i=idx(x,y);if(kind[i]||terr[i]===TWA||cellAt[i]>=0||lmkA[i]>=0){ok=false;break;}const h=hh(x,y);hs+=h;mn=Math.min(mn,h);mx=Math.max(mx,h);if(deco[i]>=1&&deco[i]<=16)tr++;}
        if(!ok||mx-mn>3||hs/(sz*sz)<minH||!rdNear(x0,y0,sz)||placed.some(([a,b])=>Math.hypot(a-x0,b-y0)<18))continue;const sc=tr+hs/(sz*sz)*2+r()*4;if(sc>bs){bs=sc;best=[x0,y0];}}return best;};
    const put=(id,sz,minH)=>{const p=spot(sz,minH);if(!p)return;placed.push(p);placeLmk(T(id),p[0]+((sz-1)>>1),p[1]+((sz-1)>>1),true);};
    put('camp',4,1.5);if(r()<.6)put('camp',4,1.5);put('lodge',2,2.5);for(let k=0;k<3;k++)put('pension',2,1);put('valley',4,1.2);put('fishing',4,.8);}
