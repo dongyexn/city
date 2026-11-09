@@ -2559,9 +2559,13 @@ function drawWalkers(g,x,y,i,S){const v=vari[i];if(kind[i]!==K.PARK)return;if(fi
 /* ================= map generation (Korean landscape) ================= */
 function idx(x,y){return y*N+x;}
 let distR=new Float32Array(NN);
+/* 공중 섬 컨셉: 고도 없음 — 바다가 아닌 땅의 꼭짓점 높이를 하나로 맞춘다(강·바다 판정 terr/OCEAN은 그대로) */
+function flatLand(){let lv=255;for(let y=0;y<N;y++)for(let x=0;x<N;x++){const i=idx(x,y);if(OCEAN[i]||terr[i]===TWA)continue;lv=Math.min(lv,H[y*HN+x],H[y*HN+x+1],H[(y+1)*HN+x],H[(y+1)*HN+x+1]);}
+ if(lv===255)return;for(let y=0;y<=N;y++)for(let x=0;x<=N;x++){let land=false;for(const [dx,dy] of [[-1,-1],[0,-1],[-1,0],[0,0]]){const tx=x+dx,ty=y+dy;if(tx>=0&&ty>=0&&tx<N&&ty<N&&!OCEAN[idx(tx,ty)])land=true;}if(land)H[y*HN+x]=lv;}
+ if(typeof LIFTV!=='undefined'&&LIFTV)LIFTV.fill(0);BHV++;}
 let OCEAN=new Uint8Array(NN);function genMap(seed){alloc();const r=mulberry(seed*7+3),S=MS;distR=new Float32Array(NN);
   /* island: a main body plus 1-3 lobes (peninsulas/capes), warped and noisy, so every seed has its own silhouette */
-  const IR=N*(.4+r()*.04),LB=[{x:N/2+(r()-.5)*N*.08,y:N/2+(r()-.5)*N*.08,r:IR,e:1+r()*.35,a:r()*6.283}];
+  const IR=N*(.3+r()*.03),LB=[{x:N/2+(r()-.5)*N*.08,y:N/2+(r()-.5)*N*.08,r:IR,e:1+r()*.35,a:r()*6.283}];
   {const nl=1+((r()*3)|0);for(let k=0;k<nl;k++){const a=r()*6.283,d=IR*(.45+r()*.35);LB.push({x:LB[0].x+Math.cos(a)*d,y:LB[0].y+Math.sin(a)*d,r:IR*(.32+r()*.28),e:1+r()*.6,a:r()*6.283});}}
   /* archipelago layout (own rng, so mode 0 keeps the old single-island maps): 0 = one island + islets, 1 = two islands, 2 = three islands */
   const r3=mulberry(seed*7+57),MODE=r3()<.34?0:r3()<.55?1:2,XI=[];let WARP=60;
@@ -4094,7 +4098,7 @@ function genCity(seed){const r=mulberry(seed*13+5),SAVE=ROADL,DIR=[[1,0],[-1,0],
   /* 1. centre: flat lowland on a river bank (Korean cities grow from river ports) */
   let cx=N/2,cy=N/2,bs=-1e9;for(let t=0;t<4000;t++){const x=(40*MS|0)+((r()*(N-80*MS))|0),y=(40*MS|0)+((r()*(N-80*MS))|0),i=idx(x,y);if(terr[i]===TWA||hh(x,y)>1)continue;const dr=distR[i];if(dr<6||dr>40)continue;let fl=0;for(let k=0;k<24;k++){const a=k/24*6.283,xx=Math.round(x+Math.cos(a)*30),yy=Math.round(y+Math.sin(a)*30);if(inMap(xx,yy)&&hh(xx,yy)<=2&&terr[idx(xx,yy)]!==TWA)fl++;}
     const sc=fl*3-Math.abs(dr-16)*.6-Math.hypot(x-N/2,y-N/2)/6+r()*4;if(sc>bs){bs=sc;cx=x;cy=y;}}
-  const CSC=MS<1?.66:1,R=(60+r()*12)*CSC,Rw=(x,y)=>R*(.82+.36*fbm(x/60,y/60,seed+5,2));
+  const CSC=MS<1?.5:1,R=(60+r()*12)*CSC,Rw=(x,y)=>R*(.82+.36*fbm(x/60,y/60,seed+5,2));
   /* multi-centre (광주형): 구도심 + 3~4 부도심/신도시, 사이엔 녹지대 */
   const CEN=[{x:cx,y:cy,s:1,role:'main'}];
   {const nS=3+((r()*2)|0),a0=r()*6.283;for(let k=0;k<nS;k++){let best=null,bs=-1e9;for(let t=0;t<80;t++){const a=a0+k/nS*6.283+(r()-.5)*1.1,s=.5+r()*.15,dd=R*(1+s)+(14+r()*18)*CSC,x=Math.round(cx+Math.cos(a)*dd),y=Math.round(cy+Math.sin(a)*dd);if(x<34*CSC||y<34*CSC||x>N-34*CSC||y>N-34*CSC)continue;if(CEN.some(c=>Math.hypot(c.x-x,c.y-y)<R*(c.s+s)+12*CSC))continue;let fl=0;for(let q=0;q<20;q++){const b=q/20*6.283;for(const rr of [.3,.75]){const xx=Math.round(x+Math.cos(b)*R*s*rr),yy=Math.round(y+Math.sin(b)*R*s*rr);if(inMap(xx,yy)&&hh(xx,yy)<=2&&terr[idx(xx,yy)]!==TWA)fl++;}}const sc=fl+r()*3;if(sc>bs){bs=sc;best={x,y,s,role:'new'};}}if(best&&bs>=26)CEN.push(best);}
@@ -4411,7 +4415,7 @@ function genCity(seed){const r=mulberry(seed*13+5),SAVE=ROADL,DIR=[[1,0],[-1,0],
   compsDirty=true;ROADL=SAVE;return[Math.round(cx),Math.round(cy)];}
 function newCity(seed,blank){HANOKC=null;Object.assign(sim,{day:0,month:0,year:2027,speed:1,tax:[9,9,9],dem:[.7,.4,.6],pop:0,jc:0,ji:0,inc:0,exp:0,spent:0,hist:[],pw:0,wt:0,avgLv:0,name:'뉴타운',seed});
   RL=new Uint8Array(NN);STN=new Uint8Array(NN);RLINES=[];TRAINS=[];BOATS=[];RLC.clear();BOVC.clear();ROADVER++;
-  genMap(seed);let c;if(blank==='rand'){c=genCity(seed);}else if(blank){const p=findSpot(20);c=[p[0]+10,p[1]+10];}else{c=starter();}
+  genMap(seed);flatLand();let c;if(blank==='rand'){c=genCity(seed);}else if(blank){const p=findSpot(20);c=[p[0]+10,p[1]+10];}else{c=starter();}
   recomputeComps();fields();
   if(!blank||blank==='rand'){growForce=true;for(let m=0;m<(blank?8:30);m++)for(let d=0;d<30;d++)tick(true);growForce=false;}
   zoom=2;centerOn(c[0],c[1]);afterLoad();}

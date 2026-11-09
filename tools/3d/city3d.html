@@ -193,7 +193,7 @@ const area=L=>{let s3=0;for(let i=0;i<L.length;i++){const p=L[i],q=L[(i+1)%L.len
 const SM=loops.map(L=>chaikin(L,3));
 const inset=(L,d)=>{const sg=Math.sign(area(L));return L.map((p,i)=>{const a2=L[(i-1+L.length)%L.length],b2=L[(i+1)%L.length];let tx=b2[0]-a2[0],tz=b2[1]-a2[1];const l=Math.hypot(tx,tz)||1;tx/=l;tz/=l;return [p[0]-tz*d*sg,p[1]+tx*d*sg,p[2]];});};
 /* per-tile mask texture: R river, G lawn -> fragment discard keeps grid-exact roads/rivers inside smooth outlines */
-const md=new Uint8Array(N*N*4);for(let y=0;y<N;y++)for(let x=0;x<N;x++){const i=(y*N+x)*4;md[i]=riv(x,y)?255:0;md[i+1]=isLawn(x,y)?255:0;md[i+3]=255;}
+const md=new Uint8Array(N*N*4);for(let y=0;y<N;y++)for(let x=0;x<N;x++){const i=(y*N+x)*4;md[i]=riv(x,y)?255:0;md[i+1]=isLawn(x,y)?255:0;md[i+2]=isR(x,y)?255:0;md[i+3]=255;}
 const MT=new THREE.DataTexture(md,N,N);MT.magFilter=MT.minFilter=THREE.NearestFilter;MT.needsUpdate=true;
 /* smooth river outline: MS over river field (extended past the coast), chained + Chaikin */
 const msLoops=(Vf)=>{const sg2=[];for(let y=-1;y<=N;y++)for(let x=-1;x<=N;x++){const a=Vf(x,y),b=Vf(x+1,y),c=Vf(x+1,y+1),d=Vf(x,y+1),cs=a|b<<1|c<<2|d<<3;if(!cs||cs===15)continue;
@@ -208,11 +208,11 @@ hg.globalCompositeOperation='lighter';for(const L of SM)poly2(L,'#0000ff');for(c
 hg.globalCompositeOperation='source-over';for(let y=0;y<N;y++)for(let x=0;x<N;x++)if(isR(x,y)&&riv2(x,y)){hg.fillStyle='#0000ff';hg.fillRect(x*HR,y*HR,HR,HR);}
 const HT=new THREE.CanvasTexture(hc);HT.flipY=false;HT.magFilter=THREE.LinearFilter;HT.minFilter=THREE.LinearFilter;HT.generateMipmaps=false;
 const masked=(m,ch,keep)=>{m.side=THREE.FrontSide;m.customProgramCacheKey=()=>'mask'+ch+keep;m.onBeforeCompile=sh=>{sh.uniforms.uMask={value:MT};sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nvarying vec2 vMP;').replace('#include <worldpos_vertex>','#include <worldpos_vertex>\nvMP=(modelMatrix*vec4(transformed,1.0)).xz;');
- sh.uniforms.uHi={value:HT};sh.fragmentShader=sh.fragmentShader.replace('#include <common>','#include <common>\nvarying vec2 vMP;uniform sampler2D uMask;uniform sampler2D uHi;').replace('void main() {','void main() {\nvec4 hm=texture2D(uHi,vMP/'+N+'.);float tl=texture2D(uMask,(floor(vMP)+.5)/'+N+'.).g;'+(ch==='r'?'if(hm.r>.5)discard;':ch==='g'?'if(tl<.5||hm.r>.35)discard;':'if(hm.b<.5)discard;'));};return m;};
+ sh.uniforms.uHi={value:HT};sh.fragmentShader=sh.fragmentShader.replace('#include <common>','#include <common>\nvarying vec2 vMP;uniform sampler2D uMask;uniform sampler2D uHi;').replace('void main() {','void main() {\nvec4 hm=texture2D(uHi,vMP/'+N+'.);float tl=texture2D(uMask,(floor(vMP)+.5)/'+N+'.).g;'+(ch==='rimR'?'if(texture2D(uMask,(floor(vMP)+.5)/'+N+'.).b>.5||hm.b<.5)discard;':ch==='rim'?'if(hm.r>.45||texture2D(uMask,(floor(vMP)+.5)/'+N+'.).b>.5||hm.b<.5)discard;':ch==='r'?'if(hm.r>.5)discard;':ch==='g'?'if(tl<.5||hm.r>.35)discard;':'if(hm.b<.5)discard;'));};return m;};
 const shapeMesh=(L,h,m)=>{const sp=new THREE.Shape(L.map(p=>new THREE.Vector2(p[0],-p[1])));const g=new THREE.ShapeGeometry(sp,1);g.rotateX(-Math.PI/2);g.translate(0,h,0);const e=new THREE.Mesh(g,m);e.receiveShadow=true;sc.add(e);return e;};
 const mk=(A,m,cast)=>{const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(A,3));g.computeVertexNormals();const e=new THREE.Mesh(g,m);e.receiveShadow=true;e.castShadow=!!cast;sc.add(e);return e;};
-const topM=masked(asph.clone(),'r',false),lawnT=masked(lawnM.clone(),'g',true),rimM=M('#f3f5f9',{roughness:.5,envMapIntensity:.4,side:THREE.DoubleSide});
-const RIM=[],ribbon=(L,h0,h1,w)=>{const I=inset(L,w);for(let i=0;i<L.length;i++){const p=L[i],q=L[(i+1)%L.length],pi=I[i],qi=I[(i+1)%L.length];if(p[2]&&q[2])continue;RIM.push(p[0],h1,p[1], pi[0],h1,pi[1], q[0],h1,q[1], q[0],h1,q[1], pi[0],h1,pi[1], qi[0],h1,qi[1]);RIM.push(p[0],h0,p[1], p[0],h1,p[1], q[0],h0,q[1], q[0],h0,q[1], p[0],h1,p[1], q[0],h1,q[1]);}};
+const topM=masked(asph.clone(),'r',false),lawnT=masked(lawnM.clone(),'g',true),rimM=masked(M('#f3f5f9',{roughness:.5,envMapIntensity:.4}),'rim',true);rimM.side=THREE.DoubleSide;
+const RIM=[],ribbon=(L,h0,h1,w)=>{const I=inset(L,w);for(let i=0;i<L.length;i++){const p=L[i],q=L[(i+1)%L.length],pi=I[i],qi=I[(i+1)%L.length];RIM.push(p[0],h1,p[1], pi[0],h1,pi[1], q[0],h1,q[1], q[0],h1,q[1], pi[0],h1,pi[1], qi[0],h1,qi[1]);RIM.push(p[0],h0,p[1], p[0],h1,p[1], q[0],h0,q[1], q[0],h0,q[1], p[0],h1,p[1], q[0],h1,q[1]);}};
 for(const L of SM){shapeMesh(L,0,topM);const Li=inset(L,.35);shapeMesh(inset(Li,.1),.135,lawnT);ribbon(Li,0,.135,.12);}
 mk(RIM,rimM,true);
 /* island edge walls on the smooth outline: asphalt band, soil, seam, soil2 */
@@ -231,6 +231,12 @@ if(curbs.length){const m=new THREE.Mesh(mergeGeometries(curbs),curbM);m.castShad
   const hor=isR(x-1,y)||isR(x+1,y);for(const s2 of [0,1]){g=hor?new THREE.BoxGeometry(1.02,.1,.08):new THREE.BoxGeometry(.08,.1,1.02);g.translate(hor?x+.5:x+.04+s2*.92,.05,hor?y+.04+s2*.92:y+.5);rl.push(g);}}
  if(dk.length){const m=new THREE.Mesh(mergeGeometries(dk),asph);m.castShadow=true;m.receiveShadow=true;sc.add(m);const m2=new THREE.Mesh(mergeGeometries(rl),curbM);m2.castShadow=true;sc.add(m2);}}
 window.FALLS=seg.filter(s=>s[2]).map(s=>s[0]);
+/* river bridges: white rails where a road tile meets open river */
+{const RR=[];for(let y=0;y<N;y++)for(let x=0;x<N;x++){if(!isR(x,y)||!riv(x,y))continue;const op=(xx,yy)=>riv(xx,yy)&&!isR(xx,yy);
+ const add2=(w,d,cx_,cz_)=>{const g=new THREE.BoxGeometry(w,.1,d);g.translate(cx_,.05,cz_);RR.push(g);};
+ if(op(x,y-1))add2(1,.07,x+.5,y+.035);if(op(x,y+1))add2(1,.07,x+.5,y+.965);if(op(x-1,y))add2(.07,1,x+.035,y+.5);if(op(x+1,y))add2(.07,1,x+.965,y+.5);}
+ if(RR.length){const m=new THREE.Mesh(mergeGeometries(RR),curbM);m.castShadow=true;sc.add(m);}
+ const SD=[];for(let y=0;y<N;y++)for(let x=0;x<N;x++){if(!isR(x,y)||!riv(x,y))continue;const g=new THREE.BoxGeometry(1,.22,1);g.translate(x+.5,-.11,y+.5);SD.push(g);}if(SD.length){const m=new THREE.Mesh(mergeGeometries(SD),asph);m.castShadow=true;sc.add(m);}}
 /* crosswalks on straight approaches next to junctions */
 {const CW=[],deg=(x,y)=>(isR(x-1,y)?1:0)+(isR(x+1,y)?1:0)+(isR(x,y-1)?1:0)+(isR(x,y+1)?1:0);for(let y=0;y<N;y++)for(let x=0;x<N;x++){if(!isR(x,y)||deg(x,y)<3||!land(x,y))continue;
  for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){const ax=x+dx,ay=y+dy;if(!isR(ax,ay)||!land(ax,ay)||deg(ax,ay)!==2)continue;const hor=dx!==0;if(hor&&!(isR(ax+dx,ay)))continue;if(!hor&&!isR(ax,ay+dy))continue;
@@ -250,9 +256,11 @@ if(DS.length)sc.add(new THREE.Mesh(mergeGeometries(DS),paint));
 /* rivers: smooth water sheet + asphalt bank walls + white curb on the land side, all clipped to the island */
 water.transparent=true;water.onBeforeCompile=sh=>{sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nvarying float vWY;').replace('#include <worldpos_vertex>','#include <worldpos_vertex>\nvWY=(modelMatrix*vec4(transformed,1.0)).y;');sh.fragmentShader=sh.fragmentShader.replace('#include <common>','#include <common>\nvarying float vWY;').replace('#include <dithering_fragment>','#include <dithering_fragment>\ngl_FragColor.a*=smoothstep(-15.,-5.,vWY);');};
 
-{const wsurf=masked(water.clone(),'b',true);wsurf.transparent=false;wsurf.side=THREE.DoubleSide;const bankM=masked(M('#5d667c'),'b',true);bankM.side=THREE.DoubleSide;const cM=masked(M('#f3f5f9',{roughness:.5,envMapIntensity:.4}),'b',true);cM.side=THREE.DoubleSide;
- const BK=[],CR=[];for(const L of RL){shapeMesh(L,RT,wsurf);const sg3=Math.sign(area(L));const Io=L.map((p,i)=>{const a2=L[(i-1+L.length)%L.length],b2=L[(i+1)%L.length];let tx=b2[0]-a2[0],tz=b2[1]-a2[1];const l=Math.hypot(tx,tz)||1;return [p[0]+tz/l*.14*sg3,p[1]-tx/l*.14*sg3];});
-  for(let i=0;i<L.length;i++){const p=L[i],q=L[(i+1)%L.length],po=Io[i],qo=Io[(i+1)%L.length];BK.push(p[0],.0,p[1], p[0],RF,p[1], q[0],.0,q[1], q[0],.0,q[1], p[0],RF,p[1], q[0],RF,q[1]);
+{const wsurf=masked(water.clone(),'b',true);wsurf.transparent=false;wsurf.side=THREE.DoubleSide;const bankM=masked(M('#5d667c'),'b',true);bankM.side=THREE.DoubleSide;const cM=masked(M('#f3f5f9',{roughness:.5,envMapIntensity:.4}),'rimR',true);cM.side=THREE.DoubleSide;
+ const BK=[],CR=[];for(const L of RL){shapeMesh(L,RT,wsurf);
+  for(let i=0;i<L.length;i++){const p=L[i],q=L[(i+1)%L.length];let tx=q[0]-p[0],tz=q[1]-p[1];const l=Math.hypot(tx,tz)||1;let nx=tz/l,nz=-tx/l;const mx=(p[0]+q[0])/2,mz=(p[1]+q[1])/2;
+   const rv=(px,pz)=>riv2(Math.floor(px),Math.floor(pz));if(rv(mx+nx*.45,mz+nz*.45)&&!rv(mx-nx*.45,mz-nz*.45)){nx=-nx;nz=-nz;}
+   const w=.14,po=[p[0]+nx*w,p[1]+nz*w],qo=[q[0]+nx*w,q[1]+nz*w];BK.push(p[0],.0,p[1], p[0],RF,p[1], q[0],.0,q[1], q[0],.0,q[1], p[0],RF,p[1], q[0],RF,q[1]);
    CR.push(p[0],.135,p[1], po[0],.135,po[1], q[0],.135,q[1], q[0],.135,q[1], po[0],.135,po[1], qo[0],.135,qo[1]); CR.push(p[0],0,p[1], p[0],.135,p[1], q[0],0,q[1], q[0],0,q[1], p[0],.135,p[1], q[0],.135,q[1]);}}
  mk(BK,bankM);mk(CR,cM,true);}
 /* waterfalls: river mouths on the smooth outline, bend over the lip, straight drop, fade */
@@ -270,12 +278,13 @@ water.transparent=true;water.onBeforeCompile=sh=>{sh.vertexShader=sh.vertexShade
   if(k===K.COM){ if(r<.55)O.bld(x0+.15,x1+.85,y0+.15,y1+.85,10+((r*100)|0)%5,r<.3?S.APT:Object.assign({},S.APT,{crown:2})); else if(r<.8)O.towerA(x0+.4,y0+.4); else O.roundB(x0+.45,y0+.4);}
   else if(w>=4){O.fountain(x0+w/2,y0+w/2);}
   else{const f=[O.gas,O.greenhouse,O.restaurant][((r*3)|0)%3];f(x0+.35,y0+.35);}}
- for(let y=0;y<N;y++)for(let x=0;x<N;x++){const i=y*N+x;if(done[i]||!isLawn(x,y))continue;const k=kind[i],L=lvl[i],r=hs(i,3),bx0=x+.12,bx1=x+.88,bz0=y+.12,bz1=y+.88;
+ const built=new Uint8Array(N*N);for(let y=0;y<N;y++)for(let x=0;x<N;x++){const i=y*N+x;if(done[i]||!isLawn(x,y))continue;const k=kind[i],L=lvl[i],r=hs(i,3),bx0=x+.16,bx1=x+.84,bz0=y+.16,bz1=y+.84;
+  if(k>=K.RES&&k<=K.FIRE&&k!==K.PARK){const nb2=(built[i-1]?1:0)+(built[i-N]?1:0)+(y>0&&x>0&&built[i-N-1]?1:0);if(nb2>=2||(nb2===1&&hs(i,21)<.55)){done[i]=2;continue;}built[i]=1;}
   if(k===K.RES){nb++;if(r<.35)O.house(bx0,bx1,bz0,bz1,['#ff7a59','#3d9df5','#5d6470'][((r*30)|0)%3]);else O.bld(bx0,bx1,bz0,bz1,L>1?5:3+((r*10)|0)%2,[S.VIL,S.BRICK,S.GBRICK][((r*9)|0)%3]);}
   else if(k===K.COM){nb++;const T=L<=1?[[S.CVS,1],[S.BAKE,2],[S.WOOD,2]]:L===2?[[S.NEIGH,4],[S.SHOP,3],[S.STONE,5],[S.PHAR,3],[S.TOWN,3]]:L===3?[[S.OFF,8],[S.BAND,7],[S.STONE,7]]:[[S.OFF,11],[S.BAND,10]];const [st,fl]=T[((r*97)|0)%T.length];O.bld(bx0,bx1,bz0,bz1,fl,st);}
   else if(k>=K.POWER&&k<=K.FIRE){nb++;O.bld(bx0,bx1,bz0,bz1,2,S.STONE);}}
  /* trees: icon cypress, instanced (forest deco + parks) */
- const TP=[];for(let y=0;y<N;y++)for(let x=0;x<N;x++){const i=y*N+x;if(done[i]||!isLawn(x,y))continue;const k=kind[i];if(!(k===K.EMPTY||k===K.PARK))continue;const d=deco[i];if(!(d>=1&&d<=21)&&!(k===K.PARK&&hs(i,5)<.25))continue;TP.push([x+.3+hs(i,7)*.4,y+.3+hs(i,8)*.4,i]);}
+ const TP=[],clear=(x,y)=>{for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){const xx=x+dx,yy=y+dy;if(!land(xx,yy)||riv(xx,yy)||isR(xx,yy))return false;const j=yy*N+xx;if(done[j]===1||built[j]||lmkA[j]>=0)return false;}return true;};for(let y=0;y<N;y++)for(let x=0;x<N;x++){const i=y*N+x;if(done[i]===1||built[i]||!isLawn(x,y)||!clear(x,y))continue;const k=kind[i];if(!(k===K.EMPTY||k===K.PARK||done[i]===2))continue;const d=deco[i];if(!(d>=1&&d<=21)&&!(k===K.PARK&&hs(i,5)<.25))continue;TP.push([x+.3+hs(i,7)*.4,y+.3+hs(i,8)*.4,i]);}
  const k2=1.35,B0=.13,trG=new THREE.CylinderGeometry(.016*k2,.02*k2,.08*k2,10),ptG=new THREE.CylinderGeometry(.08*k2,.085*k2,.025,20),cr=[0,1,2].map(j=>O.crown(.1*k2,2.5,j*1.7,O.PAL[j]));
  const im=(g,m,n)=>{const e=new THREE.InstancedMesh(g,m,n);e.castShadow=true;e.receiveShadow=true;sc.add(e);return e;};
  const iT=im(trG,O.TRK,TP.length),iP=im(ptG,O.PIT,TP.length),iC=[0,1,2].map(j=>im(cr[j],O.LEAF,TP.length)),cnt=[0,0,0],mm=new THREE.Matrix4();
