@@ -194,7 +194,7 @@ const flatR=(x,y)=>{const c=cH(x,y);return Math.max(...c)-Math.min(...c)<.01;};
 const FALL=[];
 /* ===== BLOCK TERRAIN (Minecraft / MapleStory2 style): every edge on the tile grid, no smoothed outlines ===== */
 const mk=(A,m,cast)=>{const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(A,3));g.computeVertexNormals();const e=new THREE.Mesh(g,m);e.receiveShadow=true;e.castShadow=!!cast;sc.add(e);return e;};
-{const TP=[],TC=[],TU=[],RP=[],RC=[],W=[],WC=[],WU=[],GS=[],GU=[],WF=[],BED=[];
+{const BR=.14,BS=4,BP=[],BN=[],BC=[],BU=[],EXP=new Uint8Array(N*N),TP=[],TC=[],TU=[],RP=[],RC=[],W=[],WC=[],WU=[],GS=[],GU=[],WF=[],BED=[];
  const q=(A,a,b,c,d)=>A.push(...a,...b,...c,...c,...b,...d),col=(A,c,n)=>{for(let k=0;k<n;k++)A.push(c.r,c.g,c.b);},col4=(A,ca,cb,cc,cd)=>{for(const c of [ca,cd,cb,cb,cd,cc])A.push(c.r,c.g,c.b);};
  const CON=C('#e3e6ea'),G1=C('#7ccf52'),ROAD=C('#5d667c'),sC=C('#c99a66'),sD=C('#a97d52'),SL=[C('#a97d52'),C('#946a44'),C('#7e5a3a'),C('#6b4c32'),C('#5a3f2a')],tmp=new THREE.Color(),WHITE=C('#ffffff');
  const hsh=(x,y)=>{const v=Math.sin(x*12.9898+y*78.233)*43758.5453;return v-Math.floor(v);};
@@ -220,16 +220,29 @@ const mk=(A,m,cast)=>{const g=new THREE.BufferGeometry();g.setAttribute('positio
   if(isLawn(x,y)){tmp.copy(G1).multiplyScalar((.94+hsh(x,y)*.1)*(((x+y)&1)?.97:1));const me=Math.max(...t);
    /* corner AO: darken a corner when any of the 3 tiles touching it is higher */
    const ao=(cx,cy)=>{let o=0;for(const [dx,dy] of [[-1,-1],[0,-1],[-1,0],[0,0]]){const xx=cx+dx,yy=cy+dy;if(xx===x&&yy===y)continue;if(tmax(xx,yy)>me+.2)o++;}return tmp.clone().multiplyScalar(1-Math.min(2,o)*.17);};
-   q(TP,[x,t[0],y],[x,t[3],y+1],[x+1,t[1],y],[x+1,t[2],y+1]);col4(TC,ao(x,y),ao(x+1,y),ao(x+1,y+1),ao(x,y+1));TU.push(0,0, 0,1, 1,0, 1,0, 0,1, 1,1);}
+   const h=t[0],ex=[[-1,0],[1,0],[0,-1],[0,1]].map(([dx,dy])=>{const n2=top(x+dx,y+dy);return !n2||Math.max(...n2)<h-.2;});EXP[y*N+x]=ex[0]|ex[1]<<1|ex[2]<<2|ex[3]<<3;
+   const x0=x+(ex[0]?BR:0),x1=x+1-(ex[1]?BR:0),z0=y+(ex[2]?BR:0),z1=y+1-(ex[3]?BR:0),ux0=x0-x,ux1=x1-x,uz0=z0-y,uz1=z1-y;
+   q(TP,[x0,h,z0],[x0,h,z1],[x1,h,z0],[x1,h,z1]);col4(TC,ao(x,y),ao(x+1,y),ao(x+1,y+1),ao(x,y+1));TU.push(ux0,uz0, ux0,uz1, ux1,uz0, ux1,uz0, ux0,uz1, ux1,uz1);
+   /* rounded lip on every exposed top edge (quarter round, mitred at convex corners) */
+   const cA=tmp.clone().multiplyScalar(1.04);
+   const edge=(I0,I1,E0,E1,nx,nz)=>{for(let k=0;k<BS;k++){const a0=k/BS*Math.PI/2,a1=(k+1)/BS*Math.PI/2,s0=Math.sin(a0),s1=Math.sin(a1),y0=h-BR+BR*Math.cos(a0),y1=h-BR+BR*Math.cos(a1);
+     const P=(I,E,s_,yy)=>[I[0]+(E[0]-I[0])*s_,yy,I[1]+(E[1]-I[1])*s_],A=P(I0,E0,s0,y0),B=P(I1,E1,s0,y0),Cq=P(I0,E0,s1,y1),Dq=P(I1,E1,s1,y1);
+     const nn=(a)=>[nx*Math.sin(a),Math.cos(a),nz*Math.sin(a)],n0=nn(a0),n1=nn(a1);const u=[Cq[0]-A[0],Cq[1]-A[1],Cq[2]-A[2]],v=[B[0]-A[0],B[1]-A[1],B[2]-A[2]],cr=[u[1]*v[2]-u[2]*v[1],u[2]*v[0]-u[0]*v[2],u[0]*v[1]-u[1]*v[0]],nm=[(n0[0]+n1[0]),(n0[1]+n1[1]),(n0[2]+n1[2])];
+     if(cr[0]*nm[0]+cr[1]*nm[1]+cr[2]*nm[2]>=0){BP.push(...A,...Cq,...B,...B,...Cq,...Dq);BN.push(...n0,...n1,...n0,...n0,...n1,...n1);}else{BP.push(...A,...B,...Cq,...B,...Dq,...Cq);BN.push(...n0,...n0,...n1,...n0,...n1,...n1);}
+     const c0=cA.clone().multiplyScalar(1-.1*s0),c1=cA.clone().multiplyScalar(1-.1*s1);for(const c of [c0,c1,c0,c0,c1,c1])BC.push(c.r,c.g,c.b);for(let j=0;j<6;j++)BU.push(.5,.5);}};
+   if(ex[0])edge([x0,z1],[x0,z0],[x,ex[3]?y+1:z1],[x,ex[2]?y:z0],-1,0);
+   if(ex[1])edge([x1,z0],[x1,z1],[x+1,ex[2]?y:z0],[x+1,ex[3]?y+1:z1],1,0);
+   if(ex[2])edge([x0,z0],[x1,z0],[ex[0]?x:x0,y],[ex[1]?x+1:x1,y],0,-1);
+   if(ex[3])edge([x1,z1],[x0,z1],[ex[1]?x+1:x1,y+1],[ex[0]?x:x0,y+1],0,1);}
   else if(isR(x,y)){q(RP,[x,t[0]+.002,y],[x,t[3]+.002,y+1],[x+1,t[1]+.002,y],[x+1,t[2]+.002,y+1]);col(RC,ROAD,6);}
   else{q(WF,[x,RT,y],[x,RT,y+1],[x+1,RT,y],[x+1,RT,y+1]);q(BED,[x,BEDH,y],[x,BEDH,y+1],[x+1,BEDH,y],[x+1,BEDH,y+1]);}
   const b=bot(x,y),bc=SL[Math.min(4,Math.round(B0-b))];q(W,[x,b,y],[x+1,b,y],[x,b,y+1],[x+1,b,y+1]);col(WC,bc,6);WU.push(0,0,1,0,0,1,0,1,1,0,1,1);
   for(const [dx,dy,p0,p1,k0,k1,n0,n1] of [[1,0,[x+1,y],[x+1,y+1],1,2,0,3],[0,1,[x,y+1],[x+1,y+1],3,2,0,1],[-1,0,[x,y],[x,y+1],0,3,1,2],[0,-1,[x,y],[x+1,y],0,1,3,2]]){
-   const xx=x+dx,yy=y+dy,nt=top(xx,yy),T0=t[k0],T1=t[k1];
+   const xx=x+dx,yy=y+dy,nt=top(xx,yy),eb=dx===1?2:dx===-1?1:dy===1?8:4,bev=(EXP[y*N+x]&eb)?BR:0,T0=t[k0]-bev,T1=t[k1]-bev;
    const face=(a0,a1,b0_,b1_,c_,aoB)=>{if(a0-b0_<.01&&a1-b1_<.01)return;q(W,[p0[0],a0,p0[1]],[p0[0],b0_,p0[1]],[p1[0],a1,p1[1]],[p1[0],b1_,p1[1]]);const cb=aoB?c_.clone().multiplyScalar(.72):c_;for(const c of [c_,cb,c_,c_,cb,cb])WC.push(c.r,c.g,c.b);WU.push(0,a0,0,b0_,1,a1,1,a1,0,b0_,1,b1_);};
    const skirt=(a0,a1)=>{const o=.008,d=.5;const P0=[p0[0]+dx*o,p0[1]+dy*o],P1=[p1[0]+dx*o,p1[1]+dy*o];q(GS,[P0[0],a0+.01,P0[1]],[P0[0],a0-d,P0[1]],[P1[0],a1+.01,P1[1]],[P1[0],a1-d,P1[1]]);const u0=(x+y)*.37%1;GU.push(u0,1,u0,0,u0+1,1,u0+1,1,u0,0,u0+1,0);};
-   if(nt){const N0=nt[n0],N1=nt[n1],nb=riv(xx,yy)&&!isR(xx,yy);if(T0>N0+.01||T1>N1+.01){if(rvT)continue;const m0=nb?BEDH:Math.min(T0,N0),m1=nb?BEDH:Math.min(T1,N1);
-     face(T0,T1,m0,m1,isR(x,y)?CON:sC,!nb);if(isLawn(x,y))skirt(T0,T1);}
+   if(nt){const N0=nt[n0],N1=nt[n1],nb=riv(xx,yy)&&!isR(xx,yy);if(T0+bev>N0+.01||T1+bev>N1+.01){if(rvT)continue;const m0=nb?BEDH:Math.min(T0,N0),m1=nb?BEDH:Math.min(T1,N1);
+     face(T0,T1,m0,m1,isR(x,y)?CON:sC,!nb);if(isLawn(x,y)&&Math.min(T0-m0,T1-m1)>.3)skirt(T0,T1);}
     const b2=bot(xx,yy);if(b2>b+.01){face(b2,b2,b,b,SL[Math.min(4,Math.round(B0-b))]);}continue;}
    if(rvT){face(RT-.32,RT-.32,B1,B1,sC);face(B1,B1,b,b,sD);
      const rad=.3,NB=10,pr=[];for(let k=0;k<=NB;k++){const f=k/NB*Math.PI/2;pr.push([-rad+rad*Math.sin(f)+.01,RT-rad+rad*Math.cos(f)]);}pr.push([.01,-32]);for(let k=0;k+1<pr.length;k++){const [o0,h0]=pr[k],[o1,h1]=pr[k+1];q(FALL,[p0[0]+dx*o0,h0,p0[1]+dy*o0],[p0[0]+dx*o1,h1,p0[1]+dy*o1],[p1[0]+dx*o0,h0,p1[1]+dy*o0],[p1[0]+dx*o1,h1,p1[1]+dy*o1]);}continue;}
@@ -239,6 +252,7 @@ const mk=(A,m,cast)=>{const g=new THREE.BufferGeometry();g.setAttribute('positio
  add2(geo(TP,TC,TU),new THREE.MeshStandardMaterial({vertexColors:true,map:topT,roughness:.8,envMapIntensity:.12,side:THREE.DoubleSide}));
  add2(geo(RP,RC),new THREE.MeshStandardMaterial({vertexColors:true,roughness:.7,envMapIntensity:.12,side:THREE.DoubleSide}));
  add2(geo(W,WC,WU),new THREE.MeshStandardMaterial({vertexColors:true,map:sideT,roughness:.9,envMapIntensity:.12,side:THREE.DoubleSide}));
+ if(BP.length){const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(BP,3));g.setAttribute('normal',new THREE.Float32BufferAttribute(BN,3));g.setAttribute('color',new THREE.Float32BufferAttribute(BC,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(BU,2));add2(g,new THREE.MeshStandardMaterial({vertexColors:true,map:topT,roughness:.8,envMapIntensity:.12,side:THREE.DoubleSide}));}
  if(GS.length)add2(geo(GS,null,GU),new THREE.MeshStandardMaterial({map:skirtT,alphaTest:.5,roughness:.8,envMapIntensity:.12,side:THREE.DoubleSide}),false);
  if(BED.length)add2(geo(BED),new THREE.MeshStandardMaterial({color:'#e6cf96',roughness:.9}),false);
  water.transparent=true;water.opacity=.82;water.depthWrite=false;water.onBeforeCompile=sh=>{sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nvarying float vWY;').replace('#include <worldpos_vertex>','#include <worldpos_vertex>\nvWY=(modelMatrix*vec4(transformed,1.0)).y;');sh.fragmentShader=sh.fragmentShader.replace('#include <common>','#include <common>\nvarying float vWY;').replace('#include <dithering_fragment>','#include <dithering_fragment>\ngl_FragColor.a*=smoothstep(-31.,-8.,vWY);');};
