@@ -4610,6 +4610,9 @@ function genCity(seed){const r=mulberry(seed*13+5),SAVE=ROADL,DIR=[[1,0],[-1,0],
         {let bj=0,bd=0,bv=BIG;for(let j=0;j<=M;j++)for(let d=-1;d<=1;d++){const v=cost[K3(nA-1,j,d)];if(v<bv){bv=v;bj=j;bd=d;}}if(bv<BIG){const qq=new Float64Array(N);let okP=true;for(let k=nA-1;k>=0;k--){qq[a0+k]=q[a0+k]+bj;if(k>0){const f=from[K3(k,bj,bd)];if(f<0){okP=false;break;}bj=(f/3)|0;bd=f%3-1;}}if(okP)for(let a=a0;a<=a1;a++)q[a]=qq[a];}}
         /* a bank that runs diagonally to the grid would turn 강변로 into a tile staircase: keep the park, skip the road there */
         let jogs=0;for(let a=a0+1;a<=a1;a++)if(q[a]!==q[a-1])jogs++;const stair=jogs>nA*.18;
+        /* a staircase bank still gets its 둔치 trail, kept 3 tiles off the water so it follows the river (no 강변로 line to follow there) */
+        if(stair){const tt=new Int32Array(N);for(let a=a0;a<=a1;a++){let m=0,n=0;for(let b=Math.max(a0,a-3);b<=Math.min(a1,a+3);b++){m+=e[b];n++;}let t=Math.round(m/n)+3*s;if(s*(t-e[a])<2)t=e[a]+2*s;tt[a]=t;}
+        for(let a=a0;a<=a1;a++){const t=tt[a];trail.add(T(a,t));if(a>a0){const tp=tt[a-1];if(s*(t-tp)>0){for(let o=tp+s;o!==t;o+=s)trail.add(T(a-1,o));trail.add(T(a-1,t));}else for(let o=t;;o+=s){trail.add(T(a,o));if(o===tp)break;}}}}
         for(let a=a0;a<=a1;a++){const oR=s*q[a];if(stair)continue;road.add(T(a,oR));const t=oR-3*s;trail.add(T(a,t));if(a<a1){const oN=s*q[a+1];if(oN!==oR)road.add(T(a+1,oR));const tN=oN-3*s;if(tN!==t)trail.add(tN===t+s?T(a+1,t):T(a,tN));}}
         for(let a=a0+6;a<a1-6;a+=24+((r()*20)|0))if(r()<.75){const L2=3+((r()*3)|0);for(let k=0;k<L2;k++)sport.add(a+k);}
         for(let a=a0;a<=a1;a++){const oR=s*q[a];for(let o=e[a];s*(oR-o)>=(stair?0:1);o+=s){const [x,y]=XY(a,o),i=idx(x,y);if(road.has(i)||kind[i]===K.ROAD||kind[i]===K.LMK||terr[i]===TWA)continue;

@@ -1,0 +1,105 @@
+{
+ "22": {
+  "railOffMedian": 0,
+  "railOffRoad": 0,
+  "roadComponents": 1,
+  "orphanRoadTiles": 0,
+  "deadEnds": 35,
+  "builtTiles": 2536,
+  "lotsNoAccess": 0,
+  "builtNoSprite": 0,
+  "builtOnSlope": 0,
+  "stations": 4,
+  "stationsWithBuilding": 4,
+  "cells": 6,
+  "lowFillCells": 1,
+  "waterRoadCorners": 0,
+  "trains": 1,
+  "lines": 1,
+  "lmkOnWater": 0,
+  "pop": 8896,
+  "perf": {
+   "overview": {
+    "fps": 2.9,
+    "worst": 783
+   },
+   "downtown": {
+    "fps": 3.7,
+    "worst": 750
+   },
+   "oldtown": {
+    "fps": 4.2,
+    "worst": 567
+   }
+  }
+ },
+ "5": {
+  "railOffMedian": 0,
+  "railOffRoad": 0,
+  "roadComponents": 1,
+  "orphanRoadTiles": 0,
+  "deadEnds": 33,
+  "builtTiles": 1545,
+  "lotsNoAccess": 0,
+  "builtNoSprite": 0,
+  "builtOnSlope": 2,
+  "stations": 3,
+  "stationsWithBuilding": 3,
+  "cells": 4,
+  "lowFillCells": 1,
+  "waterRoadCorners": 0,
+  "trains": 1,
+  "lines": 1,
+  "lmkOnWater": 0,
+  "pop": 3642,
+  "perf": {
+   "overview": {
+    "fps": 2.7,
+    "worst": 1250
+   },
+   "downtown": {
+    "fps": 3.5,
+    "worst": 950
+   },
+   "oldtown": {
+    "fps": 3.7,
+    "worst": 817
+   }
+  }
+ },
+ "33": {
+  "railOffMedian": 0,
+  "railOffRoad": 0,
+  "roadComponents": 1,
+  "orphanRoadTiles": 0,
+  "deadEnds": 46,
+  "builtTiles": 1899,
+  "lotsNoAccess": 0,
+  "builtNoSprite": 0,
+  "builtOnSlope": 2,
+  "stations": 3,
+  "stationsWithBuilding": 3,
+  "cells": 5,
+  "lowFillCells": 0,
+  "waterRoadCorners": 0,
+  "trains": 1,
+  "lines": 1,
+  "lmkOnWater": 0,
+  "pop": 90978,
+  "perf": {
+   "overview": {
+    "fps": 2.7,
+    "worst": 767
+   },
+   "downtown": {
+    "fps": 3.7,
+    "worst": 683
+   },
+   "oldtown": {
+    "fps": 3.7,
+    "worst": 750
+   }
+  }
+ },
+ "errors": []
+}
