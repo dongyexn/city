@@ -13,6 +13,6 @@ async def main():
             await route.fulfill(path=path,content_type=ct)
         await pg.route('http://l/**',h);await pg.goto('http://l/icon3d.html');await pg.wait_for_function('window.ready===1',timeout=60000)
         for n,v in views.items():
-            d=await pg.evaluate('render(%d,1600,1000,%s)'%(sd,json.dumps(v)));open(os.path.join(D,'i_%d_%s.png'%(sd,n)),'wb').write(base64.b64decode(d.split(',')[1]))
+            d=await pg.evaluate('render(%d,1600,1000,%s)'%(sd,json.dumps(v)));print(n,await pg.evaluate('window.NFALL'));open(os.path.join(D,'i_%d_%s.png'%(sd,n)),'wb').write(base64.b64decode(d.split(',')[1]))
         await b.close()
 asyncio.run(main())
