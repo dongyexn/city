@@ -3021,16 +3021,26 @@ function drawWalkers(g,x,y,i,S){const v=vari[i];if(kind[i]!==K.PARK)return;if(fi
 /* ================= map generation (Korean landscape) ================= */
 function idx(x,y){return y*N+x;}
 let distR=new Float32Array(NN);
-/* 공중 섬 컨셉: 고도 없음 — 바다가 아닌 땅의 꼭짓점 높이를 하나로 맞춘다(강·바다 판정 terr/OCEAN은 그대로) */
-let H0=null;function flatLand(){H0=H.slice();let lv=255;for(let y=0;y<N;y++)for(let x=0;x<N;x++){const i=idx(x,y);if(OCEAN[i]||terr[i]===TWA)continue;lv=Math.min(lv,H[y*HN+x],H[y*HN+x+1],H[(y+1)*HN+x],H[(y+1)*HN+x+1]);}
- if(lv===255)return;for(let y=0;y<=N;y++)for(let x=0;x<=N;x++){let land=false;for(const [dx,dy] of [[-1,-1],[0,-1],[-1,0],[0,0]]){const tx=x+dx,ty=y+dy;if(tx>=0&&ty>=0&&tx<N&&ty<N&&!OCEAN[idx(tx,ty)])land=true;}if(land)H[y*HN+x]=lv;}
- if(typeof LIFTV!=='undefined'&&LIFTV)LIFTV.fill(0);BHV++;}
+/* 공중 섬 컨셉: 고도는 1~5단 계단식. 원지형(H0)을 다듬어 단으로 나누고, 이웃 칸은 1단 차이까지만, 강·해안 주변은 1단.
+   꼭짓점 높이 = 인접 땅 칸의 최고 단 → 높은 단 칸은 평지, 단 경계의 낮은 쪽 칸은 경사(isFlat=false)라 건물이 못 서고 도로만 지나간다(=경사로) */
+let H0=null,LVL=null;function terraceLand(){H0=H.slice();const land=(x,y)=>x>=0&&y>=0&&x<N&&y<N&&!OCEAN[idx(x,y)],riv=(x,y)=>land(x,y)&&terr[idx(x,y)]===TWA;
+ const L=new Uint8Array(NN).fill(1);let th=new Float32Array(NN),mn=1e9,mx=-1e9;
+ for(let y=0;y<N;y++)for(let x=0;x<N;x++){if(!land(x,y))continue;const v=(H[y*HN+x]+H[y*HN+x+1]+H[(y+1)*HN+x]+H[(y+1)*HN+x+1])/4;th[idx(x,y)]=v;mn=Math.min(mn,v);mx=Math.max(mx,v);}
+ if(mn===1e9){LVL=L;return;}
+ for(let p=0;p<4;p++){const t2=new Float32Array(NN);for(let y=0;y<N;y++)for(let x=0;x<N;x++){if(!land(x,y))continue;let s=0,n=0;for(let dy=-3;dy<=3;dy++)for(let dx=-3;dx<=3;dx++)if(land(x+dx,y+dy)){s+=th[idx(x+dx,y+dy)];n++;}t2[idx(x,y)]=s/n;}th=t2;}
+ for(let y=0;y<N;y++)for(let x=0;x<N;x++)if(land(x,y))L[idx(x,y)]=1+Math.min(4,Math.floor((th[idx(x,y)]-mn)/(mx-mn+1e-6)*5));
+ for(let p=0;p<5;p++){const L2=L.slice();for(let y=0;y<N;y++)for(let x=0;x<N;x++){if(!land(x,y))continue;const c=[0,0,0,0,0,0];for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++)if(land(x+dx,y+dy))c[L[idx(x+dx,y+dy)]]++;let b=L[idx(x,y)];for(let l=1;l<=5;l++)if(c[l]>c[b])b=l;L2[idx(x,y)]=b;}L.set(L2);}
+ for(let y=0;y<N;y++)for(let x=0;x<N;x++){if(!land(x,y))continue;let f=false;for(let dy=-2;dy<=2&&!f;dy++)for(let dx=-2;dx<=2;dx++)if(!land(x+dx,y+dy)||(Math.abs(dx)<=1&&Math.abs(dy)<=1&&riv(x+dx,y+dy))){f=true;break;}if(f)L[idx(x,y)]=1;}
+ for(let p=0;p<6;p++)for(let y=0;y<N;y++)for(let x=0;x<N;x++){if(!land(x,y))continue;let m=9;for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]])if(land(x+dx,y+dy))m=Math.min(m,L[idx(x+dx,y+dy)]);if(L[idx(x,y)]>m+1)L[idx(x,y)]=m+1;}
+ let base=255;for(let y=0;y<N;y++)for(let x=0;x<N;x++){if(OCEAN[idx(x,y)]||terr[idx(x,y)]===TWA)continue;base=Math.min(base,H[y*HN+x],H[y*HN+x+1],H[(y+1)*HN+x],H[(y+1)*HN+x+1]);}if(base===255)base=0;
+ for(let y=0;y<=N;y++)for(let x=0;x<=N;x++){let m=0,any=false;for(const [dx,dy] of [[-1,-1],[0,-1],[-1,0],[0,0]]){const tx=x+dx,ty=y+dy;if(land(tx,ty)){any=true;m=Math.max(m,L[idx(tx,ty)]);}}if(any)H[y*HN+x]=base+m-1;}
+ LVL=L;if(typeof LIFTV!=='undefined'&&LIFTV)LIFTV.fill(0);BHV++;}
 let OCEAN=new Uint8Array(NN);function genMap(seed){alloc();const r=mulberry(seed*7+3),S=MS;distR=new Float32Array(NN);
   /* island: a main body plus 1-3 lobes (peninsulas/capes), warped and noisy, so every seed has its own silhouette */
-  const IR=N*(.3+r()*.03),LB=[{x:N/2+(r()-.5)*N*.08,y:N/2+(r()-.5)*N*.08,r:IR,e:1+r()*.35,a:r()*6.283}];
+  const IR=N*(.2+r()*.02),LB=[{x:N/2+(r()-.5)*N*.08,y:N/2+(r()-.5)*N*.08,r:IR,e:1+r()*.35,a:r()*6.283}];
   {const nl=1+((r()*3)|0);for(let k=0;k<nl;k++){const a=r()*6.283,d=IR*(.45+r()*.35);LB.push({x:LB[0].x+Math.cos(a)*d,y:LB[0].y+Math.sin(a)*d,r:IR*(.32+r()*.28),e:1+r()*.6,a:r()*6.283});}}
   /* archipelago layout (own rng, so mode 0 keeps the old single-island maps): 0 = one island + islets, 1 = two islands, 2 = three islands */
-  const r3=mulberry(seed*7+57),MODE=r3()<.34?0:r3()<.55?1:2,XI=[];let WARP=32;
+  const r3=mulberry(seed*7+57),MODE=0,XI=[];let WARP=32;
   if(MODE){const th=r3()*6.283,C=[N/2,N/2],k=MODE===1?.7:.56,L0=LB[0],mc=MODE===1?[C[0]-Math.cos(th)*N*.2,C[1]-Math.sin(th)*N*.2]:[C[0]+Math.cos(th)*N*.16,C[1]+Math.sin(th)*N*.16];
     for(const L of LB){if(L!==L0){L.x=mc[0]+(L.x-L0.x)*k;L.y=mc[1]+(L.y-L0.y)*k;}L.r*=k;}L0.x=mc[0];L0.y=mc[1];WARP=32*k;
     const add=(x,y,rr)=>XI.push({x,y,r:rr,e:1+r3()*.45,a:r3()*6.283});
@@ -3041,7 +3051,7 @@ let OCEAN=new Uint8Array(NN);function genMap(seed){alloc();const r=mulberry(seed
   /* offshore islets (separate rng so the main island is unchanged): 2-5 small isles a short sea channel away from the coast */
   const ISL=XI.slice();{const r2=mulberry(seed*7+91),n=2+((r2()*4)|0);for(let t=0;t<400&&ISL.length<XI.length+n;t++){const rr=N*(.025+r2()*.045),x=14+rr+r2()*(N-28-2*rr),y=14+rr+r2()*(N-28-2*rr);const m=isl(x,y);if(m<1.25||m>2.2)continue;let ok=true;for(let k=0;k<12&&ok;k++){const a=k/12*6.283;if(isl(x+Math.cos(a)*rr*1.6,y+Math.sin(a)*rr*1.6)<1.12)ok=false;}if(!ok||ISL.some(q=>Math.hypot(q.x-x,q.y-y)<q.r+rr+10))continue;ISL.push({x,y,r:rr,e:1+r2()*.5,a:r2()*6.283});}}
   /* bigger islands, but the coast still curls in before the map edge (never a straight cut) */
-  const islA=(x,y)=>{const ed=Math.min(x,y,N-x,N-y);let m=isl(x,y)+(ed<20?(20-ed)/20*.9:0);for(const L of ISL){const dx=x-L.x,dy=y-L.y,c=Math.cos(L.a),s2=Math.sin(L.a),u=(dx*c+dy*s2)*L.e,v=-dx*s2+dy*c;m=Math.min(m,Math.hypot(u,v)/L.r+(fbm(x/18,y/18,seed+227,2)-.5)*.18+(L.r>N*.09?(fbm(x/40,y/40,seed+229,2)-.5)*.25:0));}return m;};
+  const islA=(x,y)=>{const ed=Math.min(x,y,N-x,N-y),EG=MS<.5?8:20;let m=isl(x,y)+(ed<EG?(EG-ed)/EG*.9:0);for(const L of ISL){const dx=x-L.x,dy=y-L.y,c=Math.cos(L.a),s2=Math.sin(L.a),u=(dx*c+dy*s2)*L.e,v=-dx*s2+dy*c;m=Math.min(m,Math.hypot(u,v)/L.r+(fbm(x/18,y/18,seed+227,2)-.5)*.18+(L.r>N*.09?(fbm(x/40,y/40,seed+229,2)-.5)*.25:0));}return m;};
   const OCN=new Uint8Array(NN);OCEAN=OCN;for(let y=0;y<N;y++)for(let x=0;x<N;x++)if(islA(x+.5,y+.5)>=1||x<3||y<3||x>=N-3||y>=N-3){const i=idx(x,y);OCN[i]=1;terr[i]=TWA;}
   /* rivers: rise inland and meander down to a random stretch of coast, widening toward the mouth; sometimes a second, smaller river */
   const rw=(2.4+r()*1.4)*S;distR.fill(1e9);
@@ -4556,11 +4566,11 @@ let newArm=0;$('bNew').addEventListener('click',()=>{const b=$('bNew');if(Date.n
 let randArm=0;$('bRand').addEventListener('click',()=>{const b=$('bRand');if(Date.now()-randArm>3000){randArm=Date.now();b.classList.add('arm');b.querySelector('span').textContent='한 번 더';setTimeout(()=>{b.classList.remove('arm');b.querySelector('span').textContent='랜덤 도시';},3000);return;}randArm=0;b.classList.remove('arm');b.querySelector('span').textContent='랜덤 도시';$('loading').hidden=false;$('loading').textContent='도시를 짓는 중…';setTimeout(()=>{clearUndo&&clearUndo();newCity((Math.random()*1e6)|0,'rand');$('loading').hidden=true;$('cityName').value=sim.name;dirtySave();toast(sim.name+'');},30);});
 const CNAMES=['해온시','청림시','다온시','새솔시','한별시','누리시','가람시','온빛시','미르시','라온시','은하시','푸른시'];
 function genCity(seed){const r=mulberry(seed*13+5),SAVE=ROADL,DIR=[[1,0],[-1,0],[0,1],[0,-1]];
-  const inMap=(x,y)=>x>=4&&y>=4&&x<N-4&&y<N-4,hh=(x,y)=>tileAvgH(x,y)-liftT(x,y);
+  const inMap=(x,y)=>x>=4&&y>=4&&x<N-4&&y<N-4,hh=(x,y)=>LVL?(isFlat(x,y)?0:1):tileAvgH(x,y)-liftT(x,y);/* 계단식 고도: 평평한 단은 어느 높이든 시가지 후보, 단 경계 경사칸만 1 */
   /* 1. centre: flat lowland on a river bank (Korean cities grow from river ports) */
-  let cx=N/2,cy=N/2,bs=-1e9;for(let t=0;t<4000;t++){const x=(40*MS|0)+((r()*(N-80*MS))|0),y=(40*MS|0)+((r()*(N-80*MS))|0),i=idx(x,y);if(terr[i]===TWA||hh(x,y)>1)continue;const dr=distR[i];if(dr<6||dr>40)continue;let fl=0;for(let k=0;k<24;k++){const a=k/24*6.283,xx=Math.round(x+Math.cos(a)*30),yy=Math.round(y+Math.sin(a)*30);if(inMap(xx,yy)&&hh(xx,yy)<=2&&terr[idx(xx,yy)]!==TWA)fl++;}
+  let cx=N/2,cy=N/2,bs=-1e9;for(let t=0;t<4000;t++){const x=(40*MS|0)+((r()*(N-80*MS))|0),y=(40*MS|0)+((r()*(N-80*MS))|0),i=idx(x,y);if(terr[i]===TWA||hh(x,y)>1)continue;const dr=distR[i],DF=MS<.5?.5:1;if(dr<6*DF||dr>40*DF)continue;let fl=0;for(let k=0;k<24;k++){const a=k/24*6.283,RG0=MS<.5?14:30,xx=Math.round(x+Math.cos(a)*RG0),yy=Math.round(y+Math.sin(a)*RG0);if(inMap(xx,yy)&&hh(xx,yy)<=2&&terr[idx(xx,yy)]!==TWA)fl++;}
     const sc=fl*3-Math.abs(dr-16)*.6-Math.hypot(x-N/2,y-N/2)/6+r()*4;if(sc>bs){bs=sc;cx=x;cy=y;}}
-  const CSC=MS<1?.5:1,R=(60+r()*12)*CSC,Rw=(x,y)=>R*(.82+.36*fbm(x/60,y/60,seed+5,2));
+  const CSC=MS<.5?.26:MS<1?.36:1,R=(60+r()*12)*CSC,Rw=(x,y)=>R*(.82+.36*fbm(x/60,y/60,seed+5,2));
   /* multi-centre (광주형): 구도심 + 3~4 부도심/신도시, 사이엔 녹지대 */
   const CEN=[{x:cx,y:cy,s:1,role:'main'}];
   {const nS=3+((r()*2)|0),a0=r()*6.283;for(let k=0;k<nS;k++){let best=null,bs=-1e9;for(let t=0;t<80;t++){const a=a0+k/nS*6.283+(r()-.5)*1.1,s=.5+r()*.15,dd=R*(1+s)+(14+r()*18)*CSC,x=Math.round(cx+Math.cos(a)*dd),y=Math.round(cy+Math.sin(a)*dd);if(x<34*CSC||y<34*CSC||x>N-34*CSC||y>N-34*CSC)continue;if(CEN.some(c=>Math.hypot(c.x-x,c.y-y)<R*(c.s+s)+12*CSC))continue;let fl=0;for(let q=0;q<20;q++){const b=q/20*6.283;for(const rr of [.3,.75]){const xx=Math.round(x+Math.cos(b)*R*s*rr),yy=Math.round(y+Math.sin(b)*R*s*rr);if(inMap(xx,yy)&&hh(xx,yy)<=2&&terr[idx(xx,yy)]!==TWA)fl++;}}const sc=fl+r()*3;if(sc>bs){bs=sc;best={x,y,s,role:'new'};}}if(best&&bs>=26)CEN.push(best);}
@@ -4568,18 +4578,18 @@ function genCity(seed){const r=mulberry(seed*13+5),SAVE=ROADL,DIR=[[1,0],[-1,0],
   const cNear=(x,y)=>{let m=1e9,k=0;for(let j=0;j<CEN.length;j++){const c=CEN[j],v=Math.hypot(x-c.x,y-c.y)/c.s;if(v<m){m=v;k=j;}}return k;};
   const dN=(x,y)=>{let m=1e9;for(const c of CEN){const v=Math.hypot(x-c.x,y-c.y)/c.s;if(v<m)m=v;}return m/Rw(x,y);},U=(x,y)=>inMap(x,y)&&dN(x,y)<1&&hh(x,y)<=2;
   const RD=(L,a,b)=>{ROADL=L;applyTool('road',a,b);};
-  const DUN=5+((r()*3)|0);const segOK=(a,b,allowW,maxH)=>{const cs=pathCells(a,b);let w=0,nr=0;for(const [x,y] of cs){if(!inMap(x,y))return false;const i=idx(x,y);if(OCEAN[i])return false;if(terr[i]===TWA){w++;continue;}if(distR[i]>=0&&distR[i]*MS<DUN+4)nr++;if(hh(x,y)>maxH||kind[i]===K.LMK)return false;}return w<=allowW&&(w>0||nr===0);};
+  const DUN=5+((r()*3)|0);const segOK=(a,b,allowW,maxH)=>{const cs=pathCells(a,b);let w=0,nr=0;for(const [x,y] of cs){if(!inMap(x,y))return false;const i=idx(x,y);if(OCEAN[i])return false;if(terr[i]===TWA){w++;continue;}if(distR[i]>=0&&(MS<1?distR[i]<(DUN+4)*.6:distR[i]*MS<DUN+4))nr++;if(hh(x,y)>maxH||kind[i]===K.LMK)return false;}return w<=allowW&&(w>0||nr===0);};
   /* 2. arterial grid (6~10 lanes), main axes wider, bridges where they cross the river */
-  const lines=(c0,lo,hi)=>{const out=[c0],st=()=>Math.round((34+r()*18)*(CSC<1?.78:1));let p=c0;while(p<hi){p+=st();out.push(p);}p=c0;while(p>lo){p-=st();out.unshift(p);}return out.filter(v=>v>6&&v<N-6);};
+  const lines=(c0,lo,hi)=>{const out=[c0],st=()=>Math.round((34+r()*18)*(CSC<.45?.31:CSC<1?CSC*1.56:1));let p=c0;while(p<hi){p+=st();out.push(p);}p=c0;while(p>lo){p-=st();out.unshift(p);}return out.filter(v=>v>6&&v<N-6);};
   const ext=f=>[Math.min(...CEN.map(c=>c[f]-R*c.s*1.25)),Math.max(...CEN.map(c=>c[f]+R*c.s*1.25))];
   const xs=lines(cx,...ext('x')),ys=lines(cy,...ext('y')),ix0=xs.indexOf(cx),iy0=ys.indexOf(cy);
-  const laneOf=(k,k0)=>{const d=Math.abs(k-k0);return d===0?10:d===2?8:6;},Wof=L=>RC[LANE2LV[L]].W,arts=[];
+  const laneOf=(k,k0)=>{const d=Math.abs(k-k0);if(CSC<.45)return d===0?6:4;return d===0?10:d===2?8:6;},Wof=L=>RC[LANE2LV[L]].W,arts=[];
   const near=(A,v)=>A.reduce((b,q)=>Math.abs(q-v)<Math.abs(b-v)?q:b,A[0]),CONV=[],CONH=[];
   for(let k=1;k<CEN.length;k++){const c=CEN[k],xk=near(xs,c.x),yk=near(ys,c.y);if(r()<.5){CONH.push([ys[iy0],Math.min(cx,xk),Math.max(cx,xk)]);CONV.push([xk,Math.min(ys[iy0],yk),Math.max(ys[iy0],yk)]);}else{CONV.push([xs[ix0],Math.min(cy,yk),Math.max(cy,yk)]);CONH.push([yk,Math.min(xs[ix0],xk),Math.max(xs[ix0],xk)]);}}
   const isCon=(C,l,a,b)=>C.some(([q,lo,hi])=>q===l&&Math.min(a,b)>=lo&&Math.max(a,b)<=hi);
   /* organic grid: non-axis arterials jog sideways at each crossing, so blocks differ in width and junctions stagger (planned new-town cores stay straight) */
   const XOT=new Int8Array(xs.length*ys.length),xo=(a,b)=>(a<0||b<0||a>=xs.length||b>=ys.length-1)?0:XOT[a*ys.length+b];
-  for(let a=0;a<xs.length;a++){if(a===ix0||CONV.some(c=>c[0]===xs[a]))continue;for(let b=0;b+1<ys.length;b++){const mx=xs[a],my=(ys[b]+ys[b+1])/2,k=cNear(mx,my),dd=Math.hypot(mx-CEN[k].x,my-CEN[k].y)/(R*CEN[k].s);if(CEN[k].role!=='main'&&dd<.75)continue;{const pv=b>0?XOT[a*ys.length+b-1]:0,opts=CSC<1?[-8,0,8]:[-10,0,10].filter(v=>v!==pv);XOT[a*ys.length+b]=r()<.5?pv:opts[(r()*opts.length)|0];}}}
+  for(let a=0;a<xs.length;a++){if(a===ix0||CONV.some(c=>c[0]===xs[a]))continue;for(let b=0;b+1<ys.length;b++){const mx=xs[a],my=(ys[b]+ys[b+1])/2,k=cNear(mx,my),dd=Math.hypot(mx-CEN[k].x,my-CEN[k].y)/(R*CEN[k].s);if(CEN[k].role!=='main'&&dd<.75)continue;{const pv=b>0?XOT[a*ys.length+b-1]:0,opts=CSC<.45?[-3,0,3]:CSC<1?[-8,0,8]:[-10,0,10].filter(v=>v!==pv);XOT[a*ys.length+b]=r()<.5?pv:opts[(r()*opts.length)|0];}}}
   for(let a=0;a<xs.length;a++){const L=laneOf(a,ix0);for(let b=0;b+1<ys.length;b++){const A={x:xs[a]+xo(a,b),y:ys[b]},B={x:xs[a]+xo(a,b),y:ys[b+1]},mx=A.x,my=(A.y+B.y)/2,con=isCon(CONV,xs[a],A.y,B.y);if(dN(mx,my)>1.0&&!con)continue;if(!segOK(A,B,Math.abs(a-ix0)<=2||con?45:0,3))continue;RD(con?Math.max(L,8):L,A,B);arts.push([A,B,L]);}}
   for(let b=0;b<ys.length;b++){const L=laneOf(b,iy0);for(let a=0;a+1<xs.length;a++){const A={x:xs[a]+Math.min(xo(a,b-1),xo(a,b)),y:ys[b]},B={x:xs[a+1]+Math.max(xo(a+1,b-1),xo(a+1,b)),y:ys[b]},mx=(A.x+B.x)/2,my=A.y,con=isCon(CONH,A.y,xs[a],xs[a+1]);if(dN(mx,my)>1.0&&!con)continue;if(!segOK(A,B,Math.abs(b-iy0)<=2||con?45:0,3))continue;RD(con?Math.max(L,8):L,A,B);arts.push([A,B,L]);}}
   /* 3. districts */
@@ -4594,7 +4604,7 @@ function genCity(seed){const r=mulberry(seed*13+5),SAVE=ROADL,DIR=[[1,0],[-1,0],
     if(t==='gen'&&d>.6&&fbm(mx/70,my/70,seed+5,2)>.52)t='vil';cells.push({x0,y0,x1,y1,mx,my,d,t,k:ck,ga:a,gb:b});}
   GCELLS=cells;
   /* 도심은 건축 가능한 땅이 반 이상인 블록에만: 강 둔치·제방에 먹히는 강변 블록이 CBD가 되면 빈 들판이 된다. 중심 사분면이 물로 빠져도 블록이 셋 이상이면 도심 하나는 둔다(두 블록뿐인 섬 도시는 구도심 유지) */
-  {const bf=c=>{let n=0,t=0;for(let y=c.y0;y<=c.y1;y+=2)for(let x=c.x0;x<=c.x1;x+=2){t++;const i=idx(x,y);if(terr[i]!==TWA&&hh(x,y)<=2&&!(distR[i]>=0&&distR[i]*MS<DUN+6))n++;}return n/t;};
+  {const bf=c=>{let n=0,t=0;for(let y=c.y0;y<=c.y1;y+=2)for(let x=c.x0;x<=c.x1;x+=2){t++;const i=idx(x,y);if(terr[i]!==TWA&&hh(x,y)<=2&&!(distR[i]>=0&&(MS<1?distR[i]<(DUN+6)*.6:distR[i]*MS<DUN+6)))n++;}return n/t;};
    const cs=cells.filter(c=>c.t!=='ind'&&!c.k&&bf(c)>=.5).sort((p,q)=>p.d-q.d);for(let k=0;k<2&&k<cs.length;k++)if(cs[k].d<.45||(!k&&cs[k].d<.7&&cells.filter(c=>c.t!=='ind'&&!c.k).length>=3&&!cells.some(c=>c.t==='cbd')))cs[k].t='cbd';}
   {const cand=cells.filter(c=>!c.k&&c.t==='gen'&&c.d>.45&&c.d<.75);for(let k=0;k<2&&cand.length;k++){const c=cand.splice((r()*cand.length)|0,1)[0];c.t='sub';}}
   for(const c of cells)for(let y=c.y0;y<=c.y1;y++)for(let x=c.x0;x<=c.x1;x++){const i=idx(x,y);if(terr[i]===TPAD||terr[i]===TFLD){terr[i]=TG;deco[i]=0;touch(i);}else if(deco[i]&&deco[i]<=14&&hh(x,y)<=1&&r()<.7)deco[i]=0;}
@@ -4877,7 +4887,7 @@ function genCity(seed){const r=mulberry(seed*13+5),SAVE=ROADL,DIR=[[1,0],[-1,0],
   compsDirty=true;ROADL=SAVE;return[Math.round(cx),Math.round(cy)];}
 function newCity(seed,blank){HANOKC=null;Object.assign(sim,{day:0,month:0,year:2027,speed:1,tax:[9,9,9],dem:[.7,.4,.6],pop:0,jc:0,ji:0,inc:0,exp:0,spent:0,hist:[],pw:0,wt:0,avgLv:0,name:'뉴타운',seed});
   RL=new Uint8Array(NN);STN=new Uint8Array(NN);RLINES=[];TRAINS=[];BOATS=[];RLC.clear();BOVC.clear();ROADVER++;
-  genMap(seed);flatLand();let c;if(blank==='rand'){c=genCity(seed);}else if(blank){const p=findSpot(20);c=[p[0]+10,p[1]+10];}else{c=starter();}
+  genMap(seed);terraceLand();let c;if(blank==='rand'){c=genCity(seed);}else if(blank){const p=findSpot(20);c=[p[0]+10,p[1]+10];}else{c=starter();}
   recomputeComps();fields();
   if(!blank||blank==='rand'){growForce=true;for(let m=0;m<(blank?8:30);m++)for(let d=0;d<30;d++)tick(true);growForce=false;}
   zoom=2;centerOn(c[0],c[1]);afterLoad();}

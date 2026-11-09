@@ -179,16 +179,9 @@ const tri=(A,pts,h)=>{for(let k=1;k+1<pts.length;k++)for(const p of [pts[0],pts[
 const q4=(A,x0,z0,x1,z1,h)=>A.push(x0,h,z0, x0,h,z1, x1,h,z0, x1,h,z0, x0,h,z1, x1,h,z1);
 const isLawn=(x,y)=>land(x,y)&&!riv(x,y)&&!isR(x,y);
 /* ===== discrete terraces (levels 1..5), Minecraft-like cliffs; only roads ramp between levels ===== */
-const H0=u8(D.H0),HNv=D.HN,LV=new Uint8Array(N*N).fill(1),LH=.55;
-{let th=new Float32Array(N*N),mn=1e9,mx=-1e9;for(let y=0;y<N;y++)for(let x=0;x<N;x++){const i=y*N+x;if(!land(x,y))continue;const v=(H0[y*HNv+x]+H0[y*HNv+x+1]+H0[(y+1)*HNv+x]+H0[(y+1)*HNv+x+1])/4;th[i]=v;mn=Math.min(mn,v);mx=Math.max(mx,v);}
- for(let p=0;p<3;p++){const t2=new Float32Array(N*N);for(let y=0;y<N;y++)for(let x=0;x<N;x++){if(!land(x,y))continue;let s2=0,n=0;for(let dy=-2;dy<=2;dy++)for(let dx=-2;dx<=2;dx++)if(land(x+dx,y+dy)){s2+=th[(y+dy)*N+x+dx];n++;}t2[y*N+x]=s2/n;}th=t2;}
- for(let i=0;i<N*N;i++)if(land(i%N,(i/N)|0))LV[i]=1+Math.min(4,Math.floor((th[i]-mn)/(mx-mn+1e-6)*5));
- for(let p=0;p<2;p++){const L2=LV.slice();for(let y=0;y<N;y++)for(let x=0;x<N;x++){if(!land(x,y))continue;const c=[0,0,0,0,0,0];for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++)if(land(x+dx,y+dy))c[LV[(y+dy)*N+x+dx]]++;let b=LV[y*N+x];for(let l=1;l<=5;l++)if(c[l]>c[b])b=l;L2[y*N+x]=b;}LV.set(L2);}
- for(let y=0;y<N;y++)for(let x=0;x<N;x++){let f=false;for(let dy=-2;dy<=2&&!f;dy++)for(let dx=-2;dx<=2;dx++){if(!land(x+dx,y+dy)||(Math.abs(dx)<=1&&Math.abs(dy)<=1&&riv(x+dx,y+dy))){f=true;break;}}if(f)LV[y*N+x]=1;}
- for(let p=0;p<6;p++)for(let y=0;y<N;y++)for(let x=0;x<N;x++){const i=y*N+x;if(!land(x,y))continue;let m=9;for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]])if(land(x+dx,y+dy))m=Math.min(m,LV[(y+dy)*N+x+dx]);if(LV[i]>m+1)LV[i]=m+1;}
- const G=new Map();for(let i=0;i<N*N;i++)if(lmkA[i]>=0){if(!G.has(lmkA[i]))G.set(lmkA[i],[]);G.get(lmkA[i]).push(i);}for(const c of G.values()){let m=0;for(const i of c)m=Math.max(m,LV[i]);for(const i of c)LV[i]=m;}}
+const HNv=D.HN,HH=u8(D.H),LV=D.LVL?u8(D.LVL):new Uint8Array(N*N).fill(1),LH=.55;let HB=255;for(let y=0;y<N;y++)for(let x=0;x<N;x++)if(land(x,y)&&!riv(x,y))HB=Math.min(HB,HH[y*HNv+x]);
 const hT=(x,y)=>x>=0&&y>=0&&x<N&&y<N&&land(x,y)?(LV[y*N+x]-1)*LH:0;
-const rV=(vx,vy)=>{let s2=0,n=0;for(const [dx,dy] of [[-1,-1],[0,-1],[-1,0],[0,0]]){const x=vx+dx,y=vy+dy;if(isR(x,y)&&land(x,y)){s2+=hT(x,y);n++;}}return n?s2/n:0;};
+const rV=(vx,vy)=>Math.max(0,(HH[vy*HNv+vx]-HB)*LH);
 const cH=(x,y)=>{if(isR(x,y)&&land(x,y))return [rV(x,y),rV(x+1,y),rV(x+1,y+1),rV(x,y+1)];const h=hT(x,y);return [h,h,h,h];};
 const flatR=(x,y)=>{const c=cH(x,y);return Math.max(...c)-Math.min(...c)<.01;};
 
@@ -219,10 +212,10 @@ const RL=msLoops((x,y)=>{let n=0;for(const [dx,dy] of [[-1,-1],[0,-1],[-1,0],[0,
 const HR=8,hc=document.createElement('canvas');hc.width=hc.height=N*HR;const hg=hc.getContext('2d');hg.fillStyle='#000';hg.fillRect(0,0,N*HR,N*HR);
 const poly2=(L,col)=>{hg.fillStyle=col;hg.beginPath();L.forEach((p,i)=>i?hg.lineTo(p[0]*HR,p[1]*HR):hg.moveTo(p[0]*HR,p[1]*HR));hg.closePath();hg.fill();};
 hg.globalCompositeOperation='lighter';for(const L of SM)poly2(L,'#0000ff');for(const L of RL)poly2(L,'#ff0000');
-hg.globalCompositeOperation='source-over';for(let y=0;y<N;y++)for(let x=0;x<N;x++)if(isR(x,y)&&riv2(x,y)){hg.fillStyle='#0000ff';hg.fillRect(x*HR,y*HR,HR,HR);}
+hg.globalCompositeOperation='source-over';for(let y=0;y<N;y++)for(let x=0;x<N;x++)if(isR(x,y)&&(riv2(x,y)||land(x,y))){hg.fillStyle='#0000ff';hg.fillRect(x*HR,y*HR,HR,HR);}
 const HT=new THREE.CanvasTexture(hc);HT.flipY=false;HT.magFilter=THREE.LinearFilter;HT.minFilter=THREE.LinearFilter;HT.generateMipmaps=false;
 const masked=(m,ch,keep)=>{m.side=THREE.FrontSide;m.customProgramCacheKey=()=>'mask'+ch+keep;m.onBeforeCompile=sh=>{sh.uniforms.uMask={value:MT};sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nvarying vec2 vMP;').replace('#include <worldpos_vertex>','#include <worldpos_vertex>\nvMP=(modelMatrix*vec4(transformed,1.0)).xz;');
- sh.uniforms.uHi={value:HT};sh.fragmentShader=sh.fragmentShader.replace('#include <common>','#include <common>\nvarying vec2 vMP;uniform sampler2D uMask;uniform sampler2D uHi;').replace('void main() {','void main() {\nvec4 hm=texture2D(uHi,vMP/'+N+'.);float tl=texture2D(uMask,(floor(vMP)+.5)/'+N+'.).g;'+(ch==='rimR'?'if(texture2D(uMask,(floor(vMP)+.5)/'+N+'.).b>.5||hm.b<.5)discard;':ch==='rim'?'if(hm.r>.45||texture2D(uMask,(floor(vMP)+.5)/'+N+'.).b>.5||hm.b<.5)discard;':ch==='r'?'if(hm.r>.5)discard;':ch==='g'?'if(tl<.5||hm.r>.35)discard;':'if(hm.b<.5)discard;'));};return m;};
+ sh.uniforms.uHi={value:HT};sh.fragmentShader=sh.fragmentShader.replace('#include <common>','#include <common>\nvarying vec2 vMP;uniform sampler2D uMask;uniform sampler2D uHi;').replace('void main() {','void main() {\nvec4 hm=texture2D(uHi,vMP/'+N+'.);float tl=texture2D(uMask,(floor(vMP)+.5)/'+N+'.).g;'+(ch==='rimR'?'if(texture2D(uMask,(floor(vMP)+.5)/'+N+'.).b>.5||hm.b<.5)discard;':ch==='rim'?'if(hm.r>.45||texture2D(uMask,(floor(vMP)+.5)/'+N+'.).b>.5||hm.b<.5)discard;':ch==='r'?'if(hm.r>.5)discard;':ch==='g'?'if(tl<.5||hm.r>.35)discard;':'if(hm.b<.5||(texture2D(uMask,(floor(vMP)+.5)/'+N+'.).b>.5&&texture2D(uMask,(floor(vMP)+.5)/'+N+'.).r<.5))discard;'));};return m;};
 const shapeMesh=(L,h,m)=>{const sp=new THREE.Shape(L.map(p=>new THREE.Vector2(p[0],-p[1])));const g=new THREE.ShapeGeometry(sp,1);g.rotateX(-Math.PI/2);g.translate(0,h,0);const e=new THREE.Mesh(g,m);e.receiveShadow=true;sc.add(e);return e;};
 const mk=(A,m,cast)=>{const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(A,3));g.computeVertexNormals();const e=new THREE.Mesh(g,m);e.receiveShadow=true;e.castShadow=!!cast;sc.add(e);return e;};
 const topM=masked(asph.clone(),'r',false),lawnT=masked(lawnM.clone(),'g',true),rimM=masked(M('#f3f5f9',{roughness:.5,envMapIntensity:.4}),'rim',true);rimM.side=THREE.DoubleSide;
@@ -240,7 +233,7 @@ const wmm=new THREE.Mesh(wg,new THREE.MeshStandardMaterial({vertexColors:true,ro
  const q=(A,a,b,c,d)=>A.push(...a,...b,...c,...c,...b,...d);
  for(let y=0;y<N;y++)for(let x=0;x<N;x++){if(!land(x,y)||riv(x,y))continue;const c=cH(x,y);if(Math.max(...c)<.01)continue;const e=.002;
   q(AT,[x,c[0]+e,y],[x,c[3]+e,y+1],[x+1,c[1]+e,y],[x+1,c[2]+e,y+1]);
-  if(isLawn(x,y)){const h=c[0]+.135,sl=(dx,dy)=>{const xx=x+dx,yy=y+dy;return isLawn(xx,yy)&&hT(xx,yy)>=hT(x,y)-.01||hT(xx,yy)<hT(x,y)-.2?0:.12;};
+  if(isLawn(x,y)){const h=c[0]+.135,sl=(dx,dy)=>{const xx=x+dx,yy=y+dy;return 0;};
    const x0=x+sl(-1,0),x1=x+1-sl(1,0),z0=y+sl(0,-1),z1=y+1-sl(0,1);q(LT,[x0,h,z0],[x0,h,z1],[x1,h,z0],[x1,h,z1]);}}
  const wall=(ax,az,bx_,bz,t0,b0,t1,b1,lawnTop)=>{if(Math.abs(t0-b0)<.2&&Math.abs(t1-b1)<.2)return;const T0=Math.max(t0,b0),B0=Math.min(t0,b0),T1=Math.max(t1,b1),B1=Math.min(t1,b1);
   const g0=T0-.16,g1=T1-.16,push=(p0,p1,p2,p3,col)=>{W.push(...p0,...p1,...p2,...p2,...p1,...p3);for(let k=0;k<6;k++)WC.push(col.r,col.g,col.b);};
@@ -255,7 +248,14 @@ const wmm=new THREE.Mesh(wg,new THREE.MeshStandardMaterial({vertexColors:true,ro
 /* curbs around lawn blocks (white, raised) */
 let CY=0;const curbs=[];const cb=(x0,z0,x1,z1)=>{const g=new THREE.BoxGeometry(Math.abs(x1-x0)||.12,.12,Math.abs(z1-z0)||.12);g.translate((x0+x1)/2,.06+CY,(z0+z1)/2);curbs.push(g);};
 const nl=(x,y)=>land(x,y)&&!isLawn(x,y)&&!riv(x,y)&&Math.abs(hT(x,y)-CY)<.3;
-for(let y=0;y<N;y++)for(let x=0;x<N;x++){if(!isLawn(x,y))continue;CY=hT(x,y);if(nl(x,y-1))cb(x,y+.06,x+1,y+.06);if(nl(x,y+1))cb(x,y+.94,x+1,y+.94);if(nl(x-1,y))cb(x+.06,y,x+.06,y+1);if(nl(x+1,y))cb(x+.94,y,x+.94,y+1);}
+/* road-side curbs: on every road edge that faces non-road land or river, following the road's own (ramped) edge heights */
+{const CP=[],cw=.12,ch=.12,q6=(a,b,c,d)=>CP.push(...a,...b,...c,...c,...b,...d);
+ const edge=(p,q,hp,hq,nx,nz)=>{const pi=[p[0]+nx*cw,p[1]+nz*cw],qi=[q[0]+nx*cw,q[1]+nz*cw];
+  q6([p[0],hp+ch,p[1]],[pi[0],hp+ch,pi[1]],[q[0],hq+ch,q[1]],[qi[0],hq+ch,qi[1]]);q6([pi[0],hp,pi[1]],[pi[0],hp+ch,pi[1]],[qi[0],hq,qi[1]],[qi[0],hq+ch,qi[1]]);q6([p[0],hp-.4,p[1]],[p[0],hp+ch,p[1]],[q[0],hq-.4,q[1]],[q[0],hq+ch,q[1]]);};
+ const nr=(x,y)=>land(x,y)&&!isR(x,y)||(riv(x,y)&&!isR(x,y));
+ for(let y=0;y<N;y++)for(let x=0;x<N;x++){if(!isR(x,y)||!land(x,y)||riv(x,y))continue;const c=cH(x,y);
+  if(nr(x,y-1))edge([x,y],[x+1,y],c[0],c[1],0,1);if(nr(x,y+1))edge([x,y+1],[x+1,y+1],c[3],c[2],0,-1);if(nr(x-1,y))edge([x,y],[x,y+1],c[0],c[3],1,0);if(nr(x+1,y))edge([x+1,y],[x+1,y+1],c[1],c[2],-1,0);}
+ if(CP.length){const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(CP,3));g.computeVertexNormals();const m=new THREE.Mesh(g,M('#f3f5f9',{roughness:.5,envMapIntensity:.4,side:THREE.DoubleSide}));m.castShadow=true;m.receiveShadow=true;sc.add(m);}}
 if(curbs.length){const m=new THREE.Mesh(mergeGeometries(curbs),curbM);m.castShadow=true;m.receiveShadow=true;sc.add(m);}
 /* bridges over the void: asphalt deck with white edge rails */
 {const dk=[],rl=[];for(let y=0;y<N;y++)for(let x=0;x<N;x++){if(!isR(x,y)||land(x,y))continue;let g=new THREE.BoxGeometry(1.02,.25,1.02);g.translate(x+.5,-.125,y+.5);dk.push(g);
