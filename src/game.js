@@ -2984,7 +2984,7 @@ function railTool(t,a,b){if(!a||!b)return;
 function railBulldoze(cells){let ch=false;for(const [x,y] of cells){const i=idx(x,y);if(RL[i]){RL[i]=0;STN[i]=0;touch(i);ch=true;}}if(ch)rebuildRailLines();}
 /* 역세권: shops and offices crowd the blocks around a station */
 /* station building beside the road at a station: 역사(2x2) or 복합역사(4x4), entrance on the sidewalk */
-function stationBldg(x0,y0,r){const i0=idx(x0,y0),axs=[];for(const L of RLINES)if((RL[i0]>>L.line)&1&&!axs.includes(L.ax))axs.push(L.ax);if(!axs.length)return false;
+function stationBldg(x0,y0,r){const i0=idx(x0,y0),axs=[],h0=tileAvgH(x0,y0);/* ground level of the station street: a city on a plateau still gets its 역사, a hillside beside it does not */for(const L of RLINES)if((RL[i0]>>L.line)&1&&!axs.includes(L.ax))axs.push(L.ax);if(!axs.length)return false;
   /* one building per station, also where two lines cross (stationArea runs once per line) */
   for(let dy=-7;dy<=7;dy++)for(let dx=-7;dx<=7;dx++){const cx=x0+dx,cy=y0+dy;if(!inMap(cx,cy))continue;const ci=idx(cx,cy);if(kind[ci]===K.LMK&&lmkA[ci]>=0&&(LMKT[vari[lmkA[ci]]]?.id||'').startsWith('rstn'))return false;}
   /* a crossing station tries both lines' axes; when a chunk edge runs right behind the sidewalk the building steps back one tile */
@@ -2993,7 +2993,7 @@ function stationBldg(x0,y0,r){const i0=idx(x0,y0),axs=[];for(const L of RLINES)i
   for(const sd of [1,-1]){/* road half-width beside the track: the narrowest column, so a cross street at the station does not push the building down that street */let o=99;for(let dt=-6;dt<=6;dt++){const [cx,cy]=at(dt,0);if(!inMap(cx,cy)||kind[idx(cx,cy)]!==K.ROAD)continue;let q=0;while(Math.abs(q)<12){const [x,y]=at(dt,q+sd);if(!inMap(x,y)||kind[idx(x,y)]!==K.ROAD)break;q+=sd;}if(q&&Math.abs(q)<Math.abs(o))o=q;}if(o===99)continue;const e=o+sd*(1+back);
     for(const off of [0,-1,1,-2,2,-3,3,-4,4,-5,5,-6,6]){const t0=off-(sz>>1),oA=Math.min(e,e+sd*(sz-1)),xa=ax?x0+oA:x0+t0,ya=ax?y0+t0:y0+oA;
       if((xa>>4)!==((xa+sz-1)>>4)||(ya>>4)!==((ya+sz-1)>>4))continue;let ok=true;
-      for(let y=ya;y<ya+sz&&ok;y++)for(let x=xa;x<xa+sz;x++){if(!inMap(x,y)){ok=false;break;}const j=idx(x,y);if(kind[j]===K.ROAD||kind[j]===K.LMK||terr[j]===TWA||RL[j]||tileAvgH(x,y)>3){ok=false;break;}}
+      for(let y=ya;y<ya+sz&&ok;y++)for(let x=xa;x<xa+sz;x++){if(!inMap(x,y)){ok=false;break;}const j=idx(x,y);if(kind[j]===K.ROAD||kind[j]===K.LMK||terr[j]===TWA||RL[j]||Math.abs(tileAvgH(x,y)-h0)>1){ok=false;break;}}
       if(!ok)continue;for(let y=ya;y<ya+sz;y++)for(let x=xa;x<xa+sz;x++){const j=idx(x,y);clearTile(j);deco[j]=0;touch(j);}if(back)for(let t=t0;t<t0+sz;t++){const [x,y]=at(t,o+sd);if(inMap(x,y)){const j=idx(x,y);if(kind[j]!==K.ROAD&&kind[j]!==K.LMK&&!RL[j]&&terr[j]!==TWA){clearTile(j);deco[j]=0;touch(j);}}}
       placeLmk(tid,xa+((sz-1)>>1),ya+((sz-1)>>1),1);return true;}}}}
   return false;}
