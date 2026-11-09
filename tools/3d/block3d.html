@@ -263,7 +263,9 @@ const mk=(A,m,cast)=>{const g=new THREE.BufferGeometry();g.setAttribute('positio
   const grassPaint=(g,n,R,y0,y1)=>{const gr=g.createLinearGradient(0,y0,n,y1);gr.addColorStop(0,'#a3c94a');gr.addColorStop(.5,'#8ab43a');gr.addColorStop(1,'#6f9a2e');g.fillStyle=gr;g.fillRect(0,y0,n,y1-y0);
    for(let k=0;k<70;k++){const x=R()*n,y=y0+R()*(y1-y0),r=n*(.03+R()*.07);g.fillStyle=`rgba(${R()<.5?'60,105,25':'205,220,110'},${.2+R()*.2})`;g.beginPath();g.ellipse(x,y,r,r*.6,R()*3,0,7);g.fill();}
    for(let k=0;k<14;k++)clover(g,R()*n,y0+R()*(y1-y0),n*(.035+R()*.03),`rgba(70,140,40,${.35+R()*.25})`);
-   for(let k=0;k<260;k++){const x=R()*n,y=y0+R()*(y1-y0);g.strokeStyle=`rgba(${R()<.6?'70,140,30':'215,245,140'},${.25+R()*.3})`;g.lineWidth=1+R()*1.5;g.beginPath();g.moveTo(x,y);g.lineTo(x+(R()-.5)*n*.02,y-n*(.012+R()*.02));g.stroke();}};
+   for(let k=0;k<40;k++){const x=R()*n,y=y0+R()*(y1-y0),w=n*.035;for(let j=0;j<5;j++){g.strokeStyle=`rgba(${j%2?'60,115,25':'190,225,95'},.55)`;g.lineWidth=2;g.beginPath();g.moveTo(x+(j-2)*w*.2,y);g.quadraticCurveTo(x+(j-2)*w*.35,y-w*.6,x+(j-2)*w*.55,y-w*(.9+R()*.4));g.stroke();}}
+   for(let k=0;k<30;k++){g.fillStyle=`rgba(${R()<.5?'255,250,220':'240,220,120'},.75)`;g.beginPath();g.arc(R()*n,y0+R()*(y1-y0),1.5+R()*1.5,0,7);g.fill();}
+   for(let k=0;k<600;k++){const x=R()*n,y=y0+R()*(y1-y0);g.strokeStyle=`rgba(${R()<.6?'70,140,30':'215,245,140'},${.25+R()*.3})`;g.lineWidth=1+R()*1.5;g.beginPath();g.moveTo(x,y);g.lineTo(x+(R()-.5)*n*.02,y-n*(.012+R()*.02));g.stroke();}};
   const dirtPaint=(g,n,R,y0,y1,dark)=>{const gr=g.createLinearGradient(0,y0,0,y1);gr.addColorStop(0,dark?'#8a5a33':'#b98552');gr.addColorStop(1,dark?'#6f4626':'#9c6a3e');g.fillStyle=gr;g.fillRect(0,y0,n,y1-y0);
    for(let k=0;k<60;k++){const x=R()*n,y=y0+R()*(y1-y0),r=n*(.015+R()*.05);g.fillStyle=`rgba(${R()<.5?'70,40,20':'215,170,115'},${.15+R()*.2})`;g.beginPath();g.ellipse(x,y,r,r*.55,R()*3,0,7);g.fill();}
    for(let k=0;k<22;k++){const x=R()*n,y=y0+R()*(y1-y0),r=n*(.02+R()*.03);g.fillStyle='rgba(60,35,18,.35)';g.beginPath();g.ellipse(x+2,y+2,r,r*.7,0,0,7);g.fill();g.fillStyle=R()<.5?'#c9a77b':'#a88660';g.beginPath();g.ellipse(x,y,r,r*.7,0,0,7);g.fill();g.fillStyle='rgba(255,240,210,.45)';g.beginPath();g.ellipse(x-r*.3,y-r*.3,r*.35,r*.22,0,0,7);g.fill();}};
@@ -279,7 +281,11 @@ const mk=(A,m,cast)=>{const g=new THREE.BufferGeometry();g.setAttribute('positio
    sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nattribute float aKind;attribute float aTop;varying float vK;varying float vTp;varying vec3 vLP;varying vec3 vWP;varying vec3 vWN;').replace('#include <worldpos_vertex>','#include <worldpos_vertex>\nvK=aKind;vTp=aTop;vLP=position;vec4 wq=modelMatrix*instanceMatrix*vec4(transformed,1.);vWP=wq.xyz;vWN=normalize(mat3(modelMatrix*instanceMatrix)*objectNormal);');
    sh.fragmentShader=sh.fragmentShader.replace('#include <common>','#include <common>\nuniform sampler2D tT;uniform sampler2D tA;varying float vTp;uniform sampler2D tS;uniform sampler2D tD;varying float vK;varying vec3 vLP;varying vec3 vWP;varying vec3 vWN;')
    .replace('#include <map_fragment>',`vec3 an=abs(vWN);vec4 tc;
-     if(vWN.y>.6){tc=vTp>.5?texture2D(tA,vWP.xz*.5):texture2D(tT,vWP.xz);}else{float u=an.x>an.z?vWP.z:vWP.x;float v=1.-clamp(.5-vLP.y/${LH.toFixed(3)},0.,1.);tc=vK<.5&&vTp<.5?texture2D(tS,vec2(u,v)):texture2D(tD,vec2(u,v*.75+fract(floor(vWP.y)*.37)));}
+     if(vWN.y>.6){if(vTp>.5){tc=texture2D(tA,vWP.xz*.5);}else{tc=texture2D(tT,vWP.xz*.5+vec2(fract(sin(dot(floor(vWP.xz),vec2(3.1,7.7)))*91.3),0.));
+      vec2 pc=vWP.xz/6.;vec2 ip=floor(pc),fp=fract(pc);fp=fp*fp*(3.-2.*fp);float h00=fract(sin(dot(ip,vec2(12.9,78.2)))*43758.5),h10=fract(sin(dot(ip+vec2(1,0),vec2(12.9,78.2)))*43758.5),h01=fract(sin(dot(ip+vec2(0,1),vec2(12.9,78.2)))*43758.5),h11=fract(sin(dot(ip+vec2(1,1),vec2(12.9,78.2)))*43758.5);
+      float pz=mix(mix(h00,h10,fp.x),mix(h01,h11,fp.x),fp.y);float tile=fract(sin(dot(floor(vWP.xz),vec2(41.3,17.9)))*1731.7);
+      vec3 c0=vec3(1.0,1.0,1.0),c1=vec3(.72,.95,.7),c2=vec3(1.2,1.06,.6),c3=vec3(.68,.8,.6);
+      vec3 tint=pz<.33?mix(c1,c0,pz*3.):pz<.66?mix(c0,c2,(pz-.33)*3.):mix(c2,c3,(pz-.66)*3.);tint*=.94+tile*.1;tc.rgb*=tint;}}else{float u=an.x>an.z?vWP.z:vWP.x;float v=1.-clamp(.5-vLP.y/${LH.toFixed(3)},0.,1.);tc=vK<.5&&vTp<.5?texture2D(tS,vec2(u,v)):texture2D(tD,vec2(u,v*.75+fract(floor(vWP.y)*.37)));}
      float edge=max(abs(vLP.x),abs(vLP.z));float rim=smoothstep(.43,.5,edge);tc.rgb*=1.-rim*(vTp>.5?.12:.22);tc.rgb*=vWN.y>.6?1.08:(vWN.x+vWN.z>0.?.86:.7);tc.rgb*=mix(.9,1.,smoothstep(-.5,.5,vLP.y));
      diffuseColor*=tc;`);};
   mat.customProgramCacheKey=()=>'ms2block';
