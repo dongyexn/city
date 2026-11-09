@@ -179,7 +179,7 @@ const tri=(A,pts,h)=>{for(let k=1;k+1<pts.length;k++)for(const p of [pts[0],pts[
 const q4=(A,x0,z0,x1,z1,h)=>A.push(x0,h,z0, x0,h,z1, x1,h,z0, x1,h,z0, x0,h,z1, x1,h,z1);
 const isLawn=(x,y)=>land(x,y)&&!riv(x,y)&&!isR(x,y);
 /* ===== discrete terraces (levels 1..5), Minecraft-like cliffs; only roads ramp between levels ===== */
-const HNv=D.HN,HH=u8(D.H),LV=D.LVL?u8(D.LVL):new Uint8Array(N*N).fill(1),LH=.55;let HB=255;for(let y=0;y<N;y++)for(let x=0;x<N;x++)if(land(x,y)&&!riv(x,y))HB=Math.min(HB,HH[y*HNv+x]);
+const HNv=D.HN,HH=u8(D.H),LV=D.LVL?u8(D.LVL):new Uint8Array(N*N).fill(1),LH=1;let HB=255;for(let y=0;y<N;y++)for(let x=0;x<N;x++)if(land(x,y)&&!riv(x,y))HB=Math.min(HB,HH[y*HNv+x]);
 const hT=(x,y)=>x>=0&&y>=0&&x<N&&y<N&&land(x,y)?(LV[y*N+x]-1)*LH:0;
 const rV=(vx,vy)=>Math.max(0,(HH[vy*HNv+vx]-HB)*LH);
 /* road ramps slope along ONE axis only (no twisted tiles): a road tile whose level differs from its road neighbour along x (else y) ramps along that axis;
@@ -194,36 +194,54 @@ const flatR=(x,y)=>{const c=cH(x,y);return Math.max(...c)-Math.min(...c)<.01;};
 const FALL=[];
 /* ===== BLOCK TERRAIN (Minecraft / MapleStory2 style): every edge on the tile grid, no smoothed outlines ===== */
 const mk=(A,m,cast)=>{const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(A,3));g.computeVertexNormals();const e=new THREE.Mesh(g,m);e.receiveShadow=true;e.castShadow=!!cast;sc.add(e);return e;};
-{const TP=[],TC=[],W=[],WC=[],WF=[],q=(A,a,b,c,d)=>A.push(...a,...b,...c,...c,...b,...d),col=(A,c,n)=>{for(let k=0;k<n;k++)A.push(c.r,c.g,c.b);};
- const G1=C('#6fd456'),ROAD=C('#5d667c'),gC=C('#4fae3e'),sC=C('#b07f58'),sD=C('#916647'),SL=[C('#916647'),C('#7d5638'),C('#6b4a30'),C('#5a3e28'),C('#4a3220')],tmp=new THREE.Color();
+{const TP=[],TC=[],TU=[],RP=[],RC=[],W=[],WC=[],WU=[],GS=[],GU=[],WF=[],BED=[];
+ const q=(A,a,b,c,d)=>A.push(...a,...b,...c,...c,...b,...d),col=(A,c,n)=>{for(let k=0;k<n;k++)A.push(c.r,c.g,c.b);},col4=(A,ca,cb,cc,cd)=>{for(const c of [ca,cd,cb,cb,cd,cc])A.push(c.r,c.g,c.b);};
+ const G1=C('#7ccf52'),ROAD=C('#5d667c'),sC=C('#c99a66'),sD=C('#a97d52'),SL=[C('#a97d52'),C('#946a44'),C('#7e5a3a'),C('#6b4c32'),C('#5a3f2a')],tmp=new THREE.Color(),WHITE=C('#ffffff');
  const hsh=(x,y)=>{const v=Math.sin(x*12.9898+y*78.233)*43758.5453;return v-Math.floor(v);};
- /* top height of a tile at its 4 corners (a,b,c,d = NW,NE,SE,SW) */
+ /* textures (MapleStory2-like blocks): bevelled grass top, seamed dirt side, grass skirt with ragged hem */
+ const tex=(f,n=128)=>{const cv=document.createElement('canvas');cv.width=cv.height=n;const g=cv.getContext('2d');f(g,n);const t=new THREE.CanvasTexture(cv);t.colorSpace=THREE.SRGBColorSpace;t.wrapS=t.wrapT=THREE.RepeatWrapping;t.anisotropy=8;return t;};
+ const topT=tex((g,n)=>{g.fillStyle='#e9e9e9';g.fillRect(0,0,n,n);let s=7;const R=()=>{s=(s*9301+49297)%233280;return s/233280;};
+  for(let k=0;k<26;k++){g.fillStyle=R()<.5?'rgba(255,255,255,.35)':'rgba(120,150,90,.18)';const x=R()*n,y=R()*n,r=6+R()*16;g.beginPath();g.ellipse(x,y,r,r*.7,R()*3,0,7);g.fill();}
+  const gr=(x0,y0,x1,y1,c0,c1)=>{const q2=g.createLinearGradient(x0,y0,x1,y1);q2.addColorStop(0,c0);q2.addColorStop(1,c1);return q2;};
+  g.fillStyle=gr(0,0,0,10,'rgba(255,255,255,.55)','rgba(255,255,255,0)');g.fillRect(0,0,n,10);g.fillStyle=gr(0,0,10,0,'rgba(255,255,255,.45)','rgba(255,255,255,0)');g.fillRect(0,0,10,n);
+  g.fillStyle=gr(0,n,0,n-10,'rgba(40,70,20,.35)','rgba(40,70,20,0)');g.fillRect(0,n-10,n,10);g.fillStyle=gr(n,0,n-10,0,'rgba(40,70,20,.3)','rgba(40,70,20,0)');g.fillRect(n-10,0,10,n);});
+ const sideT=tex((g,n)=>{g.fillStyle='#ececec';g.fillRect(0,0,n,n);let s=11;const R=()=>{s=(s*9301+49297)%233280;return s/233280;};
+  for(let k=0;k<40;k++){g.fillStyle=R()<.5?'rgba(255,255,255,.25)':'rgba(70,40,20,.14)';const x=R()*n,y=R()*n,r=3+R()*9;g.beginPath();g.ellipse(x,y,r,r*.6,0,0,7);g.fill();}
+  g.fillStyle='rgba(60,35,15,.35)';g.fillRect(0,n-3,n,3);g.fillRect(n-3,0,3,n);g.fillStyle='rgba(255,255,255,.35)';g.fillRect(0,0,n,3);g.fillRect(0,0,3,n);});
+ const skirtT=tex((g,n)=>{g.clearRect(0,0,n,n);g.fillStyle='#6cc248';g.beginPath();g.moveTo(0,0);g.lineTo(n,0);let x=n;while(x>0){const w=10+((x*7)%13),d=n*.55+((x*13)%23);g.lineTo(x-w*.5,d);g.lineTo(x-w,n*.42);x-=w;}g.closePath();g.fill();
+  const q2=g.createLinearGradient(0,0,0,n*.75);q2.addColorStop(0,'rgba(255,255,255,.45)');q2.addColorStop(.12,'rgba(255,255,255,0)');q2.addColorStop(1,'rgba(30,60,10,.25)');g.globalCompositeOperation='source-atop';g.fillStyle=q2;g.fillRect(0,0,n,n);},128);
  const top=(x,y)=>{if(!land(x,y))return null;if(riv(x,y)&&!isR(x,y))return [RT,RT,RT,RT];const c=cH(x,y),e=isLawn(x,y)?.135:0;return [c[0]+e,c[1]+e,c[2]+e,c[3]+e];};
- /* underside depth: Minecraft-style inverted steps by distance from the edge */
+ const tmax=(x,y)=>{const t=top(x,y);return t?Math.max(...t):-99;};
  const dist=new Int16Array(N*N).fill(-1),Q=[];for(let y=0;y<N;y++)for(let x=0;x<N;x++){if(!land(x,y))continue;if(!land(x-1,y)||!land(x+1,y)||!land(x,y-1)||!land(x,y+1)){dist[y*N+x]=0;Q.push(y*N+x);}}
  for(let h=0;h<Q.length;h++){const i=Q[h],x=i%N,y=(i/N)|0;for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){const xx=x+dx,yy=y+dy;if(!land(xx,yy))continue;const j=yy*N+xx;if(dist[j]<0){dist[j]=dist[i]+1;Q.push(j);}}}
- const bot=(x,y)=>B0-Math.min(5,Math.floor(dist[y*N+x]/2))*1.1-(hsh(x,y)<.25&&dist[y*N+x]>1?.55:0);
- for(let y=0;y<N;y++)for(let x=0;x<N;x++){if(!land(x,y))continue;const t=top(x,y);
-  if(isLawn(x,y)){tmp.copy(G1).multiplyScalar((.93+hsh(x,y)*.12)*(((x+y)&1)?.975:1));q(TP,[x,t[0],y],[x,t[3],y+1],[x+1,t[1],y],[x+1,t[2],y+1]);col(TC,tmp,6);}
-  else if(isR(x,y)){q(TP,[x,t[0]+.002,y],[x,t[3]+.002,y+1],[x+1,t[1]+.002,y],[x+1,t[2]+.002,y+1]);col(TC,ROAD,6);}
-  else{q(WF,[x,RT,y],[x,RT,y+1],[x+1,RT,y],[x+1,RT,y+1]);}
-  /* bottom face */const b=bot(x,y),bc=SL[Math.min(4,Math.round((B0-b)/1.1))];q(W,[x,b,y],[x+1,b,y],[x,b,y+1],[x+1,b,y+1]);col(WC,bc,6);
-  /* side faces on +x,+y,-x,-y */
+ const bot=(x,y)=>B0-Math.min(5,Math.floor(dist[y*N+x]/2))*1-(hsh(x,y)<.25&&dist[y*N+x]>1?1:0);
+ const BEDH=RT-.7;
+ for(let y=0;y<N;y++)for(let x=0;x<N;x++){if(!land(x,y))continue;const t=top(x,y),rvT=riv(x,y)&&!isR(x,y);
+  if(isLawn(x,y)){tmp.copy(G1).multiplyScalar((.94+hsh(x,y)*.1)*(((x+y)&1)?.97:1));const me=Math.max(...t);
+   /* corner AO: darken a corner when any of the 3 tiles touching it is higher */
+   const ao=(cx,cy)=>{let o=0;for(const [dx,dy] of [[-1,-1],[0,-1],[-1,0],[0,0]]){const xx=cx+dx,yy=cy+dy;if(xx===x&&yy===y)continue;if(tmax(xx,yy)>me+.2)o++;}return tmp.clone().multiplyScalar(1-Math.min(2,o)*.17);};
+   q(TP,[x,t[0],y],[x,t[3],y+1],[x+1,t[1],y],[x+1,t[2],y+1]);col4(TC,ao(x,y),ao(x+1,y),ao(x+1,y+1),ao(x,y+1));TU.push(0,0, 0,1, 1,0, 1,0, 0,1, 1,1);}
+  else if(isR(x,y)){q(RP,[x,t[0]+.002,y],[x,t[3]+.002,y+1],[x+1,t[1]+.002,y],[x+1,t[2]+.002,y+1]);col(RC,ROAD,6);}
+  else{q(WF,[x,RT,y],[x,RT,y+1],[x+1,RT,y],[x+1,RT,y+1]);q(BED,[x,BEDH,y],[x,BEDH,y+1],[x+1,BEDH,y],[x+1,BEDH,y+1]);}
+  const b=bot(x,y),bc=SL[Math.min(4,Math.round(B0-b))];q(W,[x,b,y],[x+1,b,y],[x,b,y+1],[x+1,b,y+1]);col(WC,bc,6);WU.push(0,0,1,0,0,1,0,1,1,0,1,1);
   for(const [dx,dy,p0,p1,k0,k1,n0,n1] of [[1,0,[x+1,y],[x+1,y+1],1,2,0,3],[0,1,[x,y+1],[x+1,y+1],3,2,0,1],[-1,0,[x,y],[x,y+1],0,3,1,2],[0,-1,[x,y],[x+1,y],0,1,3,2]]){
    const xx=x+dx,yy=y+dy,nt=top(xx,yy),T0=t[k0],T1=t[k1];
-   const face=(a0,a1,b0_,b1_,c_)=>{if(a0-b0_<.01&&a1-b1_<.01)return;q(W,[p0[0],a0,p0[1]],[p0[0],b0_,p0[1]],[p1[0],a1,p1[1]],[p1[0],b1_,p1[1]]);col(WC,c_,6);};
-   if(nt){/* inner step: only where this tile is higher than the neighbour */const N0=nt[n0],N1=nt[n1];if(T0>N0+.01||T1>N1+.01){const m0=Math.min(T0,N0),m1=Math.min(T1,N1),g0=Math.max(m0,T0-.16),g1=Math.max(m1,T1-.16);
-     if(riv(x,y)&&!isR(x,y))continue;face(T0,T1,g0,g1,gC);face(g0,g1,m0,m1,sC);}
-    /* underside step */const b2=bot(xx,yy);if(b2>b+.01){const c_=SL[Math.min(4,Math.round((B0-b)/1.1))];face(b2,b2,b,b,c_);}continue;}
-   /* island edge */
-   if(riv(x,y)&&!isR(x,y)){face(RT-.32,RT-.32,B1,B1,sC);face(B1,B1,b,b,sD);
-     /* waterfall: a straight sheet just outside the face */const rad=.3,NB=10,pr=[];for(let k=0;k<=NB;k++){const f=k/NB*Math.PI/2;pr.push([-rad+rad*Math.sin(f)+.01,RT-rad+rad*Math.cos(f)]);}pr.push([.01,-32]);for(let k=0;k+1<pr.length;k++){const [o0,h0]=pr[k],[o1,h1]=pr[k+1];q(FALL,[p0[0]+dx*o0,h0,p0[1]+dy*o0],[p0[0]+dx*o1,h1,p0[1]+dy*o1],[p1[0]+dx*o0,h0,p1[1]+dy*o0],[p1[0]+dx*o1,h1,p1[1]+dy*o1]);}continue;}
-   face(T0,T1,T0-.16,T1-.16,gC);face(T0-.16,T1-.16,B1,B1,sC);face(B1,B1,b,b,sD);}}
- const tg=new THREE.BufferGeometry();tg.setAttribute('position',new THREE.Float32BufferAttribute(TP,3));tg.setAttribute('color',new THREE.Float32BufferAttribute(TC,3));tg.computeVertexNormals();
- const te=new THREE.Mesh(tg,new THREE.MeshStandardMaterial({vertexColors:true,roughness:.75,envMapIntensity:.12,side:THREE.DoubleSide}));te.receiveShadow=true;te.castShadow=true;sc.add(te);
- const wg=new THREE.BufferGeometry();wg.setAttribute('position',new THREE.Float32BufferAttribute(W,3));wg.setAttribute('color',new THREE.Float32BufferAttribute(WC,3));wg.computeVertexNormals();
- const we=new THREE.Mesh(wg,new THREE.MeshStandardMaterial({vertexColors:true,roughness:.9,envMapIntensity:.12,side:THREE.DoubleSide}));we.receiveShadow=true;we.castShadow=true;sc.add(we);
- water.transparent=true;water.onBeforeCompile=sh=>{sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nvarying float vWY;').replace('#include <worldpos_vertex>','#include <worldpos_vertex>\nvWY=(modelMatrix*vec4(transformed,1.0)).y;');sh.fragmentShader=sh.fragmentShader.replace('#include <common>','#include <common>\nvarying float vWY;').replace('#include <dithering_fragment>','#include <dithering_fragment>\ngl_FragColor.a*=smoothstep(-31.,-8.,vWY);');};
+   const face=(a0,a1,b0_,b1_,c_,aoB)=>{if(a0-b0_<.01&&a1-b1_<.01)return;q(W,[p0[0],a0,p0[1]],[p0[0],b0_,p0[1]],[p1[0],a1,p1[1]],[p1[0],b1_,p1[1]]);const cb=aoB?c_.clone().multiplyScalar(.72):c_;for(const c of [c_,cb,c_,c_,cb,cb])WC.push(c.r,c.g,c.b);WU.push(0,a0,0,b0_,1,a1,1,a1,0,b0_,1,b1_);};
+   const skirt=(a0,a1)=>{const o=.006,d=.42;const P0=[p0[0]+dx*o,p0[1]+dy*o],P1=[p1[0]+dx*o,p1[1]+dy*o];q(GS,[P0[0],a0+.01,P0[1]],[P0[0],a0-d,P0[1]],[P1[0],a1+.01,P1[1]],[P1[0],a1-d,P1[1]]);const u0=(x+y)*.37%1;GU.push(u0,0,u0,1,u0+1,0,u0+1,0,u0,1,u0+1,1);};
+   if(nt){const N0=nt[n0],N1=nt[n1],nb=riv(xx,yy)&&!isR(xx,yy);if(T0>N0+.01||T1>N1+.01){if(rvT)continue;const m0=nb?BEDH:Math.min(T0,N0),m1=nb?BEDH:Math.min(T1,N1);
+     face(T0,T1,m0,m1,sC,!nb);if(isLawn(x,y)&&!isR(xx,yy))skirt(T0,T1);}
+    const b2=bot(xx,yy);if(b2>b+.01){face(b2,b2,b,b,SL[Math.min(4,Math.round(B0-b))]);}continue;}
+   if(rvT){face(RT-.32,RT-.32,B1,B1,sC);face(B1,B1,b,b,sD);
+     const rad=.3,NB=10,pr=[];for(let k=0;k<=NB;k++){const f=k/NB*Math.PI/2;pr.push([-rad+rad*Math.sin(f)+.01,RT-rad+rad*Math.cos(f)]);}pr.push([.01,-32]);for(let k=0;k+1<pr.length;k++){const [o0,h0]=pr[k],[o1,h1]=pr[k+1];q(FALL,[p0[0]+dx*o0,h0,p0[1]+dy*o0],[p0[0]+dx*o1,h1,p0[1]+dy*o1],[p1[0]+dx*o0,h0,p1[1]+dy*o0],[p1[0]+dx*o1,h1,p1[1]+dy*o1]);}continue;}
+   face(T0,T1,B1,B1,sC);face(B1,B1,b,b,sD);if(isLawn(x,y))skirt(T0,T1);}}
+ const geo=(P,Cc,U)=>{const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(P,3));if(Cc)g.setAttribute('color',new THREE.Float32BufferAttribute(Cc,3));if(U)g.setAttribute('uv',new THREE.Float32BufferAttribute(U,2));g.computeVertexNormals();return g;};
+ const add2=(g,m,cast=true)=>{const e=new THREE.Mesh(g,m);e.receiveShadow=true;e.castShadow=cast;sc.add(e);return e;};
+ add2(geo(TP,TC,TU),new THREE.MeshStandardMaterial({vertexColors:true,map:topT,roughness:.8,envMapIntensity:.12,side:THREE.DoubleSide}));
+ add2(geo(RP,RC),new THREE.MeshStandardMaterial({vertexColors:true,roughness:.7,envMapIntensity:.12,side:THREE.DoubleSide}));
+ add2(geo(W,WC,WU),new THREE.MeshStandardMaterial({vertexColors:true,map:sideT,roughness:.9,envMapIntensity:.12,side:THREE.DoubleSide}));
+ if(GS.length)add2(geo(GS,null,GU),new THREE.MeshStandardMaterial({map:skirtT,alphaTest:.5,roughness:.8,envMapIntensity:.12,side:THREE.DoubleSide}),false);
+ if(BED.length)add2(geo(BED),new THREE.MeshStandardMaterial({color:'#e6cf96',roughness:.9}),false);
+ water.transparent=true;water.opacity=.82;water.depthWrite=false;water.onBeforeCompile=sh=>{sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nvarying float vWY;').replace('#include <worldpos_vertex>','#include <worldpos_vertex>\nvWY=(modelMatrix*vec4(transformed,1.0)).y;');sh.fragmentShader=sh.fragmentShader.replace('#include <common>','#include <common>\nvarying float vWY;').replace('#include <dithering_fragment>','#include <dithering_fragment>\ngl_FragColor.a*=smoothstep(-31.,-8.,vWY);');};
  mk(WF,water);const fw=water.clone();fw.clearcoat=0;fw.roughness=.35;fw.onBeforeCompile=water.onBeforeCompile;fw.customProgramCacheKey=()=>'fall';if(FALL.length){const e=mk(FALL,fw);e.renderOrder=3;}window.NFALL=FALL.length/18;}
 
 /* curbs around lawn blocks (white, raised) */
