@@ -1,7 +1,7 @@
 (()=>{'use strict';
 /* ================= constants & state ================= */
 var PIXNAT=0;
-const N=256,NS=8,NM=N-1,MS=N/256,NN=N*N,HN=N+1,CG=4,CN=N/CG,CNN=CN*CN;
+const N=128,NS=7,NM=N-1,MS=N/256,NN=N*N,HN=N+1,CG=4,CN=N/CG,CNN=CN*CN;
 const SR=4,TOPM=320,HMAX=32,E=6,ELEV=HMAX*E,SKIRT=16;
 const K={EMPTY:0,ROAD:1,RES:2,COM:3,IND:4,POWER:5,WATER:6,POLICE:7,FIRE:8,PARK:9,LMK:10};
 const TG=0,TWA=1,TSA=2;
