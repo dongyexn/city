@@ -187,8 +187,8 @@ const rV=(vx,vy)=>Math.max(0,(HH[vy*HNv+vx]-HB)*LH);
 const isRL=(x,y)=>isR(x,y)&&land(x,y)&&!riv(x,y);
 const rAx=(x,y)=>{const h=hT(x,y),d=(xx,yy)=>isRL(xx,yy)&&Math.abs(hT(xx,yy)-h)>.01;return d(x-1,y)||d(x+1,y)?1:d(x,y-1)||d(x,y+1)?2:0;};
 const eH=(x,y,xx,yy)=>isRL(xx,yy)?(hT(x,y)+hT(xx,yy))/2:hT(x,y);
-const cH=(x,y)=>{const h=hT(x,y);if(!isRL(x,y))return [h,h,h,h];const ax=rAx(x,y);
- if(ax===1){const l=eH(x,y,x-1,y),r=eH(x,y,x+1,y);return [l,r,r,l];}if(ax===2){const u=eH(x,y,x,y-1),d=eH(x,y,x,y+1);return [u,u,d,d];}return [h,h,h,h];};
+const rvA=(vx,vy)=>{let s2=0,n=0;for(const [dx,dy] of [[-1,-1],[0,-1],[-1,0],[0,0]]){const x=vx+dx,y=vy+dy;if(isRL(x,y)){s2+=hT(x,y);n++;}}return s2/n;};
+const cH=(x,y)=>{const h=hT(x,y);if(!isRL(x,y))return [h,h,h,h];return [rvA(x,y),rvA(x+1,y),rvA(x+1,y+1),rvA(x,y+1)];};
 const flatR=(x,y)=>{const c=cH(x,y);return Math.max(...c)-Math.min(...c)<.01;};
 
 const FALL=[];
@@ -212,12 +212,12 @@ const mk=(A,m,cast)=>{const g=new THREE.BufferGeometry();g.setAttribute('positio
   for(const [dx,dy,p0,p1,k0,k1,n0,n1] of [[1,0,[x+1,y],[x+1,y+1],1,2,0,3],[0,1,[x,y+1],[x+1,y+1],3,2,0,1],[-1,0,[x,y],[x,y+1],0,3,1,2],[0,-1,[x,y],[x+1,y],0,1,3,2]]){
    const xx=x+dx,yy=y+dy,nt=top(xx,yy),T0=t[k0],T1=t[k1];
    const face=(a0,a1,b0_,b1_,c_)=>{if(a0-b0_<.01&&a1-b1_<.01)return;q(W,[p0[0],a0,p0[1]],[p0[0],b0_,p0[1]],[p1[0],a1,p1[1]],[p1[0],b1_,p1[1]]);col(WC,c_,6);};
-   if(nt){/* inner step: only where this tile is higher than the neighbour */const N0=nt[n0],N1=nt[n1];if(T0>N0+.01||T1>N1+.01){const g0=Math.max(N0,T0-.16),g1=Math.max(N1,T1-.16);
-     if(riv(x,y)&&!isR(x,y))continue;face(T0,T1,g0,g1,gC);face(g0,g1,Math.min(g0,N0),Math.min(g1,N1),sC);}
+   if(nt){/* inner step: only where this tile is higher than the neighbour */const N0=nt[n0],N1=nt[n1];if(T0>N0+.01||T1>N1+.01){const m0=Math.min(T0,N0),m1=Math.min(T1,N1),g0=Math.max(m0,T0-.16),g1=Math.max(m1,T1-.16);
+     if(riv(x,y)&&!isR(x,y))continue;face(T0,T1,g0,g1,gC);face(g0,g1,m0,m1,sC);}
     /* underside step */const b2=bot(xx,yy);if(b2>b+.01){const c_=SL[Math.min(4,Math.round((B0-b)/1.1))];face(b2,b2,b,b,c_);}continue;}
    /* island edge */
-   if(riv(x,y)&&!isR(x,y)){face(RT-.03,RT-.03,B1,B1,sC);face(B1,B1,b,b,sD);
-     /* waterfall: a straight sheet just outside the face */const ox=dx*.01,oz=dy*.01;q(FALL,[p0[0]+ox,RT,p0[1]+oz],[p0[0]+ox,-32,p0[1]+oz],[p1[0]+ox,RT,p1[1]+oz],[p1[0]+ox,-32,p1[1]+oz]);continue;}
+   if(riv(x,y)&&!isR(x,y)){face(RT-.32,RT-.32,B1,B1,sC);face(B1,B1,b,b,sD);
+     /* waterfall: a straight sheet just outside the face */const rad=.3,NB=10,pr=[];for(let k=0;k<=NB;k++){const f=k/NB*Math.PI/2;pr.push([-rad+rad*Math.sin(f)+.01,RT-rad+rad*Math.cos(f)]);}pr.push([.01,-32]);for(let k=0;k+1<pr.length;k++){const [o0,h0]=pr[k],[o1,h1]=pr[k+1];q(FALL,[p0[0]+dx*o0,h0,p0[1]+dy*o0],[p0[0]+dx*o1,h1,p0[1]+dy*o1],[p1[0]+dx*o0,h0,p1[1]+dy*o0],[p1[0]+dx*o1,h1,p1[1]+dy*o1]);}continue;}
    face(T0,T1,T0-.16,T1-.16,gC);face(T0-.16,T1-.16,B1,B1,sC);face(B1,B1,b,b,sD);}}
  const tg=new THREE.BufferGeometry();tg.setAttribute('position',new THREE.Float32BufferAttribute(TP,3));tg.setAttribute('color',new THREE.Float32BufferAttribute(TC,3));tg.computeVertexNormals();
  const te=new THREE.Mesh(tg,new THREE.MeshStandardMaterial({vertexColors:true,roughness:.75,envMapIntensity:.12,side:THREE.DoubleSide}));te.receiveShadow=true;te.castShadow=true;sc.add(te);
