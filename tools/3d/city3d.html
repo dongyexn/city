@@ -6,7 +6,7 @@ import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {RoundedBoxGeometry} from 'three/addons/geometries/RoundedBoxGeometry.js';
 
-const OBJ=(THREE,RoundedBoxGeometry,root)=>{let cur=root;const sc={add:o=>cur.add(o)};
+const OBJ=(THREE,RoundedBoxGeometry,root)=>{const root0=root;let cur=root;const lift=(h)=>{const g=new THREE.Group();g.position.y=h;root0.add(g);root=g;cur=g;};const sc={add:o=>cur.add(o)};
 const M=(c,o={})=>new THREE.MeshStandardMaterial(Object.assign({color:c,roughness:.6,metalness:0,envMapIntensity:.12},o));
 const add=(g,m,x,y,z,sh=true)=>{const e=new THREE.Mesh(g,m);e.position.set(x,y,z);e.castShadow=sh;e.receiveShadow=true;cur.add(e);return e;};
 const RB=(w,h,d,rad=.06)=>new RoundedBoxGeometry(w,h,d,3,Math.max(.001,Math.min(rad,w/2-.002,h/2-.002,d/2-.002)));
@@ -157,7 +157,7 @@ const greenhouse=(x,z)=>at(x,z,3.35,3.5,()=>{/* greenhouse cafe */{const x0=3.35
   for(const [px,pz] of [[x0,z0],[x1,z0],[x0,z1],[x1,z1]])bx(px-.02,px+.02,B,B+h+.04,pz-.02,pz+.02,wm,.005);for(const pz of [z0,z1])bx(x0,x1,B+h+.02,B+h+.05,pz-.02,pz+.02,wm,.005);for(const px of [x0,x1])bx(px-.02,px+.02,B+h+.02,B+h+.05,z0,z1,wm,.005);
   const sp=new THREE.Shape();sp.moveTo(-(z1-z0)/2,0);sp.lineTo((z1-z0)/2,0);sp.lineTo(0,.3);sp.lineTo(-(z1-z0)/2,0);const rg=new THREE.ExtrudeGeometry(sp,{depth:x1-x0,bevelEnabled:false});rg.translate(0,0,-(x1-x0)/2);const r=add(rg,glz,(x0+x1)/2,B+h+.05,(z0+z1)/2,false);r.rotation.y=Math.PI/2;
   bx(x0+.02,x1-.02,B+h+.33,B+h+.36,(z0+z1)/2-.02,(z0+z1)/2+.02,wm,.005);for(const [a,b,rr] of [[x0+.2,z0+.2,.1],[x1-.2,z0+.25,.08],[x0+.25,z1-.2,.08],[x1-.25,z1-.25,.1]])add(new THREE.SphereGeometry(rr,20,14),M('#5fae4f',{roughness:.7}),a,B+rr,b,false);bx(x0+.35,x1-.35,B,B+.2,z0+.35,z1-.35,M('#ffffff'),.02);}});
-return {bld,house,car,gas,towerA,roundB,fountain,roofCafe,shopHouse,restaurant,greenhouse,STY:{APT,OFF,SHOP,VIL,CVS,STONE,BAND,BRICK,GBRICK,WOOD,TOWN,NEIGH,BAKE,PHAR},crown,PAL,TRK,PIT,LEAF,FH};};
+return {lift,bld,house,car,gas,towerA,roundB,fountain,roofCafe,shopHouse,restaurant,greenhouse,STY:{APT,OFF,SHOP,VIL,CVS,STONE,BAND,BRICK,GBRICK,WOOD,TOWN,NEIGH,BAKE,PHAR},crown,PAL,TRK,PIT,LEAF,FH};};
 
 window.render=async(seed,VW,VH,view)=>{
 const D=await (await fetch('http://l/map_'+seed+'.json')).json();const u8=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
@@ -178,6 +178,20 @@ const ASP=-.25,RT=-.07,RF=-.3,B1=-3.4,B0=-7;
 const tri=(A,pts,h)=>{for(let k=1;k+1<pts.length;k++)for(const p of [pts[0],pts[k+1],pts[k]])A.push(p[0],h,p[1]);};
 const q4=(A,x0,z0,x1,z1,h)=>A.push(x0,h,z0, x0,h,z1, x1,h,z0, x1,h,z0, x0,h,z1, x1,h,z1);
 const isLawn=(x,y)=>land(x,y)&&!riv(x,y)&&!isR(x,y);
+/* ===== discrete terraces (levels 1..5), Minecraft-like cliffs; only roads ramp between levels ===== */
+const H0=u8(D.H0),HNv=D.HN,LV=new Uint8Array(N*N).fill(1),LH=.55;
+{let th=new Float32Array(N*N),mn=1e9,mx=-1e9;for(let y=0;y<N;y++)for(let x=0;x<N;x++){const i=y*N+x;if(!land(x,y))continue;const v=(H0[y*HNv+x]+H0[y*HNv+x+1]+H0[(y+1)*HNv+x]+H0[(y+1)*HNv+x+1])/4;th[i]=v;mn=Math.min(mn,v);mx=Math.max(mx,v);}
+ for(let p=0;p<3;p++){const t2=new Float32Array(N*N);for(let y=0;y<N;y++)for(let x=0;x<N;x++){if(!land(x,y))continue;let s2=0,n=0;for(let dy=-2;dy<=2;dy++)for(let dx=-2;dx<=2;dx++)if(land(x+dx,y+dy)){s2+=th[(y+dy)*N+x+dx];n++;}t2[y*N+x]=s2/n;}th=t2;}
+ for(let i=0;i<N*N;i++)if(land(i%N,(i/N)|0))LV[i]=1+Math.min(4,Math.floor((th[i]-mn)/(mx-mn+1e-6)*5));
+ for(let p=0;p<2;p++){const L2=LV.slice();for(let y=0;y<N;y++)for(let x=0;x<N;x++){if(!land(x,y))continue;const c=[0,0,0,0,0,0];for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++)if(land(x+dx,y+dy))c[LV[(y+dy)*N+x+dx]]++;let b=LV[y*N+x];for(let l=1;l<=5;l++)if(c[l]>c[b])b=l;L2[y*N+x]=b;}LV.set(L2);}
+ for(let y=0;y<N;y++)for(let x=0;x<N;x++){let f=false;for(let dy=-2;dy<=2&&!f;dy++)for(let dx=-2;dx<=2;dx++){if(!land(x+dx,y+dy)||(Math.abs(dx)<=1&&Math.abs(dy)<=1&&riv(x+dx,y+dy))){f=true;break;}}if(f)LV[y*N+x]=1;}
+ for(let p=0;p<6;p++)for(let y=0;y<N;y++)for(let x=0;x<N;x++){const i=y*N+x;if(!land(x,y))continue;let m=9;for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]])if(land(x+dx,y+dy))m=Math.min(m,LV[(y+dy)*N+x+dx]);if(LV[i]>m+1)LV[i]=m+1;}
+ const G=new Map();for(let i=0;i<N*N;i++)if(lmkA[i]>=0){if(!G.has(lmkA[i]))G.set(lmkA[i],[]);G.get(lmkA[i]).push(i);}for(const c of G.values()){let m=0;for(const i of c)m=Math.max(m,LV[i]);for(const i of c)LV[i]=m;}}
+const hT=(x,y)=>x>=0&&y>=0&&x<N&&y<N&&land(x,y)?(LV[y*N+x]-1)*LH:0;
+const rV=(vx,vy)=>{let s2=0,n=0;for(const [dx,dy] of [[-1,-1],[0,-1],[-1,0],[0,0]]){const x=vx+dx,y=vy+dy;if(isR(x,y)&&land(x,y)){s2+=hT(x,y);n++;}}return n?s2/n:0;};
+const cH=(x,y)=>{if(isR(x,y)&&land(x,y))return [rV(x,y),rV(x+1,y),rV(x+1,y+1),rV(x,y+1)];const h=hT(x,y);return [h,h,h,h];};
+const flatR=(x,y)=>{const c=cH(x,y);return Math.max(...c)-Math.min(...c)<.01;};
+
 /* marching-squares contour -> chained loops -> Chaikin smoothing (rounded coast like the icon slab) */
 const seg=[];
 for(let y=-1;y<=N;y++)for(let x=-1;x<=N;x++){const a=V(x,y),b=V(x+1,y),c=V(x+1,y+1),d=V(x,y+1),cs=a|b<<1|c<<2|d<<3;if(!cs||cs===15)continue;
@@ -221,10 +235,27 @@ const AS=C('#5d667c'),SEAM=C('#7a5a40');
 for(const L of SM)for(let i=0;i<L.length;i++){const p=L[i],q=L[(i+1)%L.length],rv=p[2]&&q[2];if(rv){band(p,q,RF,B1,soil);band(p,q,B1,B0,soil2);continue;}band(p,q,0,ASP,AS);band(p,q,ASP,B1+.06,soil);band(p,q,B1+.06,B1-.06,SEAM);band(p,q,B1-.06,B0,soil2);}
 const wg=new THREE.BufferGeometry();wg.setAttribute('position',new THREE.Float32BufferAttribute(WP,3));wg.setAttribute('color',new THREE.Float32BufferAttribute(WC,3));wg.computeVertexNormals();
 const wmm=new THREE.Mesh(wg,new THREE.MeshStandardMaterial({vertexColors:true,roughness:.9,side:THREE.DoubleSide,envMapIntensity:.12}));wmm.castShadow=true;wmm.receiveShadow=true;sc.add(wmm);
+/* terrace tops + cliff walls */
+{const AT=[],LT=[],W=[],WC=[],gC=new THREE.Color('#4fae3e'),sC=new THREE.Color('#b07f58'),sD=new THREE.Color('#916647');
+ const q=(A,a,b,c,d)=>A.push(...a,...b,...c,...c,...b,...d);
+ for(let y=0;y<N;y++)for(let x=0;x<N;x++){if(!land(x,y)||riv(x,y))continue;const c=cH(x,y);if(Math.max(...c)<.01)continue;const e=.002;
+  q(AT,[x,c[0]+e,y],[x,c[3]+e,y+1],[x+1,c[1]+e,y],[x+1,c[2]+e,y+1]);
+  if(isLawn(x,y)){const h=c[0]+.135,sl=(dx,dy)=>{const xx=x+dx,yy=y+dy;return isLawn(xx,yy)&&hT(xx,yy)>=hT(x,y)-.01||hT(xx,yy)<hT(x,y)-.2?0:.12;};
+   const x0=x+sl(-1,0),x1=x+1-sl(1,0),z0=y+sl(0,-1),z1=y+1-sl(0,1);q(LT,[x0,h,z0],[x0,h,z1],[x1,h,z0],[x1,h,z1]);}}
+ const wall=(ax,az,bx_,bz,t0,b0,t1,b1,lawnTop)=>{if(Math.abs(t0-b0)<.2&&Math.abs(t1-b1)<.2)return;const T0=Math.max(t0,b0),B0=Math.min(t0,b0),T1=Math.max(t1,b1),B1=Math.min(t1,b1);
+  const g0=T0-.16,g1=T1-.16,push=(p0,p1,p2,p3,col)=>{W.push(...p0,...p1,...p2,...p2,...p1,...p3);for(let k=0;k<6;k++)WC.push(col.r,col.g,col.b);};
+  push([ax,T0,az],[ax,g0,az],[bx_,T1,bz],[bx_,g1,bz],gC);push([ax,g0,az],[ax,B0,az],[bx_,g1,bz],[bx_,B1,bz],sC);};
+ const top=(x,y,k)=>{if(!land(x,y)||riv(x,y))return 0;const c=cH(x,y);return c[k]+(isLawn(x,y)?.135:0);};
+ for(let y=0;y<N;y++)for(let x=0;x<N;x++){if(!land(x,y))continue;
+  if(land(x+1,y)){const a0=top(x,y,1),a1=top(x,y,2),b0=top(x+1,y,0),b1=top(x+1,y,3);wall(x+1,y,x+1,y+1,a0,b0,a1,b1);}
+  if(land(x,y+1)){const a0=top(x,y,3),a1=top(x,y,2),b0=top(x,y+1,0),b1=top(x,y+1,1);wall(x,y+1,x+1,y+1,a0,b0,a1,b1);}}
+ const mk2=(A,m)=>{if(!A.length)return;const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(A,3));g.computeVertexNormals();const e=new THREE.Mesh(g,m);e.castShadow=true;e.receiveShadow=true;sc.add(e);};
+ mk2(AT,asph.clone());const lm=lawnM.clone();lm.side=THREE.DoubleSide;mk2(LT,lm);
+ if(W.length){const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(W,3));g.setAttribute('color',new THREE.Float32BufferAttribute(WC,3));g.computeVertexNormals();const e=new THREE.Mesh(g,new THREE.MeshStandardMaterial({vertexColors:true,roughness:.9,side:THREE.DoubleSide,envMapIntensity:.12}));e.castShadow=true;e.receiveShadow=true;sc.add(e);}}
 /* curbs around lawn blocks (white, raised) */
-const curbs=[];const cb=(x0,z0,x1,z1)=>{const g=new THREE.BoxGeometry(Math.abs(x1-x0)||.12,.12,Math.abs(z1-z0)||.12);g.translate((x0+x1)/2,.06,(z0+z1)/2);curbs.push(g);};
-const nl=(x,y)=>land(x,y)&&!isLawn(x,y)&&!riv(x,y);
-for(let y=0;y<N;y++)for(let x=0;x<N;x++){if(!isLawn(x,y))continue;if(nl(x,y-1))cb(x,y+.06,x+1,y+.06);if(nl(x,y+1))cb(x,y+.94,x+1,y+.94);if(nl(x-1,y))cb(x+.06,y,x+.06,y+1);if(nl(x+1,y))cb(x+.94,y,x+.94,y+1);}
+let CY=0;const curbs=[];const cb=(x0,z0,x1,z1)=>{const g=new THREE.BoxGeometry(Math.abs(x1-x0)||.12,.12,Math.abs(z1-z0)||.12);g.translate((x0+x1)/2,.06+CY,(z0+z1)/2);curbs.push(g);};
+const nl=(x,y)=>land(x,y)&&!isLawn(x,y)&&!riv(x,y)&&Math.abs(hT(x,y)-CY)<.3;
+for(let y=0;y<N;y++)for(let x=0;x<N;x++){if(!isLawn(x,y))continue;CY=hT(x,y);if(nl(x,y-1))cb(x,y+.06,x+1,y+.06);if(nl(x,y+1))cb(x,y+.94,x+1,y+.94);if(nl(x-1,y))cb(x+.06,y,x+.06,y+1);if(nl(x+1,y))cb(x+.94,y,x+.94,y+1);}
 if(curbs.length){const m=new THREE.Mesh(mergeGeometries(curbs),curbM);m.castShadow=true;m.receiveShadow=true;sc.add(m);}
 /* bridges over the void: asphalt deck with white edge rails */
 {const dk=[],rl=[];for(let y=0;y<N;y++)for(let x=0;x<N;x++){if(!isR(x,y)||land(x,y))continue;let g=new THREE.BoxGeometry(1.02,.25,1.02);g.translate(x+.5,-.125,y+.5);dk.push(g);
@@ -239,17 +270,17 @@ window.FALLS=seg.filter(s=>s[2]).map(s=>s[0]);
  const SD=[];for(let y=0;y<N;y++)for(let x=0;x<N;x++){if(!isR(x,y)||!riv(x,y))continue;const g=new THREE.BoxGeometry(1,.22,1);g.translate(x+.5,-.11,y+.5);SD.push(g);}if(SD.length){const m=new THREE.Mesh(mergeGeometries(SD),asph);m.castShadow=true;sc.add(m);}}
 /* crosswalks on straight approaches next to junctions */
 {const CW=[],deg=(x,y)=>(isR(x-1,y)?1:0)+(isR(x+1,y)?1:0)+(isR(x,y-1)?1:0)+(isR(x,y+1)?1:0);for(let y=0;y<N;y++)for(let x=0;x<N;x++){if(!isR(x,y)||deg(x,y)<3||!land(x,y))continue;
- for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){const ax=x+dx,ay=y+dy;if(!isR(ax,ay)||!land(ax,ay)||deg(ax,ay)!==2)continue;const hor=dx!==0;if(hor&&!(isR(ax+dx,ay)))continue;if(!hor&&!isR(ax,ay+dy))continue;
-  for(let k=0;k<4;k++){const o=.2+k*.2;const g=hor?new THREE.BoxGeometry(.38,.012,.1):new THREE.BoxGeometry(.1,.012,.38);g.translate(hor?ax+.5:ax+o,.014,hor?ay+o:ay+.5);CW.push(g);}}}
+ for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){const ax=x+dx,ay=y+dy;if(!isR(ax,ay)||!land(ax,ay)||deg(ax,ay)!==2||!flatR(ax,ay))continue;const hor=dx!==0;if(hor&&!(isR(ax+dx,ay)))continue;if(!hor&&!isR(ax,ay+dy))continue;
+  for(let k=0;k<4;k++){const o=.2+k*.2;const g=hor?new THREE.BoxGeometry(.38,.012,.1):new THREE.BoxGeometry(.1,.012,.38);g.translate(hor?ax+.5:ax+o,.014+hT(ax,ay),hor?ay+o:ay+.5);CW.push(g);}}}
  if(CW.length)sc.add(new THREE.Mesh(mergeGeometries(CW),paint));}
 /* contact shadow strip at curb feet (soft AO on asphalt) */
 {const cv=document.createElement('canvas');cv.width=4;cv.height=64;const g=cv.getContext('2d');const gr=g.createLinearGradient(0,0,0,64);gr.addColorStop(0,'#fff');gr.addColorStop(1,'#000');g.fillStyle=gr;g.fillRect(0,0,4,64);
  const am=new THREE.MeshBasicMaterial({color:'#1d2836',alphaMap:new THREE.CanvasTexture(cv),transparent:true,opacity:.35,depthWrite:false});const AO=[],UV=[];
  const strip=(x0,z0,x1,z1,nx,nz)=>{const w=.22;AO.push(x0,.006,z0, x1,.006,z1, x0+nx*w,.006,z0+nz*w, x1,.006,z1, x1+nx*w,.006,z1+nz*w, x0+nx*w,.006,z0+nz*w);UV.push(0,1,0,1,0,0,0,1,0,0,0,0);};
- for(let y=0;y<N;y++)for(let x=0;x<N;x++){if(!isLawn(x,y))continue;if(isR(x,y-1)&&land(x,y-1))strip(x,y,x+1,y,0,-1);if(isR(x,y+1)&&land(x,y+1))strip(x,y+1,x+1,y+1,0,1);if(isR(x-1,y)&&land(x-1,y))strip(x,y,x,y+1,-1,0);if(isR(x+1,y)&&land(x+1,y))strip(x+1,y,x+1,y+1,1,0);}
+ for(let y=0;y<N;y++)for(let x=0;x<N;x++){if(!isLawn(x,y)||hT(x,y)>0)continue;const _r=isR;const isR2=(a,b)=>_r(a,b)&&flatR(a,b)&&hT(a,b)===0;if(isR2(x,y-1)&&land(x,y-1))strip(x,y,x+1,y,0,-1);if(isR2(x,y+1)&&land(x,y+1))strip(x,y+1,x+1,y+1,0,1);if(isR2(x-1,y)&&land(x-1,y))strip(x,y,x,y+1,-1,0);if(isR2(x+1,y)&&land(x+1,y))strip(x+1,y,x+1,y+1,1,0);}
  const g2=new THREE.BufferGeometry();g2.setAttribute('position',new THREE.Float32BufferAttribute(AO,3));g2.setAttribute('uv',new THREE.Float32BufferAttribute(UV,2));const e=new THREE.Mesh(g2,am);e.renderOrder=1;sc.add(e);}
 /* lane dashes */
-const DS=[];for(let y=0;y<N;y++)for(let x=0;x<N;x++){if(!isR(x,y))continue;const h=riv(x,y)||!land(x,y)?.05:.012,L=isR(x-1,y),R=isR(x+1,y),U=isR(x,y-1),Dd=isR(x,y+1);
+const DS=[];for(let y=0;y<N;y++)for(let x=0;x<N;x++){if(!isR(x,y)||(land(x,y)&&!flatR(x,y)))continue;const h=(riv(x,y)||!land(x,y)?.05:.012)+hT(x,y),L=isR(x-1,y),R=isR(x+1,y),U=isR(x,y-1),Dd=isR(x,y+1);
  if(L&&R&&!U&&!Dd&&x%2===0){const g=new THREE.BoxGeometry(.42,.012,.06);g.translate(x+.5,h,y+.5);DS.push(g);}
  if(U&&Dd&&!L&&!R&&y%2===0){const g=new THREE.BoxGeometry(.06,.012,.42);g.translate(x+.5,h,y+.5);DS.push(g);}}
 if(DS.length)sc.add(new THREE.Mesh(mergeGeometries(DS),paint));
@@ -274,11 +305,11 @@ water.transparent=true;water.onBeforeCompile=sh=>{sh.vertexShader=sh.vertexShade
  const done=new Uint8Array(N*N),grp=new Map();for(let i=0;i<N*N;i++)if(lmkA[i]>=0){if(!grp.has(lmkA[i]))grp.set(lmkA[i],[]);grp.get(lmkA[i]).push(i);}
  let nb=0;
  for(const [a,cells] of grp){let x0=1e9,x1=-1,y0=1e9,y1=-1;for(const i of cells){const x=i%N,y=(i/N)|0;x0=Math.min(x0,x);x1=Math.max(x1,x);y0=Math.min(y0,y);y1=Math.max(y1,y);done[i]=1;}
-  const w=x1-x0+1,k=kind[a],r=hs(a);nb++;
+  const w=x1-x0+1,k=kind[a],r=hs(a);nb++;O.lift(hT(x0,y0));
   if(k===K.COM){ if(r<.55)O.bld(x0+.15,x1+.85,y0+.15,y1+.85,10+((r*100)|0)%5,r<.3?S.APT:Object.assign({},S.APT,{crown:2})); else if(r<.8)O.towerA(x0+.4,y0+.4); else O.roundB(x0+.45,y0+.4);}
   else if(w>=4){O.fountain(x0+w/2,y0+w/2);}
   else{const f=[O.gas,O.greenhouse,O.restaurant][((r*3)|0)%3];f(x0+.35,y0+.35);}}
- const built=new Uint8Array(N*N);for(let y=0;y<N;y++)for(let x=0;x<N;x++){const i=y*N+x;if(done[i]||!isLawn(x,y))continue;const k=kind[i],L=lvl[i],r=hs(i,3),bx0=x+.16,bx1=x+.84,bz0=y+.16,bz1=y+.84;
+ const built=new Uint8Array(N*N);for(let y=0;y<N;y++)for(let x=0;x<N;x++){const i=y*N+x;if(done[i]||!isLawn(x,y))continue;O.lift(hT(x,y));const k=kind[i],L=lvl[i],r=hs(i,3),bx0=x+.16,bx1=x+.84,bz0=y+.16,bz1=y+.84;
   if(k>=K.RES&&k<=K.FIRE&&k!==K.PARK){const nb2=(built[i-1]?1:0)+(built[i-N]?1:0)+(y>0&&x>0&&built[i-N-1]?1:0);if(nb2>=2||(nb2===1&&hs(i,21)<.55)){done[i]=2;continue;}built[i]=1;}
   if(k===K.RES){nb++;if(r<.35)O.house(bx0,bx1,bz0,bz1,['#ff7a59','#3d9df5','#5d6470'][((r*30)|0)%3]);else O.bld(bx0,bx1,bz0,bz1,L>1?5:3+((r*10)|0)%2,[S.VIL,S.BRICK,S.GBRICK][((r*9)|0)%3]);}
   else if(k===K.COM){nb++;const T=L<=1?[[S.CVS,1],[S.BAKE,2],[S.WOOD,2]]:L===2?[[S.NEIGH,4],[S.SHOP,3],[S.STONE,5],[S.PHAR,3],[S.TOWN,3]]:L===3?[[S.OFF,8],[S.BAND,7],[S.STONE,7]]:[[S.OFF,11],[S.BAND,10]];const [st,fl]=T[((r*97)|0)%T.length];O.bld(bx0,bx1,bz0,bz1,fl,st);}
@@ -288,12 +319,12 @@ water.transparent=true;water.onBeforeCompile=sh=>{sh.vertexShader=sh.vertexShade
  const k2=1.35,B0=.13,trG=new THREE.CylinderGeometry(.016*k2,.02*k2,.08*k2,10),ptG=new THREE.CylinderGeometry(.08*k2,.085*k2,.025,20),cr=[0,1,2].map(j=>O.crown(.1*k2,2.5,j*1.7,O.PAL[j]));
  const im=(g,m,n)=>{const e=new THREE.InstancedMesh(g,m,n);e.castShadow=true;e.receiveShadow=true;sc.add(e);return e;};
  const iT=im(trG,O.TRK,TP.length),iP=im(ptG,O.PIT,TP.length),iC=[0,1,2].map(j=>im(cr[j],O.LEAF,TP.length)),cnt=[0,0,0],mm=new THREE.Matrix4();
- TP.forEach(([x,z,i],n)=>{mm.makeTranslation(x,B0+.04*k2,z);iT.setMatrixAt(n,mm);mm.makeTranslation(x,B0+.012,z);iP.setMatrixAt(n,mm);const j=(i*5)%3,sc2=.85+hs(i,9)*.35;mm.makeScale(sc2,sc2,sc2).setPosition(x,B0+.32*k2*sc2,z);iC[j].setMatrixAt(cnt[j]++,mm);});
+ TP.forEach(([x,z,i],n)=>{const ty=hT(i%N,(i/N)|0);mm.makeTranslation(x,ty+B0+.04*k2,z);iT.setMatrixAt(n,mm);mm.makeTranslation(x,ty+B0+.012,z);iP.setMatrixAt(n,mm);const j=(i*5)%3,sc2=.85+hs(i,9)*.35;mm.makeScale(sc2,sc2,sc2).setPosition(x,ty+B0+.32*k2*sc2,z);iC[j].setMatrixAt(cnt[j]++,mm);});
  iC.forEach((e,j)=>{e.count=cnt[j];});
  /* cars on straight land roads */
  let nc=0;const CC=['#ff7a59','#f7f7f5','#3d9df5','#ffc23d','#1fb5a5','#c9c4bc'];for(let y=0;y<N;y++)for(let x=0;x<N;x++){const i=y*N+x;if(!isR(x,y)||!land(x,y)||riv(x,y)||hs(i,11)>.07)continue;const h=isR(x-1,y)&&isR(x+1,y)&&!isR(x,y-1)&&!isR(x,y+1),v=isR(x,y-1)&&isR(x,y+1)&&!isR(x-1,y)&&!isR(x+1,y);if(!h&&!v)continue;
-  const side=hs(i,12)<.5?-.2:.2;O.car(h?x+.5:x+.5+side,h?y+.5+side:y+.5,h,CC[((hs(i,13)*60)|0)%CC.length]);nc++;}
- window.STAT={buildings:nb,trees:TP.length,cars:nc};}
+  if(!flatR(x,y))continue;O.lift(hT(x,y));const side=hs(i,12)<.5?-.2:.2;O.car(h?x+.5:x+.5+side,h?y+.5+side:y+.5,h,CC[((hs(i,13)*60)|0)%CC.length]);nc++;}
+ const lh=[0,0,0,0,0,0];for(let i=0;i<N*N;i++)if(land(i%N,(i/N)|0))lh[LV[i]]++;window.STAT={buildings:nb,trees:TP.length,cars:nc,levels:lh.slice(1)};}
 /* light + camera */
 const cx=N/2,cz=N/2;sc.add(new THREE.HemisphereLight('#d8ecff','#7d8a6a',1.1));const L=new THREE.DirectionalLight('#fff0d6',3.6);L.position.set(cx-50,100,cz+40);L.target.position.set(cx,0,cz);sc.add(L.target);L.castShadow=true;L.shadow.mapSize.set(4096,4096);L.shadow.radius=3;L.shadow.bias=-.0008;L.shadow.normalBias=.08;const s=L.shadow.camera;s.left=-110;s.right=110;s.top=110;s.bottom=-110;s.near=1;s.far=300;sc.add(L);{const F=new THREE.DirectionalLight('#fff4e6',.9);F.position.set(cx+80,40,cz+120);sc.add(F);}
 let bx0=N,bx1=0,bz0=N,bz1=0;for(let y=0;y<N;y++)for(let x=0;x<N;x++)if(land(x,y)){bx0=Math.min(bx0,x);bx1=Math.max(bx1,x);bz0=Math.min(bz0,y);bz1=Math.max(bz1,y);}
