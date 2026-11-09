@@ -225,7 +225,7 @@ const masked=(m,ch,keep)=>{m.side=THREE.FrontSide;m.customProgramCacheKey=()=>'m
 const shapeMesh=(L,h,m)=>{const sp=new THREE.Shape(L.map(p=>new THREE.Vector2(p[0],-p[1])));const g=new THREE.ShapeGeometry(sp,1);g.rotateX(-Math.PI/2);g.translate(0,h,0);const e=new THREE.Mesh(g,m);e.receiveShadow=true;sc.add(e);return e;};
 const mk=(A,m,cast)=>{const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(A,3));g.computeVertexNormals();const e=new THREE.Mesh(g,m);e.receiveShadow=true;e.castShadow=!!cast;sc.add(e);return e;};
 const PAV=(()=>{const cv=document.createElement('canvas');cv.width=cv.height=128;const g=cv.getContext('2d');g.fillStyle='#d9cbb3';g.fillRect(0,0,128,128);const cs=['#e6d9c2','#d2c2a6','#ddd0b8','#cdbd9f'];for(let y=0;y<4;y++)for(let x=0;x<4;x++){const o=(y%2)*16;g.fillStyle=cs[(x*3+y*5)%4];g.fillRect(((x*32+o)%128)+2,y*32+2,28,28);if(o)g.fillRect(-14,y*32+2,28,28);}const t=new THREE.CanvasTexture(cv);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.colorSpace=THREE.SRGBColorSpace;return t;})();
-if(window.MS2){asph.color.set('#ffffff');asph.map=PAV;}
+if(window.PAVER){asph.color.set('#ffffff');asph.map=PAV;}
 const topM=masked(asph.clone(),'r',false),lawnT=masked(lawnM.clone(),'g',true),rimM=masked(M('#f3f5f9',{roughness:.5,envMapIntensity:.4}),'rim',true);rimM.side=THREE.DoubleSide;
 const RIM=[],ribbon=(L,h0,h1,w)=>{const I=inset(L,w);for(let i=0;i<L.length;i++){const p=L[i],q=L[(i+1)%L.length],pi=I[i],qi=I[(i+1)%L.length];RIM.push(p[0],h1,p[1], pi[0],h1,pi[1], q[0],h1,q[1], q[0],h1,q[1], pi[0],h1,pi[1], qi[0],h1,qi[1]);RIM.push(p[0],h0,p[1], p[0],h1,p[1], q[0],h0,q[1], q[0],h0,q[1], p[0],h1,p[1], q[0],h1,q[1]);}};
 for(const L of SM){shapeMesh(L,0,topM);shapeMesh(L,.135,lawnT);}

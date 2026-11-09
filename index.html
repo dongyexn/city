@@ -2619,7 +2619,7 @@ function genOutskirts(r,cx,cy,R,dN,seed){const hh=(x,y)=>tileAvgH(x,y)-liftT(x,y
   /* 1. national roads (4 lanes) along valleys from the arterial ends to the map edges */
   {const G=4,GN=N/G,cost=new Float32Array(GN*GN);for(let gy=0;gy<GN;gy++)for(let gx=0;gx<GN;gx++){let mn=99,mx=-1,wt=0,bl=0;for(let y=gy*G;y<gy*G+G;y++)for(let x=gx*G;x<gx*G+G;x++){const i=idx(x,y),h=hh(x,y);mn=Math.min(mn,h);mx=Math.max(mx,h);if(terr[i]===TWA)wt++;const k=kind[i];if(k&&k!==K.ROAD)bl++;}
       const d=dN(gx*G+2,gy*G+2);let rd=0;for(let y=gy*G;y<gy*G+G;y++)for(let x=gx*G;x<gx*G+G;x++)if(kind[idx(x,y)]===K.ROAD)rd++;cost[gy*GN+gx]=1+(mx-mn)*2.2+mx*.18+(wt?260+wt*4:0)+(bl?30:0)+(d<.95?8:0)+(rd?6:0);}
-    const nEx=3+(r()<.55?1:0),a0=r()*6.283,used=[];
+    const nEx=LVL?0:3+(r()<.55?1:0),a0=r()*6.283,used=[];/* 공중 섬: 섬 둘레를 도는 국도는 만들지 않는다 */
     for(let e=0;e<nEx;e++){const ang=a0+e*6.283/nEx+(r()-.5)*.6;let st=null,bs=1e9;for(let i=0;i<NN;i++){if(kind[i]!==K.ROAD)continue;const x=i&NM,y=i>>NS,d=dN(x,y);if(d<.75||d>1.15)continue;let da=Math.atan2(y-cy,x-cx)-ang;while(da>Math.PI)da-=6.283;while(da<-Math.PI)da+=6.283;const sc=Math.abs(da)*40-d*20+(isWide(i)?-8:0);if(sc<bs){bs=sc;st=[x,y];}}
       if(!st)continue;let s=0;while(inMap(Math.round(cx+Math.cos(ang)*(s+4)),Math.round(cy+Math.sin(ang)*(s+4))))s+=4;const tx=clamp(Math.round(cx+Math.cos(ang)*s),7,N-8),ty=clamp(Math.round(cy+Math.sin(ang)*s),7,N-8);
       if(used.some(([ux,uy])=>Math.hypot(ux-tx,uy-ty)<60))continue;used.push([tx,ty]);
