@@ -3451,11 +3451,12 @@ function stationBldg(x0,y0,r){const i0=idx(x0,y0),axs=[];for(const L of RLINES)i
   for(let dy=-7;dy<=7;dy++)for(let dx=-7;dx<=7;dx++){const cx=x0+dx,cy=y0+dy;if(!inMap(cx,cy))continue;const ci=idx(cx,cy);if(kind[ci]===K.LMK&&lmkA[ci]>=0&&(LMKT[vari[lmkA[ci]]]?.id||'').startsWith('rstn'))return false;}
   /* a crossing station tries both lines' axes; when a chunk edge runs right behind the sidewalk the building steps back one tile */
   const bigs=r()<.4?[1,0]:[0];for(const back of [0,1])for(const ax of axs){const at=(t,o)=>ax?[x0+o,y0+t]:[x0+t,y0+o];
+  /* level with the street at the station (raised land is fine; a hillside is not) */const hr=tileAvgH(x0,y0);
   for(const big of bigs){const tid=LMKT.findIndex(t=>t.id===(big?'rstnx':'rstn')),sz=LMKT[tid].sz;
   for(const sd of [1,-1]){/* road half-width beside the track: the narrowest column, so a cross street at the station does not push the building down that street */let o=99;for(let dt=-6;dt<=6;dt++){const [cx,cy]=at(dt,0);if(!inMap(cx,cy)||kind[idx(cx,cy)]!==K.ROAD)continue;let q=0;while(Math.abs(q)<12){const [x,y]=at(dt,q+sd);if(!inMap(x,y)||kind[idx(x,y)]!==K.ROAD)break;q+=sd;}if(q&&Math.abs(q)<Math.abs(o))o=q;}if(o===99)continue;const e=o+sd*(1+back);
     for(const off of [0,-1,1,-2,2,-3,3,-4,4,-5,5,-6,6]){const t0=off-(sz>>1),oA=Math.min(e,e+sd*(sz-1)),xa=ax?x0+oA:x0+t0,ya=ax?y0+t0:y0+oA;
       if((xa>>4)!==((xa+sz-1)>>4)||(ya>>4)!==((ya+sz-1)>>4))continue;let ok=true;
-      for(let y=ya;y<ya+sz&&ok;y++)for(let x=xa;x<xa+sz;x++){if(!inMap(x,y)){ok=false;break;}const j=idx(x,y);if(kind[j]===K.ROAD||kind[j]===K.LMK||terr[j]===TWA||RL[j]||tileAvgH(x,y)>3){ok=false;break;}}
+      for(let y=ya;y<ya+sz&&ok;y++)for(let x=xa;x<xa+sz;x++){if(!inMap(x,y)){ok=false;break;}const j=idx(x,y);if(kind[j]===K.ROAD||kind[j]===K.LMK||terr[j]===TWA||RL[j]||Math.abs(tileAvgH(x,y)-hr)>1){ok=false;break;}}
       if(!ok)continue;for(let y=ya;y<ya+sz;y++)for(let x=xa;x<xa+sz;x++){const j=idx(x,y);clearTile(j);deco[j]=0;touch(j);}if(back)for(let t=t0;t<t0+sz;t++){const [x,y]=at(t,o+sd);if(inMap(x,y)){const j=idx(x,y);if(kind[j]!==K.ROAD&&kind[j]!==K.LMK&&!RL[j]&&terr[j]!==TWA){clearTile(j);deco[j]=0;touch(j);}}}
       placeLmk(tid,xa+((sz-1)>>1),ya+((sz-1)>>1),1);return true;}}}}
   return false;}
