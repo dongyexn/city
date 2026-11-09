@@ -262,7 +262,7 @@ const nl=(x,y)=>land(x,y)&&!isLawn(x,y)&&!riv(x,y)&&Math.abs(hT(x,y)-CY)<.3;
  for(let y=0;y<N;y++)for(let x=0;x<N;x++){if(!isR(x,y)||!land(x,y)||riv(x,y))continue;const c=cH(x,y);
   if(nr(x,y-1))edge([x,y],[x+1,y],c[0],c[1],0,1);if(nr(x,y+1))edge([x,y+1],[x+1,y+1],c[3],c[2],0,-1);if(nr(x-1,y))edge([x,y],[x,y+1],c[0],c[3],1,0);if(nr(x+1,y))edge([x+1,y],[x+1,y+1],c[1],c[2],-1,0);if(wr(x,y-1))bank([x,y],[x+1,y],c[0],c[1]);if(wr(x,y+1))bank([x,y+1],[x+1,y+1],c[3],c[2]);if(wr(x-1,y))bank([x,y],[x,y+1],c[0],c[3]);if(wr(x+1,y))bank([x+1,y],[x+1,y+1],c[1],c[2]);}
  if(BW.length){const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(BW,3));g.computeVertexNormals();sc.add(new THREE.Mesh(g,M('#5d667c',{side:THREE.DoubleSide})));}
- if(CP.length){const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(CP,3));g.computeVertexNormals();const m=new THREE.Mesh(g,M('#f3f5f9',{roughness:.5,envMapIntensity:.4,side:THREE.DoubleSide}));m.castShadow=true;m.receiveShadow=true;sc.add(m);}}
+ if(CP.length&&!window.NOCURB){const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(CP,3));g.computeVertexNormals();const m=new THREE.Mesh(g,M('#f3f5f9',{roughness:.5,envMapIntensity:.4,side:THREE.DoubleSide}));m.castShadow=true;m.receiveShadow=true;sc.add(m);}}
 if(curbs.length){const m=new THREE.Mesh(mergeGeometries(curbs),curbM);m.castShadow=true;m.receiveShadow=true;sc.add(m);}
 /* bridges over the void: asphalt deck with white edge rails */
 {const dk=[],rl=[];for(let y=0;y<N;y++)for(let x=0;x<N;x++){if(!isR(x,y)||land(x,y))continue;let g=new THREE.BoxGeometry(1.02,.25,1.02);g.translate(x+.5,-.125,y+.5);dk.push(g);
@@ -300,7 +300,7 @@ water.transparent=true;water.onBeforeCompile=sh=>{sh.vertexShader=sh.vertexShade
    const rv=(px,pz)=>riv2(Math.floor(px),Math.floor(pz));if(rv(mx+nx*.45,mz+nz*.45)&&!rv(mx-nx*.45,mz-nz*.45)){nx=-nx;nz=-nz;}
    const w=.14,po=[p[0]+nx*w,p[1]+nz*w],qo=[q[0]+nx*w,q[1]+nz*w];BK.push(p[0],.0,p[1], p[0],RF,p[1], q[0],.0,q[1], q[0],.0,q[1], p[0],RF,p[1], q[0],RF,q[1]);
    CR.push(p[0],.135,p[1], po[0],.135,po[1], q[0],.135,q[1], q[0],.135,q[1], po[0],.135,po[1], qo[0],.135,qo[1]); CR.push(p[0],0,p[1], p[0],.135,p[1], q[0],0,q[1], q[0],0,q[1], p[0],.135,p[1], q[0],.135,q[1]);}}
- mk(BK,bankM);mk(CR,cM,true);}
+ mk(BK,bankM);}
 /* waterfalls: river mouths on the smooth outline, bend over the lip, straight drop, fade */
 {const FP=[],rad=.3,yb=-16,NB=10;for(const L of SM){const sg=Math.sign(area(L));for(let i=0;i<L.length;i++){const p=L[i],q=L[(i+1)%L.length];if(!(p[2]&&q[2]))continue;let tx=q[0]-p[0],tz=q[1]-p[1];const l=Math.hypot(tx,tz);const nx=tz/l*sg,nz=-tx/l*sg;
   const prof=[];for(let k=0;k<=NB;k++){const f=k/NB*Math.PI/2;prof.push([-rad+rad*Math.sin(f)+.06,RT-rad+rad*Math.cos(f)]);}prof.push([.06,yb]);
