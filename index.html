@@ -3450,12 +3450,14 @@ function stationBldg(x0,y0,r){const i0=idx(x0,y0),axs=[],h0=tileAvgH(x0,y0);/* g
   /* one building per station, also where two lines cross (stationArea runs once per line) */
   for(let dy=-7;dy<=7;dy++)for(let dx=-7;dx<=7;dx++){const cx=x0+dx,cy=y0+dy;if(!inMap(cx,cy))continue;const ci=idx(cx,cy);if(kind[ci]===K.LMK&&lmkA[ci]>=0&&(LMKT[vari[lmkA[ci]]]?.id||'').startsWith('rstn'))return false;}
   /* a crossing station tries both lines' axes; when a chunk edge runs right behind the sidewalk the building steps back one tile */
-  const bigs=r()<.4?[1,0]:[0];for(const back of [0,1])for(const ax of axs){const at=(t,o)=>ax?[x0+o,y0+t]:[x0+t,y0+o];
+  const bigs=r()<.4?[1,0]:[0];/* second pass: when 보건소·지구대 and the like line the whole station street, the 역사 takes the place of one of them (only small ones lying wholly inside its footprint) */
+  const smallIn=(j,xa,ya,sz)=>{const a=lmkA[j];if(a<0)return false;const T=LMKT[vari[a]];if(!T||T.sz>2||T.id.startsWith('rstn'))return false;const ax=a&NM,ay=a>>NS;return ax-T.sz+1>=xa&&ay-T.sz+1>=ya&&ax<xa+sz&&ay<ya+sz;};
+  for(const soft of [0,1])for(const back of [0,1])for(const ax of axs){const at=(t,o)=>ax?[x0+o,y0+t]:[x0+t,y0+o];
   for(const big of bigs){const tid=LMKT.findIndex(t=>t.id===(big?'rstnx':'rstn')),sz=LMKT[tid].sz;
   for(const sd of [1,-1]){/* road half-width beside the track: the narrowest column, so a cross street at the station does not push the building down that street */let o=99;for(let dt=-6;dt<=6;dt++){const [cx,cy]=at(dt,0);if(!inMap(cx,cy)||kind[idx(cx,cy)]!==K.ROAD)continue;let q=0;while(Math.abs(q)<12){const [x,y]=at(dt,q+sd);if(!inMap(x,y)||kind[idx(x,y)]!==K.ROAD)break;q+=sd;}if(q&&Math.abs(q)<Math.abs(o))o=q;}if(o===99)continue;const e=o+sd*(1+back);
     for(const off of [0,-1,1,-2,2,-3,3,-4,4,-5,5,-6,6]){const t0=off-(sz>>1),oA=Math.min(e,e+sd*(sz-1)),xa=ax?x0+oA:x0+t0,ya=ax?y0+t0:y0+oA;
       if((xa>>4)!==((xa+sz-1)>>4)||(ya>>4)!==((ya+sz-1)>>4))continue;let ok=true;
-      for(let y=ya;y<ya+sz&&ok;y++)for(let x=xa;x<xa+sz;x++){if(!inMap(x,y)){ok=false;break;}const j=idx(x,y);if(kind[j]===K.ROAD||kind[j]===K.LMK||terr[j]===TWA||RL[j]||Math.abs(tileAvgH(x,y)-h0)>1){ok=false;break;}}
+      for(let y=ya;y<ya+sz&&ok;y++)for(let x=xa;x<xa+sz;x++){if(!inMap(x,y)){ok=false;break;}const j=idx(x,y);if(kind[j]===K.ROAD||(kind[j]===K.LMK&&!(soft&&smallIn(j,xa,ya,sz)))||terr[j]===TWA||RL[j]||Math.abs(tileAvgH(x,y)-h0)>1){ok=false;break;}}
       if(!ok)continue;for(let y=ya;y<ya+sz;y++)for(let x=xa;x<xa+sz;x++){const j=idx(x,y);clearTile(j);deco[j]=0;touch(j);}if(back)for(let t=t0;t<t0+sz;t++){const [x,y]=at(t,o+sd);if(inMap(x,y)){const j=idx(x,y);if(kind[j]!==K.ROAD&&kind[j]!==K.LMK&&!RL[j]&&terr[j]!==TWA){clearTile(j);deco[j]=0;touch(j);}}}
       placeLmk(tid,xa+((sz-1)>>1),ya+((sz-1)>>1),1);return true;}}}}
   return false;}
@@ -4798,7 +4800,7 @@ function genCity(seed){const r=mulberry(seed*13+5),SAVE=ROADL,DIR=[[1,0],[-1,0],
       for(const sg of [-1,1]){if(row.every(([xx,yy])=>{const nx=xx+dx*sg,ny=yy+dy*sg;return nx<0||ny<0||nx>=N||ny>=N||kind[idx(nx,ny)]!==K.ROAD;})){const back=row.every(([xx,yy])=>{const nx=xx-dx*sg,ny=yy-dy*sg;return nx>=0&&ny>=0&&nx<N&&ny<N&&isWide(idx(nx,ny));});if(!back)break;for(const [,,j] of row){clearTile(j);deco[j]=0;if(terr[j]!==TWA)terr[j]=TG;touch(j);}ch++;break;}}}if(!ch)break;compsDirty=true;}
   /* 산 레저: on wooded hillsides outside the districts, near a road — auto-camping grounds, a few pensions, a mountain lodge, a reservoir fishing spot, a valley picnic resort */
   {const T=id=>LMKT.findIndex(q=>q.id===id),rdNear=(x0,y0,sz)=>{for(let y=y0-4;y<y0+sz+4;y++)for(let x=x0-4;x<x0+sz+4;x++)if(inMap(x,y)&&kind[idx(x,y)]===K.ROAD)return true;return false;},placed=[];
-   const spot=(sz,minH)=>{let best=null,bs=-1e9;for(let t=0;t<900;t++){const x0=6+((r()*(N-12-sz))|0),y0=6+((r()*(N-12-sz))|0);let ok=true,hs=0,mn=99,mx=-1,tr=0;for(let y=y0;y<y0+sz&&ok;y++)for(let x=x0;x<x0+sz;x++){const i=idx(x,y);if(kind[i]||terr[i]===TWA||cellAt[i]>=0||lmkA[i]>=0){ok=false;break;}const h=hh(x,y);hs+=h;mn=Math.min(mn,h);mx=Math.max(mx,h);if(deco[i]>=1&&deco[i]<=16)tr++;}
+   const spot=(sz,minH)=>{let best=null,bs=-1e9;for(let t=0;t<900;t++){const x0=6+((r()*(N-12-sz))|0),y0=6+((r()*(N-12-sz))|0);if((x0>>4)!==((x0+sz-1)>>4)||(y0>>4)!==((y0+sz-1)>>4))continue;/* placeLmk would snap it onto unchecked tiles (a road) */let ok=true,hs=0,mn=99,mx=-1,tr=0;for(let y=y0;y<y0+sz&&ok;y++)for(let x=x0;x<x0+sz;x++){const i=idx(x,y);if(kind[i]||terr[i]===TWA||cellAt[i]>=0||lmkA[i]>=0){ok=false;break;}const h=hh(x,y);hs+=h;mn=Math.min(mn,h);mx=Math.max(mx,h);if(deco[i]>=1&&deco[i]<=16)tr++;}
        if(!ok||mx-mn>3||hs/(sz*sz)<minH||!rdNear(x0,y0,sz)||placed.some(([a,b])=>Math.hypot(a-x0,b-y0)<18))continue;const sc=tr+hs/(sz*sz)*2+r()*4;if(sc>bs){bs=sc;best=[x0,y0];}}return best;};
    const put=(id,sz,minH)=>{const p=spot(sz,minH);if(!p)return;placed.push(p);placeLmk(T(id),p[0]+((sz-1)>>1),p[1]+((sz-1)>>1),true);};
    put('camp',4,1.5);if(r()<.6)put('camp',4,1.5);put('lodge',2,2.5);for(let k=0;k<3;k++)put('pension',2,1);put('valley',4,1.2);put('fishing',4,.8);}
