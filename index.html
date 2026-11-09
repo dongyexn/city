@@ -4712,13 +4712,14 @@ function genCity(seed){const r=mulberry(seed*13+5),SAVE=ROADL,DIR=[[1,0],[-1,0],
   const put=(i,k,L)=>{const x=i&NM,y=i>>NS;if(BFS(k,L)===2){const x0=x&~1,y0=y&~1;if(isFlat(x0,y0)&&footFree(x0,y0,j=>!kind[j]&&!used[j]&&rdist[j]>=1&&rdist[j]<=3)){makeFoot(x0,y0,k,L,(r()*VN[k])|0,1);return;}L=k===K.IND?1:2;}kind[i]=k;lvl[i]=L;vari[i]=(r()*VN[k])|0;fix[i]=1;touch(i);};
   const tall=[];const towerOK=(x,y,dmin)=>!tall.some(([a,b])=>Math.hypot(a-x,b-y)<dmin);
   /* 8-0. 블록 관통 보행로: 긴 블록을 가로지르는 1칸 포장길(쌈지 보행로) */
+  const FPR=[];
   {const FR=j=>kind[j]===K.EMPTY&&!used[j]&&terr[j]!==TWA&&deco[j]!==17,RDt=j=>kind[j]===K.ROAD;
    cells.forEach((c,ck)=>{if(c.t==='ind'||c.t==='vil')return;const P=c.t==='cbd'?9:c.t==='sub'?10:11;
     for(const ax of [0,1]){const a0=ax?c.y0:c.x0,a1=ax?c.y1:c.x1,b0=ax?c.x0:c.y0,b1=ax?c.x1:c.y1,off=(hsh(ck,ax,77)*P)|0;
      for(let a=a0+off;a<=a1;a+=P){let b=b0-1;while(b<=b1+1){const T=bb=>ax?idx(bb,a):idx(a,bb);if(!inMap(ax?b:a,ax?a:b)){b++;continue;}if(!RDt(T(b))){b++;continue;}
        let e=b+1;while(e<=b1+2&&inMap(ax?e:a,ax?a:e)&&FR(T(e)))e++;const L=e-b-1;
        if(L>=5&&L<=34&&inMap(ax?e:a,ax?a:e)&&RDt(T(e))&&r()<.8){let ok=true;for(let k=b+1;k<e&&ok;k++)for(const d of [-1,1]){const xx=ax?k:a+d,yy=ax?a+d:k;if(!inMap(xx,yy)||kind[idx(xx,yy)]===K.ROAD||deco[idx(xx,yy)]===42){ok=false;break;}}
-        if(ok)for(let k=b+1;k<e;k++){const j=T(k);deco[j]=42;used[j]=1;touch(j);}}
+        if(ok){const run=[];for(let k=b+1;k<e;k++){const j=T(k);deco[j]=42;used[j]=1;touch(j);run.push(j);}FPR.push(run);}}
        b=e>b?e:b+1;}}}});}
   /* 8a. skyline: CBD and sub-centre blocks get 2x2 office-tower lots, first along the arterials, then on side streets */
   cells.forEach((c,ck)=>{if(c.t!=='cbd'&&c.t!=='sub')return;const cbd=c.t==='cbd';
@@ -4860,6 +4861,11 @@ function genCity(seed){const r=mulberry(seed*13+5),SAVE=ROADL,DIR=[[1,0],[-1,0],
      else if(lvl[i]===1&&isGiwa(k,1,vari[i])){vari[i]=GV[k].o[(h*GV[k].o.length)|0];touch(i);}}
    HANOKC=hc?{x0:hc.x0,y0:hc.y0,x1:hc.x1,y1:hc.y1}:null;}
   genRail(cx,cy,seed);
+  /* 보행로는 건물 사이 지름길: 끝내 집이 들어서지 않은 들판·숲(언덕, 지워진 도로 끝)을 가로지르는 포장 띠는 원래 땅으로 되돌린다 */
+  {const bl=j=>{const k=kind[j];return (k>=K.RES&&k<=K.IND&&lvl[j])||k===K.LMK||(k>=K.POWER&&k<=K.FIRE)||isFoot(j);};
+   for(const run of FPR){const on=new Set(run);let n=0;for(const i of run){const x=i&NM,y=i>>NS;let hit=false;for(let dy=-1;dy<=1&&!hit;dy++)for(let dx=-1;dx<=1;dx++){const xx=x+dx,yy=y+dy;if(!inMap(xx,yy))continue;const j=idx(xx,yy);if(!on.has(j)&&bl(j)){hit=true;break;}}if(hit)n++;}
+    if(n>=Math.max(2,Math.ceil(run.length*.4)))continue;
+    for(const i of run){if(kind[i]!==K.EMPTY||deco[i]!==42)continue;const x=i&NM,y=i>>NS;let v=0;for(const [dx,dy] of DIR){const xx=x+dx,yy=y+dy;if(!inMap(xx,yy))continue;const j=idx(xx,yy);if(!on.has(j)&&kind[j]===K.EMPTY&&terr[j]===terr[i]&&deco[j]<=14){v=deco[j];break;}}deco[i]=v;touch(i);}}}
   /* …one that still ends (rail viaducts excepted): rows that serve nothing are dropped (a bridge or boulevard to nowhere); what is left back to its last junction becomes a two-lane access road */
   {const srv=j=>{const k=kind[j];return (k>=K.RES&&k<=K.IND&&lvl[j])||k===K.LMK||(k>=K.POWER&&k<=K.PARK)||isFoot(j)||(deco[j]>=40&&deco[j]<=42);};
    for(let i=0;i<NN;i++){if(!isWide(i)||wInfo(i).p!==0)continue;const x=i&NM,y=i>>NS,s=wideState(x,y);if(s!==4&&s!==5)continue;
