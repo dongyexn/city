@@ -1,0 +1,63 @@
+<!doctype html><html><body style="margin:0;background:#000">
+<script type="importmap">{"imports":{"three":"http://l/node_modules/three/build/three.module.js","three/addons/":"http://l/node_modules/three/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
+import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
+window.render=async(seed,VW,VH,view)=>{
+const D=await (await fetch('http://l/map_'+seed+'.json')).json();const u8=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+const N=D.N,terr=u8(D.terr),kind=u8(D.kind),ocean=u8(D.ocean),K=D.K,TWA=D.TWA;
+const idx=(x,y)=>y*N+x,In=(x,y)=>x>=0&&y>=0&&x<N&&y<N;
+const land=(x,y)=>In(x,y)&&!ocean[idx(x,y)],riv=(x,y)=>land(x,y)&&terr[idx(x,y)]===TWA,isR=(x,y)=>In(x,y)&&kind[idx(x,y)]===K.ROAD,sand=(x,y)=>land(x,y)&&terr[idx(x,y)]===2;
+const r=new THREE.WebGLRenderer({antialias:true,alpha:true,preserveDrawingBuffer:true});r.setSize(VW,VH);r.setPixelRatio(1);r.shadowMap.enabled=true;r.shadowMap.type=THREE.VSMShadowMap;r.toneMapping=THREE.ACESFilmicToneMapping;r.toneMappingExposure=1.08;r.outputColorSpace=THREE.SRGBColorSpace;
+const sc=new THREE.Scene();sc.environment=new THREE.PMREMGenerator(r).fromScene(new RoomEnvironment(),.04).texture;
+const C=h=>new THREE.Color(h),M=(c,o={})=>new THREE.MeshStandardMaterial(Object.assign({color:c,roughness:.8,envMapIntensity:.35},o));
+const hash=(x,y)=>{const s=Math.sin(x*127.1+y*311.7)*43758.5;return s-Math.floor(s);};
+/* vertex land field (marching squares) */
+const V=(x,y)=>{let n=0;for(const [dx,dy] of [[-1,-1],[0,-1],[-1,0],[0,0]])if(land(x+dx,y+dy))n++;return n>=2?1:0;};
+const RW=-.28,GL=-.3,B0=-6;
+const top=[],tcol=[],walls=[],G1=C('#69cf4c'),G2=C('#5cc444'),SA=C('#f0d48c'),col=new THREE.Color();
+const tri=(pts,c)=>{for(let k=1;k+1<pts.length;k++)for(const p of [pts[0],pts[k+1],pts[k]]){top.push(p[0],0,p[1]);tcol.push(c.r,c.g,c.b);}};
+const seg=[];
+for(let y=0;y<N;y++)for(let x=0;x<N;x++){const a=V(x,y),b=V(x+1,y),c=V(x+1,y+1),d=V(x,y+1),cs=a|b<<1|c<<2|d<<3;if(!cs)continue;
+ const P={a:[x,y],b:[x+1,y],c:[x+1,y+1],d:[x,y+1],ab:[x+.5,y],bc:[x+1,y+.5],cd:[x+.5,y+1],da:[x,y+.5]};
+ const T={1:['a','ab','da'],2:['ab','b','bc'],4:['bc','c','cd'],8:['da','cd','d'],3:['a','b','bc','da'],6:['ab','b','c','cd'],12:['da','bc','c','d'],9:['a','ab','cd','d'],7:['a','b','c','cd','da'],11:['a','b','bc','cd','d'],13:['a','ab','bc','c','d'],14:['ab','b','c','d','da'],15:['a','b','c','d'],5:['a','ab','bc','c','cd','da'],10:['ab','b','bc','cd','d','da']}[cs];
+ const S={1:[['da','ab']],2:[['ab','bc']],4:[['bc','cd']],8:[['cd','da']],3:[['da','bc']],6:[['ab','cd']],12:[['bc','da']],9:[['cd','ab']],7:[['cd','da']],11:[['bc','cd']],13:[['ab','bc']],14:[['da','ab']],5:[['da','ab'],['bc','cd']],10:[['ab','bc'],['cd','da']]}[cs]||[];
+ const isRv=land(x,y)&&riv(x,y);
+ if(!isRv){if(sand(x,y)||cs!==15)col.copy(cs!==15?SA:SA);else col.copy(G1).lerp(G2,hash(x,y));if(cs!==15&&!sand(x,y))col.copy(G1).lerp(SA,.0);tri(T.map(k=>P[k]),col);}
+ for(const [p,q] of S)seg.push([P[p],P[q],isRv]);}
+/* top mesh */
+const tg=new THREE.BufferGeometry();tg.setAttribute('position',new THREE.Float32BufferAttribute(top,3));tg.setAttribute('color',new THREE.Float32BufferAttribute(tcol,3));tg.computeVertexNormals();
+const tm=new THREE.Mesh(tg,new THREE.MeshStandardMaterial({vertexColors:true,roughness:.85,envMapIntensity:.35}));tm.receiveShadow=true;sc.add(tm);
+/* edge walls with strata */
+const WP=[],WC=[],band=(p,q,t,b,c)=>{WP.push(p[0],t,p[1], p[0],b,p[1], q[0],t,q[1], q[0],t,q[1], p[0],b,p[1], q[0],b,q[1]);for(let k=0;k<6;k++)WC.push(c.r,c.g,c.b);};
+const SL1=C('#4fae3e'),SO1=C('#d08a52'),SO2=C('#b06e3e'),SO3=C('#7e4a2c'),WF=C('#1f86ea');
+for(const [p,q,rv] of seg){if(rv){band(p,q,RW,B0*.55,WF);continue;}band(p,q,0,GL,SL1);band(p,q,GL,-1.9,SO1);band(p,q,-1.9,-3.8,SO2);band(p,q,-3.8,B0,SO3);}
+const wg=new THREE.BufferGeometry();wg.setAttribute('position',new THREE.Float32BufferAttribute(WP,3));wg.setAttribute('color',new THREE.Float32BufferAttribute(WC,3));wg.computeVertexNormals();
+const wmm=new THREE.Mesh(wg,new THREE.MeshStandardMaterial({vertexColors:true,roughness:.85,side:THREE.DoubleSide,envMapIntensity:.3}));wmm.castShadow=true;sc.add(wmm);
+/* rivers: channel floor + banks + water */
+const RP=[],BK=[];const q4=(A,x0,z0,x1,z1,h)=>A.push(x0,h,z0, x0,h,z1, x1,h,z0, x1,h,z0, x0,h,z1, x1,h,z1);
+for(let y=0;y<N;y++)for(let x=0;x<N;x++){if(!riv(x,y))continue;q4(RP,x,y,x+1,y+1,RW);
+ const bw=(p,q)=>{BK.push(p[0],0,p[1], p[0],RW-.05,p[1], q[0],0,q[1], q[0],0,q[1], p[0],RW-.05,p[1], q[0],RW-.05,q[1]);};
+ if(land(x,y-1)&&!riv(x,y-1))bw([x,y],[x+1,y]);if(land(x,y+1)&&!riv(x,y+1))bw([x,y+1],[x+1,y+1]);if(land(x-1,y)&&!riv(x-1,y))bw([x,y],[x,y+1]);if(land(x+1,y)&&!riv(x+1,y))bw([x+1,y],[x+1,y+1]);}
+const mk=(A,m)=>{const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(A,3));g.computeVertexNormals();const e=new THREE.Mesh(g,m);e.receiveShadow=true;sc.add(e);return e;};
+mk(BK,M('#e8d29a',{side:THREE.DoubleSide}));
+const water=new THREE.MeshPhysicalMaterial({color:'#1683ea',roughness:.05,metalness:.05,clearcoat:1,envMapIntensity:.8});mk(RP,water);
+/* roads: on land flat; over void as floating deck */
+const RD=[],DK=[];for(let y=0;y<N;y++)for(let x=0;x<N;x++){if(!isR(x,y))continue;if(land(x,y)&&!riv(x,y))q4(RD,x,y,x+1,y+1,.03);else{const g=new THREE.BoxGeometry(1,.22,1);g.translate(x+.5,-.06,y+.5);DK.push(g);}}
+const rmesh=mk(RD,M('#5a6378',{roughness:.7,envMapIntensity:.3}));
+if(DK.length){const d=new THREE.Mesh(mergeGeometries(DK),[M('#5a6378')]);d.material=M('#dfe5ee',{roughness:.5});d.castShadow=true;d.receiveShadow=true;sc.add(d);const dt=[];for(const g of DK){}}
+{const RT=[];for(let y=0;y<N;y++)for(let x=0;x<N;x++)if(isR(x,y)&&!(land(x,y)&&!riv(x,y)))q4(RT,x,y,x+1,y+1,.052);mk(RT,M('#5a6378',{roughness:.7}));}
+const curbs=[];const cb=(x0,z0,x1,z1)=>{const g=new THREE.BoxGeometry(x1-x0||.12,.12,z1-z0||.12);g.translate((x0+x1)/2,.06,(z0+z1)/2);curbs.push(g);};const LG=(x,y)=>land(x,y)&&!riv(x,y)&&!isR(x,y);
+for(let y=0;y<N;y++)for(let x=0;x<N;x++){if(!isR(x,y)||!land(x,y)||riv(x,y))continue;if(LG(x,y-1))cb(x,y+.06,x+1,y+.06);if(LG(x,y+1))cb(x,y+.94,x+1,y+.94);if(LG(x-1,y))cb(x+.06,y,x+.06,y+1);if(LG(x+1,y))cb(x+.94,y,x+.94,y+1);}
+if(curbs.length){const m=new THREE.Mesh(mergeGeometries(curbs),M('#f3f5f9',{roughness:.5,envMapIntensity:.4}));m.castShadow=true;m.receiveShadow=true;sc.add(m);}
+/* light + camera */
+const cx=N/2,cz=N/2;sc.add(new THREE.HemisphereLight('#d8ecff','#7d8a6a',1.1));const L=new THREE.DirectionalLight('#fff0d6',3.4);L.position.set(cx-60,90,cz+40);L.target.position.set(cx,0,cz);sc.add(L.target);L.castShadow=true;L.shadow.mapSize.set(4096,4096);L.shadow.radius=3;L.shadow.bias=-.0003;L.shadow.normalBias=.05;const s=L.shadow.camera;s.left=-110;s.right=110;s.top=110;s.bottom=-110;s.near=1;s.far=300;sc.add(L);
+let bx0=N,bx1=0,bz0=N,bz1=0;for(let y=0;y<N;y++)for(let x=0;x<N;x++)if(land(x,y)){bx0=Math.min(bx0,x);bx1=Math.max(bx1,x);bz0=Math.min(bz0,y);bz1=Math.max(bz1,y);}
+const asp=VW/VH,k=view.k;const cam=new THREE.OrthographicCamera(-k*asp/2,k*asp/2,k/2,-k/2,.1,800);const t=view.t||[(bx0+bx1)/2,-2,(bz0+bz1)/2];cam.position.set(t[0]+120,t[1]+98,t[2]+120);cam.lookAt(t[0],t[1],t[2]);
+r.render(sc,cam);
+const o=document.createElement('canvas');o.width=VW;o.height=VH;const x=o.getContext('2d');const gr=x.createLinearGradient(0,0,0,VH);gr.addColorStop(0,'#7fd0ff');gr.addColorStop(.55,'#3fa2f5');gr.addColorStop(1,'#1f6fe0');x.fillStyle=gr;x.fillRect(0,0,VW,VH);
+x.save();x.filter='blur(50px)';x.globalAlpha=.35;x.fillStyle='#0a3d8a';x.beginPath();x.ellipse(VW/2,VH*.82,VW*.3,VH*.07,0,0,7);x.fill();x.restore();
+x.save();x.filter='saturate(1.25) contrast(1.05)';x.drawImage(r.domElement,0,0);x.restore();return o.toDataURL();};
+window.ready=1;
+</script></body></html>
