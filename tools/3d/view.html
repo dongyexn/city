@@ -1,0 +1,59 @@
+<!doctype html><html><body style="margin:0;background:#000">
+<script type="importmap">{"imports":{"three":"http://l/node_modules/three/build/three.module.js","three/addons/":"http://l/node_modules/three/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
+import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
+window.render=async(seed,VW,VH,view)=>{
+const D=await (await fetch('http://l/map_'+seed+'.json')).json();const u8=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+const N=D.N,HN=D.HN,H=u8(D.H),terr=u8(D.terr),kind=u8(D.kind),lvl=u8(D.lvl),ocean=u8(D.ocean),K=D.K,TWA=D.TWA;
+const hs=.38,hv=(x,y)=>H[y*HN+x]*hs,idx=(x,y)=>y*N+x,isW=(x,y)=>terr[idx(x,y)]===TWA,isR=(x,y)=>x>=0&&y>=0&&x<N&&y<N&&kind[idx(x,y)]===K.ROAD;
+const r=new THREE.WebGLRenderer({antialias:true,alpha:true,preserveDrawingBuffer:true});r.setSize(VW,VH);r.setPixelRatio(1);r.shadowMap.enabled=true;r.shadowMap.type=THREE.VSMShadowMap;r.toneMapping=THREE.ACESFilmicToneMapping;r.toneMappingExposure=1.08;r.outputColorSpace=THREE.SRGBColorSpace;
+const sc=new THREE.Scene();sc.environment=new THREE.PMREMGenerator(r).fromScene(new RoomEnvironment(),.04).texture;
+const C=(h)=>new THREE.Color(h);
+/* terrain: smooth shared-vertex heightfield; vertices touching water are pushed under the surface so coasts cut diagonally */
+const hash=(x,y)=>{const s=Math.sin(x*127.1+y*311.7)*43758.5;return s-Math.floor(s);};
+let smin=1e9;for(let i=0;i<N*N;i++)if(ocean[i])smin=Math.min(smin,H[(i/N|0)*HN+(i%N)]);const SL=(smin===1e9?0:smin)*hs+.25;
+const tLev=(x,y)=>ocean[idx(x,y)]?SL:Math.min(hv(x,y),hv(x+1,y),hv(x+1,y+1),hv(x,y+1))+.22;
+const TVH=new Float32Array(HN*HN),TVW=new Uint8Array(HN*HN),VS=new Uint8Array(HN*HN),VL=new Float32Array(HN*HN).fill(1e9);
+for(let y=0;y<=N;y++)for(let x=0;x<=N;x++){let w=0,sa=0,n=0;for(const [dx,dy] of [[-1,-1],[0,-1],[-1,0],[0,0]]){const tx=x+dx,ty=y+dy;if(tx<0||ty<0||tx>=N||ty>=N)continue;n++;const i=idx(tx,ty);if(terr[i]===TWA){w++;VL[y*HN+x]=Math.min(VL[y*HN+x],tLev(tx,ty));}else if(terr[i]===2)sa++;}
+ let h=hv(x,y);if(w>=2)h=Math.min(h,VL[y*HN+x]-.7);else if(w===1)h=Math.min(h,VL[y*HN+x]-.06);TVH[y*HN+x]=h;TVW[y*HN+x]=w;VS[y*HN+x]=sa;}
+const tg=new THREE.PlaneGeometry(N,N,N,N);tg.rotateX(-Math.PI/2);tg.translate(N/2,0,N/2);const tp=tg.attributes.position,cols=new Float32Array(tp.count*3);
+const G1=C('#69cf4c'),G2=C('#58c040'),SA=C('#f0d48c'),SB=C('#cdb889'),RK=C('#8f9a7a'),col=new THREE.Color();
+for(let k=0;k<tp.count;k++){const x=Math.round(tp.getX(k)),y=Math.round(tp.getZ(k)),j=y*HN+x;tp.setY(k,TVH[j]);
+ const w=TVW[j];if(w>=2)col.copy(SB);else if(w===1||VS[j]>=2)col.copy(SA);else{col.copy(G1).lerp(G2,hash(x,y)*.8);const hh=H[j];col.offsetHSL(0,-.02*Math.max(0,hh-6),hh*.004);}
+ cols[k*3]=col.r;cols[k*3+1]=col.g;cols[k*3+2]=col.b;}
+tg.setAttribute('color',new THREE.BufferAttribute(cols,3));tg.computeVertexNormals();
+const tm=new THREE.Mesh(tg,new THREE.MeshStandardMaterial({vertexColors:true,roughness:.85,envMapIntensity:.35}));tm.receiveShadow=true;tm.castShadow=true;sc.add(tm);
+const hvv=(x,y)=>TVH[y*HN+x];
+/* roads: asphalt quads + white curbs where road meets land */
+const RP=[],KP=[];const quad=(A,x0,z0,x1,z1,y0,y1,y2,y3)=>A.push(x0,y0,z0, x0,y3,z1, x1,y1,z0, x1,y1,z0, x0,y3,z1, x1,y2,z1);
+for(let y=0;y<N;y++)for(let x=0;x<N;x++){if(!isR(x,y))continue;const e=.03,br=isW(x,y),bl=br?tLev(x,y)+.35:0,a=br?bl:hvv(x,y)+e,b=br?bl:hvv(x+1,y)+e,c=br?bl:hvv(x+1,y+1)+e,d=br?bl:hvv(x,y+1)+e;quad(RP,x,y,x+1,y+1,a,b,c,d);}
+const rg=new THREE.BufferGeometry();rg.setAttribute('position',new THREE.Float32BufferAttribute(RP,3));rg.computeVertexNormals();const rm=new THREE.Mesh(rg,new THREE.MeshStandardMaterial({color:'#5a6378',roughness:.7,envMapIntensity:.3,polygonOffset:true,polygonOffsetFactor:-2}));rm.receiveShadow=true;sc.add(rm);
+const curbs=[];const cb=(x0,z0,x1,z1,ha,hb)=>{const w=Math.abs(x1-x0)+Math.abs(z1-z0)?1:1;const g=new THREE.BoxGeometry(x1-x0||.12,.12,z1-z0||.12);g.translate((x0+x1)/2,(ha+hb)/2+.05,(z0+z1)/2);curbs.push(g);};
+for(let y=0;y<N;y++)for(let x=0;x<N;x++){if(!isR(x,y))continue;
+ if(y>0&&!isR(x,y-1)&&!isW(x,y-1))cb(x,y+.06,x+1,y+.06,hvv(x,y),hvv(x+1,y));if(y<N-1&&!isR(x,y+1)&&!isW(x,y+1))cb(x,y+1-.06,x+1,y+1-.06,hvv(x,y+1),hvv(x+1,y+1));
+ if(x>0&&!isR(x-1,y)&&!isW(x-1,y))cb(x+.06,y,x+.06,y+1,hvv(x,y),hvv(x,y+1));if(x<N-1&&!isR(x+1,y)&&!isW(x+1,y))cb(x+1-.06,y,x+1-.06,y+1,hvv(x+1,y),hvv(x+1,y+1));}
+if(curbs.length){const m=new THREE.Mesh(mergeGeometries(curbs),new THREE.MeshStandardMaterial({color:'#f3f5f9',roughness:.5,envMapIntensity:.4}));m.receiveShadow=true;m.castShadow=true;sc.add(m);}
+/* bridge piers */{const pm=new THREE.MeshStandardMaterial({color:'#e9edf3',roughness:.5}),gs=[];for(let y=0;y<N;y++)for(let x=0;x<N;x++){if(!isR(x,y)||!isW(x,y)||((x+y)%3))continue;const lv=tLev(x,y),g=new THREE.BoxGeometry(.35,.6,.35);g.translate(x+.5,lv+.05,y+.5);gs.push(g);}if(gs.length){const m=new THREE.Mesh(mergeGeometries(gs),pm);m.castShadow=true;sc.add(m);}}
+/* water: one ocean sheet at sea level + river tiles at their own level */
+const WP=[];quad(WP,0,0,N,N,SL,SL,SL,SL);for(let y=0;y<N;y++)for(let x=0;x<N;x++){if(!isW(x,y)||ocean[idx(x,y)]||isR(x,y))continue;const lv=tLev(x,y);quad(WP,x-.05,y-.05,x+1.05,y+1.05,lv,lv,lv,lv);}
+const wg=new THREE.BufferGeometry();wg.setAttribute('position',new THREE.Float32BufferAttribute(WP,3));wg.computeVertexNormals();
+const wm=new THREE.MeshPhysicalMaterial({color:'#1683ea',roughness:.05,metalness:.05,clearcoat:1,transparent:true,opacity:.86,envMapIntensity:.8,depthWrite:false});const wmesh=new THREE.Mesh(wg,wm);wmesh.receiveShadow=true;wmesh.renderOrder=2;sc.add(wmesh);
+/* slab skirts on the two camera-facing sides (x=N and y=N): water cross-section, then soil strata */
+const base=-9,SKP=[],SKC=[];const band=(x0,z0,x1,z1,t0,t1,b0,b1,c)=>{SKP.push(x0,t0,z0, x0,b0,z0, x1,t1,z1, x1,t1,z1, x0,b0,z0, x1,b1,z1);for(let k=0;k<6;k++)SKC.push(c.r,c.g,c.b);};
+const SL1=C('#4fae3e'),SO1=C('#d08a52'),SO2=C('#b06e3e'),SO3=C('#7e4a2c'),WSD=C('#1f7fe0');
+const side=(pts)=>{for(let k=0;k+1<pts.length;k++){const [xa,za,ha,wa]=pts[k],[xb,zb,hb,wb]=pts[k+1];let ta=ha,tb=hb;
+  if(wa||wb){band(xa,za,xb,zb,SL,SL,ha,hb,WSD);}else{band(xa,za,xb,zb,ta,tb,ta-.18,tb-.18,SL1);ta-=.18;tb-=.18;}
+  const m1=SL-2.2,m2=SL-5;band(xa,za,xb,zb,ta,tb,Math.min(ta,m1),Math.min(tb,m1),SO1);band(xa,za,xb,zb,Math.min(ta,m1),Math.min(tb,m1),m2,m2,SO2);band(xa,za,xb,zb,m2,m2,base,base,SO3);}};
+{const a=[],b=[];for(let t=0;t<=N;t++){a.push([N,t,hvv(N,t),hvv(N,t)<SL]);b.push([t,N,hvv(t,N),hvv(t,N)<SL]);}side(a.reverse());side(b);}
+const sg=new THREE.BufferGeometry();sg.setAttribute('position',new THREE.Float32BufferAttribute(SKP,3));sg.setAttribute('color',new THREE.Float32BufferAttribute(SKC,3));sg.computeVertexNormals();
+const smesh=new THREE.Mesh(sg,new THREE.MeshStandardMaterial({vertexColors:true,roughness:.85,side:THREE.DoubleSide,envMapIntensity:.3}));sc.add(smesh);
+/* light + camera */
+sc.add(new THREE.HemisphereLight('#d8ecff','#7d8a6a',1.1));const L=new THREE.DirectionalLight('#fff0d6',3.4);const cx=N/2,cz=N/2;L.position.set(cx-60,90,cz+40);L.target.position.set(cx,0,cz);sc.add(L.target);L.castShadow=true;L.shadow.mapSize.set(4096,4096);L.shadow.radius=3;L.shadow.bias=-.0003;L.shadow.normalBias=.05;const s=L.shadow.camera;s.left=-110;s.right=110;s.top=110;s.bottom=-110;s.near=1;s.far=300;sc.add(L);
+const asp=VW/VH,k=view.k;const cam=new THREE.OrthographicCamera(-k*asp/2,k*asp/2,k/2,-k/2,.1,800);const t=view.t||[cx,0,cz];cam.position.set(t[0]+120,t[1]+98,t[2]+120);cam.lookAt(t[0],t[1],t[2]);
+r.render(sc,cam);
+const o=document.createElement('canvas');o.width=VW;o.height=VH;const x=o.getContext('2d');const gr=x.createLinearGradient(0,0,0,VH);gr.addColorStop(0,'#7fd0ff');gr.addColorStop(.55,'#3fa2f5');gr.addColorStop(1,'#1f6fe0');x.fillStyle=gr;x.fillRect(0,0,VW,VH);
+x.save();x.filter='saturate(1.25) contrast(1.05)';x.drawImage(r.domElement,0,0);x.restore();return o.toDataURL();};
+window.ready=1;
+</script></body></html>
