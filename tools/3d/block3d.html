@@ -184,7 +184,7 @@ const q4=(A,x0,z0,x1,z1,h)=>A.push(x0,h,z0, x0,h,z1, x1,h,z0, x1,h,z0, x0,h,z1, 
 const isLawn=(x,y)=>land(x,y)&&!riv(x,y)&&!isR(x,y);
 /* ===== discrete terraces (levels 1..5), Minecraft-like cliffs; only roads ramp between levels ===== */
 const HNv=D.HN,HH=u8(D.H),LV=D.LVL?u8(D.LVL):new Uint8Array(N*N).fill(1),LH=.75;let HB=255;for(let y=0;y<N;y++)for(let x=0;x<N;x++)if(land(x,y)&&!riv(x,y))HB=Math.min(HB,HH[y*HNv+x]);
-const ROV=new Uint8Array(N*N);const hT=(x,y)=>x>=0&&y>=0&&x<N&&y<N&&land(x,y)?((ROV[y*N+x]||LV[y*N+x])-1)*LH:0;
+const ROV=new Uint8Array(N*N);{const gp=new Map();for(let i=0;i<N*N;i++)if(lmkA[i]>=0){if(!gp.has(lmkA[i]))gp.set(lmkA[i],[]);gp.get(lmkA[i]).push(i);}let nfix=0;for(const cells of gp.values()){const c=[0,0,0,0,0,0,0,0];for(const i of cells)c[LV[i]]++;let best=0;for(let l=1;l<8;l++)if(c[l]>c[best]||best===0&&c[l])best=l;if(c[best]<cells.length){nfix++;for(const i of cells)ROV[i]=best;}}window.LMKFIX=nfix;}const hT=(x,y)=>x>=0&&y>=0&&x<N&&y<N&&land(x,y)?((ROV[y*N+x]||LV[y*N+x])-1)*LH:0;
 const rV=(vx,vy)=>Math.max(0,(HH[vy*HNv+vx]-HB)*LH);
 /* road ramps slope along ONE axis only (no twisted tiles): a road tile whose level differs from its road neighbour along x (else y) ramps along that axis;
    each edge height = mean of the two tiles' levels when the neighbour is road, else own level, so both corners of an edge always match */
@@ -193,11 +193,12 @@ const isRL=(x,y)=>isR(x,y)&&land(x,y)&&!riv(x,y);
 {const g=(x,y)=>isRL(x,y)?hT(x,y):null,ne=(a,b)=>Math.abs(a-b)>.01;for(let it=0;it<4;it++)for(let y=0;y<N;y++)for(let x=0;x<N;x++){if(!isRL(x,y))continue;const h=hT(x,y);
  for(const [dx,dy] of [[1,0],[0,1]]){let n0=0,n1=0;while(n0<5&&g(x-dx*(n0+1),y-dy*(n0+1))!==null&&!ne(g(x-dx*(n0+1),y-dy*(n0+1)),h))n0++;while(n1<5&&g(x+dx*(n1+1),y+dy*(n1+1))!==null&&!ne(g(x+dx*(n1+1),y+dy*(n1+1)),h))n1++;
   if(n0+n1+1>4)continue;const a=g(x-dx*(n0+1),y-dy*(n0+1)),b=g(x+dx*(n1+1),y+dy*(n1+1));if(a===null||b===null||ne(a,b))continue;for(let k=-n0;k<=n1;k++)ROV[(y+dy*k)*N+x+dx*k]=Math.round(a/LH)+1;break;}}}
-const rAx=(x,y)=>{if(!isRL(x,y))return 0;const h=hT(x,y),d=(xx,yy)=>isRL(xx,yy)&&Math.abs(hT(xx,yy)-h)>.01,a=d(x-1,y)||d(x+1,y),b=d(x,y-1)||d(x,y+1);return a&&!b?1:b&&!a?2:0;};
-const eHm=(x,y,xx,yy,ax)=>{const h=hT(x,y);if(!isRL(xx,yy))return [h,1];const h2=hT(xx,yy);if(Math.abs(h2-h)<.01)return [h,1];return rAx(xx,yy)===ax?[(h+h2)/2,0]:[h2,1];};
-const rEnds=(x,y)=>{const ax=rAx(x,y);if(!ax)return null;return ax===1?[ax,eHm(x,y,x-1,y,1),eHm(x,y,x+1,y,1)]:[ax,eHm(x,y,x,y-1,2),eHm(x,y,x,y+1,2)];};
-const rF=(t,z0,z1)=>z0&&z1?t*t*(3-2*t):z0?t*t:z1?1-(1-t)*(1-t):t;
-const cH=(x,y)=>{const h=hT(x,y),r=rEnds(x,y);if(!r)return [h,h,h,h];const a=r[1][0],b=r[2][0];return r[0]===1?[a,b,b,a]:[a,a,b,b];};
+const rUp=(x,y,xx,yy)=>isRL(xx,yy)&&hT(xx,yy)>hT(x,y)+.01;
+const rAx=(x,y)=>{if(!isRL(x,y))return 0;return rUp(x,y,x-1,y)||rUp(x,y,x+1,y)?1:rUp(x,y,x,y-1)||rUp(x,y,x,y+1)?2:0;};
+const eHm=(x,y,xx,yy,ax)=>[rUp(x,y,xx,yy)?hT(xx,yy):hT(x,y),1];
+const rEnds=(x,y)=>{const ax=rAx(x,y);if(!ax)return null;const r=ax===1?[ax,eHm(x,y,x-1,y,1),eHm(x,y,x+1,y,1)]:[ax,eHm(x,y,x,y-1,2),eHm(x,y,x,y+1,2)];return Math.abs(r[1][0]-r[2][0])<.01?null:r;};
+const rF=(t,z0,z1)=>t;
+const cH=(x,y)=>{const r=rEnds(x,y);let h=hT(x,y);if(!r){if(isRL(x,y)&&rAx(x,y)){const ax=rAx(x,y);h=ax===1?eHm(x,y,x-1,y)[0]:eHm(x,y,x,y-1)[0];}return [h,h,h,h];}const a=r[1][0],b=r[2][0];return r[0]===1?[a,b,b,a]:[a,a,b,b];};
 const flatR=(x,y)=>{const c=cH(x,y);return Math.max(...c)-Math.min(...c)<.01;};
 
 const FALL=[];
@@ -246,12 +247,12 @@ const mk=(A,m,cast)=>{const g=new THREE.BufferGeometry();g.setAttribute('positio
    if(ex[2])edge([x0,z0],[x1,z0],[ex[0]?x:x0,y],[ex[1]?x+1:x1,y],0,-1);
    if(ex[3])edge([x1,z1],[x0,z1],[ex[1]?x+1:x1,y+1],[ex[0]?x:x0,y+1],0,1);}
   else if(isR(x,y)){const r=isRL(x,y)?rEnds(x,y):null;if(!r){q(RP,[x,t[0]+.002,y],[x,t[3]+.002,y+1],[x+1,t[1]+.002,y],[x+1,t[2]+.002,y+1]);for(let k=0;k<6;k++)RN.push(0,1,0);}
-   else{const [ax,[e0,z0],[e1,z1]]=r,NS=12,b=bot(x,y),H=t=>e0+(e1-e0)*rF(Math.min(1,Math.max(0,t)),z0,z1),P=(t,s,hh)=>ax===1?[x+t,hh,y+s]:[x+s,hh,y+t],nm=t=>{const sl=(H(t+.02)-H(t-.02))/.04,l=Math.hypot(1,sl);return ax===1?[-sl/l,1/l,0]:[0,1/l,-sl/l];};
+   else{const [ax,[e0,z0],[e1,z1]]=r,NS=1,b=bot(x,y),H=t=>e0+(e1-e0)*rF(Math.min(1,Math.max(0,t)),z0,z1),P=(t,s,hh)=>ax===1?[x+t,hh,y+s]:[x+s,hh,y+t],nm=t=>{const sl=(H(t+.02)-H(t-.02))/.04,l=Math.hypot(1,sl);return ax===1?[-sl/l,1/l,0]:[0,1/l,-sl/l];};
     const SLB=C('#4d5362'),DRT=C('#6f4a2c'),wall=(A,B2,hA,hB)=>{q(RS,[A[0],hA,A[2]],[A[0],hA-.1,A[2]],[B2[0],hB,B2[2]],[B2[0],hB-.1,B2[2]]);col(RSC,SLB,6);q(RS,[A[0],hA-.1,A[2]],[A[0],b,A[2]],[B2[0],hB-.1,B2[2]],[B2[0],b,B2[2]]);col(RSC,DRT,6);};
     for(let k=0;k<NS;k++){const t0=k/NS,t1=(k+1)/NS,h0=H(t0)+.002,h1=H(t1)+.002,n0=nm(t0),n1=nm(t1);
      if(ax===1){q(RP,P(t0,0,h0),P(t0,1,h0),P(t1,0,h1),P(t1,1,h1));RN.push(...n0,...n0,...n1,...n1,...n0,...n1);}else{q(RP,P(t0,0,h0),P(t1,0,h1),P(t0,1,h0),P(t1,1,h1));RN.push(...n0,...n1,...n0,...n0,...n1,...n1);}
      wall(P(t0,0,h0),P(t1,0,h1),h0,h1);wall(P(t0,1,h0),P(t1,1,h1),h0,h1);}
-    wall(P(0,0,e0),P(0,1,e0),e0,e0);wall(P(1,0,e1),P(1,1,e1),e1,e1);}}
+    const cov=(xx,yy,e)=>isRL(xx,yy)&&hT(xx,yy)>=e-.01;if(!cov(ax===1?x-1:x,ax===1?y:y-1,e0))wall(P(0,0,e0),P(0,1,e0),e0,e0);if(!cov(ax===1?x+1:x,ax===1?y:y+1,e1))wall(P(1,0,e1),P(1,1,e1),e1,e1);}}
   else{q(WF,[x,RT,y],[x,RT,y+1],[x+1,RT,y],[x+1,RT,y+1]);q(BED,[x,BEDH,y],[x,BEDH,y+1],[x+1,BEDH,y],[x+1,BEDH,y+1]);}
   const b=bot(x,y),bc=SL[Math.min(4,Math.round(B0-b))];q(W,[x,b,y],[x+1,b,y],[x,b,y+1],[x+1,b,y+1]);col(WC,bc,6);WU.push(0,0,1,0,0,1,0,1,1,0,1,1);
   for(const [dx,dy,p0,p1,k0,k1,n0,n1] of [[1,0,[x+1,y],[x+1,y+1],1,2,0,3],[0,1,[x,y+1],[x+1,y+1],3,2,0,1],[-1,0,[x,y],[x,y+1],0,3,1,2],[0,-1,[x,y],[x+1,y],0,1,3,2]]){
@@ -302,7 +303,7 @@ const mk=(A,m,cast)=>{const g=new THREE.BufferGeometry();g.setAttribute('positio
      if(vWN.y>.6){float ao=max(max(vAO.x*smoothstep(.05,.5,vLP.x),vAO.y*smoothstep(.05,.5,-vLP.x)),max(vAO.z*smoothstep(.05,.5,vLP.z),vAO.w*smoothstep(.05,.5,-vLP.z)));tc.rgb*=1.-.34*ao*ao;}
      diffuseColor*=tc;`);};
   mat.customProgramCacheKey=()=>'ms2block';
-  const GEO=new RoundedBoxGeometry(1,LH,1,3,.06);const list=[];
+  const GEO=new RoundedBoxGeometry(1,LH,1,2,.06);const list=[];
   const topAt=(x,y)=>{if(!land(x,y))return -99;if(riv(x,y)&&!isR(x,y))return RT-.7;const t2=top(x,y);return Math.min(...t2);};
   for(const [x,y,T,B,TP2] of CUBES){const nb=[topAt(x+1,y),topAt(x-1,y),topAt(x,y+1),topAt(x,y-1)],lo=Math.min(...nb);
    list.push([x,y,T-LH/2,0,TP2]);for(let k=1;;k++){const tp=T-LH*k;if(tp<=B+.01||tp<=lo-LH*0)break;if(tp>lo+.01||true){if(tp<=lo+.001&&k>1)break;list.push([x,y,tp-LH/2,k,TP2]);}}
@@ -331,7 +332,7 @@ const mk=(A,m,cast)=>{const g=new THREE.BufferGeometry();g.setAttribute('positio
    const t=new THREE.CanvasTexture(cv);t.wrapS=THREE.RepeatWrapping;t.colorSpace=THREE.SRGBColorSpace;const g2=new THREE.BufferGeometry();g2.setAttribute('position',new THREE.Float32BufferAttribute(FO,3));g2.setAttribute('uv',new THREE.Float32BufferAttribute(FUV,2));
    const e=new THREE.Mesh(g2,new THREE.MeshBasicMaterial({map:t,transparent:true,opacity:.92,depthWrite:false,side:THREE.DoubleSide}));e.renderOrder=4;sc.add(e);}
   if(LI.length){const pg=new THREE.CylinderGeometry(.14,.14,.014,16,1,false,.3,5.7),p2=new THREE.CylinderGeometry(.09,.09,.014,14,1,false,2,5.7);p2.translate(.2,0,.13);const lg=mergeGeometries([pg,p2]);
-   const li=new THREE.InstancedMesh(lg,new THREE.MeshStandardMaterial({color:'#5cba4c',roughness:.6}),LI.length),fg=new THREE.SphereGeometry(.04,8,6);fg.scale(1,.7,1);const lf=new THREE.InstancedMesh(fg,new THREE.MeshStandardMaterial({color:'#ffa3c8',roughness:.5}),LI.length);lf.count=0;
+   const li=new THREE.InstancedMesh(lg,new THREE.MeshStandardMaterial({color:'#2f9a40',roughness:.6}),LI.length),fg=new THREE.SphereGeometry(.04,8,6);fg.scale(1,.7,1);const lf=new THREE.InstancedMesh(fg,new THREE.MeshStandardMaterial({color:'#ff6fa8',roughness:.5}),LI.length);lf.count=0;
    const m4=new THREE.Matrix4(),q4=new THREE.Quaternion(),Y4=new THREE.Vector3(0,1,0),S4=new THREE.Vector3(1,1,1),V4=new THREE.Vector3();LI.forEach(([x,y],n)=>{const px=x+.3+hsh(x+5,y)*.4,pz=y+.3+hsh(x,y+9)*.4;q4.setFromAxisAngle(Y4,hsh(x+2,y+3)*6.3);m4.compose(V4.set(px,RT+.012,pz),q4,S4);li.setMatrixAt(n,m4);if(hsh(x+7,y+1)<.45){m4.makeTranslation(px,RT+.04,pz);lf.setMatrixAt(lf.count++,m4);}});
    li.renderOrder=5;lf.renderOrder=5;sc.add(li);sc.add(lf);}}}
 
@@ -377,8 +378,8 @@ const DS=[];for(let y=0;y<N;y++)for(let x=0;x<N;x++){if(!isR(x,y)||(land(x,y)&&!
  if(la===2){const g=new THREE.BoxGeometry(.06,.012,.42);g.translate(x+.5,h,y+.5);DS.push(g);}}
 if(DS.length)sc.add(new THREE.Mesh(mergeGeometries(DS),paint));
 {const DR=[];for(let y=0;y<N;y++)for(let x=0;x<N;x++){if(!isRL(x,y))continue;const r=rEnds(x,y);if(!r)continue;const [ax,[e0,z0],[e1,z1]]=r,L=isR(x-1,y),R=isR(x+1,y),U=isR(x,y-1),Dd=isR(x,y+1);
-  if(laneAx(x,y)!==ax)continue;const H=t=>e0+(e1-e0)*rF(t,z0,z1)+.014,P=(t,s)=>ax===1?[x+t,H(t),y+s]:[x+s,H(t),y+t];
-  for(let k=0;k<5;k++){const t0=.29+k*.084,t1=t0+.084,a=P(t0,.47),b=P(t0,.53),c=P(t1,.47),d=P(t1,.53);if(ax===1)DR.push(...a,...b,...c,...c,...b,...d);else DR.push(...a,...c,...b,...b,...c,...d);}}
+  if(ax===1?!(L&&R):!(U&&Dd))continue;const H=t=>e0+(e1-e0)*rF(t,z0,z1)+.014,P=(t,s)=>ax===1?[x+t,H(t),y+s]:[x+s,H(t),y+t];
+  for(let k=0;k<1;k++){const t0=.29,t1=.71,a=P(t0,.47),b=P(t0,.53),c=P(t1,.47),d=P(t1,.53);if(ax===1)DR.push(...a,...b,...c,...c,...b,...d);else DR.push(...a,...c,...b,...b,...c,...d);}}
  if(DR.length){const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(DR,3));g.computeVertexNormals();const m=paint.clone();m.side=THREE.DoubleSide;sc.add(new THREE.Mesh(g,m));}}
 /* ===== objects from the icon scene ===== */
 {const O=OBJ(THREE,RoundedBoxGeometry,sc),S=O.STY,hs=(i,k=1)=>{const v=Math.sin(i*12.9898+k*78.233)*43758.5453;return v-Math.floor(v);};
@@ -458,7 +459,7 @@ if(DS.length)sc.add(new THREE.Mesh(mergeGeometries(DS),paint));
 const cx=N/2,cz=N/2;sc.add(new THREE.HemisphereLight('#d8ecff','#7d8a6a',1.1));const L=new THREE.DirectionalLight('#fff0d6',3.6);L.position.set(cx-50,100,cz+40);L.target.position.set(cx,0,cz);sc.add(L.target);L.castShadow=true;L.shadow.mapSize.set(4096,4096);L.shadow.radius=3;L.shadow.bias=-.0008;L.shadow.normalBias=.08;const s=L.shadow.camera;s.left=-110;s.right=110;s.top=110;s.bottom=-110;s.near=1;s.far=300;sc.add(L);{const F=new THREE.DirectionalLight('#fff4e6',.9);F.position.set(cx+80,40,cz+120);sc.add(F);}
 let bx0=N,bx1=0,bz0=N,bz1=0;for(let y=0;y<N;y++)for(let x=0;x<N;x++)if(land(x,y)){bx0=Math.min(bx0,x);bx1=Math.max(bx1,x);bz0=Math.min(bz0,y);bz1=Math.max(bz1,y);}
 const asp=VW/VH,k=view.k;const cam=new THREE.OrthographicCamera(-k*asp/2,k*asp/2,k/2,-k/2,.1,800);const t=view.t||[(bx0+bx1)/2,-2,(bz0+bz1)/2];const rq=view.rot||0,ca=[[1,1],[-1,1],[-1,-1],[1,-1]][rq];cam.position.set(t[0]+120*ca[0],t[1]+98,t[2]+120*ca[1]);cam.lookAt(t[0],t[1],t[2]);
-r.render(sc,cam);
+r.info.autoReset=true;r.render(sc,cam);window.STAT.tris=r.info.render.triangles;window.STAT.calls=r.info.render.calls;window.STAT.lmkfix=window.LMKFIX;{let st=0;for(let y=0;y<N;y++)for(let x=0;x<N;x++){if(!isRL(x,y))continue;const c=cH(x,y);if(isRL(x+1,y)){const d=cH(x+1,y);if(Math.abs(c[1]-d[0])>.01||Math.abs(c[2]-d[3])>.01)st++;}if(isRL(x,y+1)){const d=cH(x,y+1);if(Math.abs(c[3]-d[0])>.01||Math.abs(c[2]-d[1])>.01)st++;}}window.STAT.roadSteps=st;}
 const o=document.createElement('canvas');o.width=VW;o.height=VH;const x=o.getContext('2d');const gr=x.createLinearGradient(0,0,0,VH);gr.addColorStop(0,'#7fd0ff');gr.addColorStop(.55,'#3fa2f5');gr.addColorStop(1,'#1f6fe0');x.fillStyle=gr;x.fillRect(0,0,VW,VH);
 x.save();x.filter='blur(50px)';x.globalAlpha=.35;x.fillStyle='#0a3d8a';x.beginPath();x.ellipse(VW/2,VH*.82,VW*.3,VH*.07,0,0,7);x.fill();x.restore();
 x.save();x.filter='saturate(1.3) contrast(1.06)';x.drawImage(r.domElement,0,0);x.restore();{const b=document.createElement('canvas');b.width=VW;b.height=VH;const g=b.getContext('2d');g.filter='blur(14px)';g.drawImage(r.domElement,0,0);x.save();x.globalCompositeOperation='screen';x.globalAlpha=.1;x.drawImage(b,0,0);x.restore();}return o.toDataURL();};
