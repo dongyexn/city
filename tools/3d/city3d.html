@@ -182,7 +182,13 @@ const isLawn=(x,y)=>land(x,y)&&!riv(x,y)&&!isR(x,y);
 const HNv=D.HN,HH=u8(D.H),LV=D.LVL?u8(D.LVL):new Uint8Array(N*N).fill(1),LH=.55;let HB=255;for(let y=0;y<N;y++)for(let x=0;x<N;x++)if(land(x,y)&&!riv(x,y))HB=Math.min(HB,HH[y*HNv+x]);
 const hT=(x,y)=>x>=0&&y>=0&&x<N&&y<N&&land(x,y)?(LV[y*N+x]-1)*LH:0;
 const rV=(vx,vy)=>Math.max(0,(HH[vy*HNv+vx]-HB)*LH);
-const cH=(x,y)=>{if(isR(x,y)&&land(x,y))return [rV(x,y),rV(x+1,y),rV(x+1,y+1),rV(x,y+1)];const h=hT(x,y);return [h,h,h,h];};
+/* road ramps slope along ONE axis only (no twisted tiles): a road tile whose level differs from its road neighbour along x (else y) ramps along that axis;
+   each edge height = mean of the two tiles' levels when the neighbour is road, else own level, so both corners of an edge always match */
+const isRL=(x,y)=>isR(x,y)&&land(x,y)&&!riv(x,y);
+const rAx=(x,y)=>{const h=hT(x,y),d=(xx,yy)=>isRL(xx,yy)&&Math.abs(hT(xx,yy)-h)>.01;return d(x-1,y)||d(x+1,y)?1:d(x,y-1)||d(x,y+1)?2:0;};
+const eH=(x,y,xx,yy)=>isRL(xx,yy)?(hT(x,y)+hT(xx,yy))/2:hT(x,y);
+const cH=(x,y)=>{const h=hT(x,y);if(!isRL(x,y))return [h,h,h,h];const ax=rAx(x,y);
+ if(ax===1){const l=eH(x,y,x-1,y),r=eH(x,y,x+1,y);return [l,r,r,l];}if(ax===2){const u=eH(x,y,x,y-1),d=eH(x,y,x,y+1);return [u,u,d,d];}return [h,h,h,h];};
 const flatR=(x,y)=>{const c=cH(x,y);return Math.max(...c)-Math.min(...c)<.01;};
 
 /* marching-squares contour -> chained loops -> Chaikin smoothing (rounded coast like the icon slab) */
@@ -252,9 +258,10 @@ const nl=(x,y)=>land(x,y)&&!isLawn(x,y)&&!riv(x,y)&&Math.abs(hT(x,y)-CY)<.3;
 {const CP=[],cw=.12,ch=.12,q6=(a,b,c,d)=>CP.push(...a,...b,...c,...c,...b,...d);
  const edge=(p,q,hp,hq,nx,nz)=>{const pi=[p[0]+nx*cw,p[1]+nz*cw],qi=[q[0]+nx*cw,q[1]+nz*cw];
   q6([p[0],hp+ch,p[1]],[pi[0],hp+ch,pi[1]],[q[0],hq+ch,q[1]],[qi[0],hq+ch,qi[1]]);q6([pi[0],hp,pi[1]],[pi[0],hp+ch,pi[1]],[qi[0],hq,qi[1]],[qi[0],hq+ch,qi[1]]);q6([p[0],hp-.4,p[1]],[p[0],hp+ch,p[1]],[q[0],hq-.4,q[1]],[q[0],hq+ch,q[1]]);};
- const nr=(x,y)=>land(x,y)&&!isR(x,y)||(riv(x,y)&&!isR(x,y));
+ const nr=(x,y)=>land(x,y)&&!isR(x,y)&&!riv(x,y),wr=(x,y)=>riv(x,y)&&!isR(x,y),BW=[],bank=(p,q,hp,hq)=>BW.push(p[0],hp,p[1], p[0],RF,p[1], q[0],hq,q[1], q[0],hq,q[1], p[0],RF,p[1], q[0],RF,q[1]);
  for(let y=0;y<N;y++)for(let x=0;x<N;x++){if(!isR(x,y)||!land(x,y)||riv(x,y))continue;const c=cH(x,y);
-  if(nr(x,y-1))edge([x,y],[x+1,y],c[0],c[1],0,1);if(nr(x,y+1))edge([x,y+1],[x+1,y+1],c[3],c[2],0,-1);if(nr(x-1,y))edge([x,y],[x,y+1],c[0],c[3],1,0);if(nr(x+1,y))edge([x+1,y],[x+1,y+1],c[1],c[2],-1,0);}
+  if(nr(x,y-1))edge([x,y],[x+1,y],c[0],c[1],0,1);if(nr(x,y+1))edge([x,y+1],[x+1,y+1],c[3],c[2],0,-1);if(nr(x-1,y))edge([x,y],[x,y+1],c[0],c[3],1,0);if(nr(x+1,y))edge([x+1,y],[x+1,y+1],c[1],c[2],-1,0);if(wr(x,y-1))bank([x,y],[x+1,y],c[0],c[1]);if(wr(x,y+1))bank([x,y+1],[x+1,y+1],c[3],c[2]);if(wr(x-1,y))bank([x,y],[x,y+1],c[0],c[3]);if(wr(x+1,y))bank([x+1,y],[x+1,y+1],c[1],c[2]);}
+ if(BW.length){const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(BW,3));g.computeVertexNormals();sc.add(new THREE.Mesh(g,M('#5d667c',{side:THREE.DoubleSide})));}
  if(CP.length){const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(CP,3));g.computeVertexNormals();const m=new THREE.Mesh(g,M('#f3f5f9',{roughness:.5,envMapIntensity:.4,side:THREE.DoubleSide}));m.castShadow=true;m.receiveShadow=true;sc.add(m);}}
 if(curbs.length){const m=new THREE.Mesh(mergeGeometries(curbs),curbM);m.castShadow=true;m.receiveShadow=true;sc.add(m);}
 /* bridges over the void: asphalt deck with white edge rails */
