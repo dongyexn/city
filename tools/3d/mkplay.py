@@ -4,7 +4,7 @@ def R(a,b,n=1):
     global s
     assert s.count(a)==n,(s.count(a),a[:70]);s=s.replace(a,b)
 i=s.index('<script type="module">');j=s.index('</script></body></html>');js=s[i+len('<script type="module">'):j];s=js
-R("window.render=async(seed,VW,VH,view)=>{\nconst D=await (await fetch('http://l/map_'+seed+'.json')).json();const u8=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));","window.__TEX=[];const TX=(...a)=>{const t=new THREE.CanvasTexture(...a);window.__TEX.push(t);return t;};\nwindow.buildCity=(D,r)=>{const u8=a=>a;window.STAT={};")
+R("window.render=async(seed,VW,VH,view)=>{\nconst D=await (await fetch('http://l/map_'+seed+'.json')).json();const u8=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));","window.__TEX=[];const TX=(...a)=>{const t=new THREE.CanvasTexture(...a);if(!window.__KEEPTX)window.__TEX.push(t);return t;};window.OBC={stage:new THREE.Group(),recs:[],map:new Map(),chunks:new Map()};\nwindow.buildCity=(D,r)=>{const u8=a=>a;window.STAT={};")
 R("const lmkA=new Int32Array(u8(D.lmkA).buffer),","const lmkA=D.lmkA,")
 a=s.index("const r=new THREE.WebGLRenderer({antialias:true,alpha:true,preserveDrawingBuffer:true});");b=s.index("\n",a);s=s[:a]+s[b+1:]
 R("sc.environment=new THREE.PMREMGenerator(r).fromScene(new RoomEnvironment(),.04).texture;","sc.environment=window.__ENV||(window.__ENV=new THREE.PMREMGenerator(r).fromScene(new RoomEnvironment(),.04).texture);")

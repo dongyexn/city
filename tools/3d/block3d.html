@@ -329,7 +329,14 @@ const X=(b,o)=>Object.assign({},b,o),CAT={
   ['주민센터',2,X(WOOD,{flag:1})],['법원',4,X(STONE,{wall:'#ece6da',ww:.24,pitch:'#8a8f98'})],['발전소',2,{wall:'#bfc5cc',frame:'#3e434c',ww:.4,roof:'#aab1ba',stack:2,noroof:1}],
   ['변전소',1,{wall:'#8f97a3',frame:'#ffc23d',ww:.5,roof:'#7a828e',solar:1,noroof:1}],['정수장',2,{wall:'#dcecf7',frame:'#3d7de0',ww:.4,roof:'#c4d8e8',tank:1}],
   ['버스터미널',1,{wall:'#f4f5f7',shop:'#3d7de0',awn:'#3e434c',roof:'#dfe3ea',rsign:'#3d7de0',noroof:1}],['체육관',2,{wall:'#eef2f6',frame:'#3d7de0',ww:.44,pitch:'#3d7de0'}]]};
-return {CAT,BIG,rotd,lift,bld,house,car,gas,towerA,roundB,fountain,roofCafe,shopHouse,restaurant,greenhouse,STY:{APT,OFF,SHOP,VIL,CVS,STONE,BAND,BRICK,GBRICK,WOOD,TOWN,NEIGH,BAKE,PHAR},crown,PAL,TRK,PIT,LEAF,FH};};
+const API={CAT,BIG,rotd,lift,bld,house,car,gas,towerA,roundB,fountain,roofCafe,shopHouse,restaurant,greenhouse,STY:{APT,OFF,SHOP,VIL,CVS,STONE,BAND,BRICK,GBRICK,WOOD,TOWN,NEIGH,BAKE,PHAR},crown,PAL,TRK,PIT,LEAF,FH};
+/* play build: calls are recorded per lift() and only executed for placements not already cached */
+if(window.OBC){const C=window.OBC;let rec={h:0,calls:[]},exec=false;const wrap=(n,f)=>(...a)=>{if(exec)return f(...a);rec.calls.push([n,f,a]);};
+ for(const n of ['bld','house','car','gas','towerA','roundB','fountain','roofCafe','shopHouse','restaurant','greenhouse','rotd'])API[n]=wrap(n,API[n]);API.BIG=BIG.map((e,i)=>[e[0],wrap('B'+i,e[1]),e[2],e[3]]);
+ API.lift=h=>{rec={h,calls:[]};C.recs.push(rec);};
+ API.flush=()=>{const out=[];for(const rc of C.recs){if(!rc.calls.length)continue;const key=rc.h.toFixed(2)+'|'+rc.calls.map(c=>c[0]+JSON.stringify(c[2],(k,v)=>k==='__k'||k==='_3d'?undefined:typeof v==='function'?'f':typeof v==='number'?Math.round(v*1000)/1000:v)).join(';');let p=C.map.get(key);
+   if(!p){lift(rc.h);const g=cur;exec=true;window.__KEEPTX=true;try{for(const c of rc.calls)c[1](...c[2]);}finally{exec=false;window.__KEEPTX=false;}p=C.extract(g);root0.remove(g);C.map.set(key,p);}out.push([key,p]);}C.recs.length=0;return out;};}
+return API;};
 
 window.render=async(seed,VW,VH,view)=>{
 const D=await (await fetch('http://l/map_'+seed+'.json')).json();const u8=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
@@ -618,7 +625,7 @@ if(DS.length)sc.add(new THREE.Mesh(mergeGeometries(DS),paint));
   for(let k=0;k<1;k++){const t0=.29,t1=.71,a=P(t0,.47),b=P(t0,.53),c=P(t1,.47),d=P(t1,.53);if(ax===1)DR.push(...a,...b,...c,...c,...b,...d);else DR.push(...a,...c,...b,...b,...c,...d);}}
  if(DR.length){const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(DR,3));g.computeVertexNormals();const m=paint.clone();m.side=THREE.DoubleSide;sc.add(new THREE.Mesh(g,m));}}
 /* ===== objects from the icon scene ===== */
-{const O=OBJ(THREE,RoundedBoxGeometry,sc);window.__O=O;const S=O.STY,hs=(i,k=1)=>{const v=Math.sin(i*12.9898+k*78.233)*43758.5453;return v-Math.floor(v);};
+{window.__KEEPTX=true;const O=window.OBC&&window.__O?window.__O:OBJ(THREE,RoundedBoxGeometry,window.OBC?window.OBC.stage:sc);window.__KEEPTX=false;window.__O=O;const S=O.STY,hs=(i,k=1)=>{const v=Math.sin(i*12.9898+k*78.233)*43758.5453;return v-Math.floor(v);};
  const FA=new Set(),FNT=[];const done=new Uint8Array(N*N),grp=new Map();for(let i=0;i<N*N;i++)if(lmkA[i]>=0){if(!grp.has(lmkA[i]))grp.set(lmkA[i],[]);grp.get(lmkA[i]).push(i);}
  let nb=0;
  for(let i=0;i<N*N;i++)if(BIGM[i])done[i]=1;for(const [bi,x0,y0,w,d] of BIGP){O.lift(hT(x0,y0));O.BIG[bi][1](x0+w/2,y0+d/2);nb++;}window.BIGN=BIGP.map(p=>O.BIG[p[0]][0]+'@'+p[1]+','+p[2]);
@@ -702,6 +709,14 @@ if(DS.length)sc.add(new THREE.Mesh(mergeGeometries(DS),paint));
  /* cars on straight land roads */
  let nc=0;const CC=['#ff7a59','#f7f7f5','#3d9df5','#ffc23d','#1fb5a5','#c9c4bc'];for(let y=0;y<N;y++)for(let x=0;x<N;x++){const i=y*N+x;if(!isR(x,y)||!land(x,y)||riv(x,y)||hs(i,11)>.07)continue;const h=isR(x-1,y)&&isR(x+1,y)&&!isR(x,y-1)&&!isR(x,y+1),v=isR(x,y-1)&&isR(x,y+1)&&!isR(x-1,y)&&!isR(x+1,y);if(!h&&!v)continue;
   if(!flatR(x,y))continue;O.lift(hT(x,y));const side=hs(i,12)<.5?-.2:.2;O.car(h?x+.5:x+.5+side,h?y+.5+side:y+.5,h,CC[((hs(i,13)*60)|0)%CC.length]);nc++;}
+ if(window.OBC){const C=window.OBC,sub=(g,st,ct)=>{const ng=new THREE.BufferGeometry(),idx=g.index;for(const n of ['position','normal','uv']){const a=g.attributes[n];if(!a)continue;const sz=a.itemSize,arr=new Float32Array(ct*sz);for(let k=0;k<ct;k++){const vi=idx?idx.getX(st+k):st+k;for(let j=0;j<sz;j++)arr[k*sz+j]=a.array[vi*sz+j];}ng.setAttribute(n,new THREE.BufferAttribute(arr,sz));}return ng;};
+  C.extract=gr=>{gr.updateMatrixWorld(true);const ps=[],put=(m,g,e)=>{if(!g.attributes.uv)g.setAttribute('uv',new THREE.BufferAttribute(new Float32Array(g.attributes.position.count*2),2));if(!g.attributes.normal)g.computeVertexNormals();g.applyMatrix4(e.matrixWorld);ps.push({m,cs:e.castShadow,ro:e.renderOrder,g});};
+   gr.traverse(e=>{if(!e.isMesh||e.isInstancedMesh)return;const g=e.geometry,n=g.index?g.index.count:g.attributes.position.count;if(Array.isArray(e.material)){const grp=g.groups.length?g.groups:[{start:0,count:n,materialIndex:0}];for(const q of grp)put(e.material[q.materialIndex],sub(g,q.start,q.count),e);}else put(e.material,sub(g,0,n),e);});return ps;};
+  const live=O.flush(),by=new Map(),ls=new Set();for(const [key,ps] of live){ls.add(key);if(!ps.length)continue;const p0=ps[0].g.attributes.position,cid=Math.floor(p0.getX(0)/12)+','+Math.floor(p0.getZ(0)/12);let c=by.get(cid);if(!c)by.set(cid,c={keys:[],ps:[]});c.keys.push(key);c.ps.push(ps);}
+  for(const [k,ps] of C.map)if(!ls.has(k)){for(const p of ps)p.g.dispose();C.map.delete(k);}
+  for(const [cid,ch] of C.chunks)if(!by.has(cid)){for(const m of ch.meshes)m.geometry.dispose();C.chunks.delete(cid);}
+  for(const [cid,c] of by){const sig=c.keys.join('\n');let ch=C.chunks.get(cid);if(!ch||ch.sig!==sig){if(ch)for(const m of ch.meshes)m.geometry.dispose();const B_=new Map();for(const ps of c.ps)for(const p of ps){const k=p.m.uuid+'|'+(p.cs?1:0)+'|'+p.ro;let b=B_.get(k);if(!b)B_.set(k,b={p,a:[]});b.a.push(p.g);}
+    const meshes=[];for(const b of B_.values()){const e=new THREE.Mesh(mergeGeometries(b.a),b.p.m);e.castShadow=b.p.cs;e.receiveShadow=true;e.renderOrder=b.p.ro;e.userData.keep=1;meshes.push(e);}ch={sig,meshes};C.chunks.set(cid,ch);}for(const m of ch.meshes)sc.add(m);}}
  {sc.updateMatrixWorld(true);const B_=new Map(),gs=sc.children.filter(c=>c.userData.ob),sub=(g,st,ct)=>{const ng=new THREE.BufferGeometry(),idx=g.index,o={};for(const n of ['position','normal','uv']){const a=g.attributes[n];if(!a)continue;const sz=a.itemSize,arr=new Float32Array(ct*sz);for(let k=0;k<ct;k++){const vi=idx?idx.getX(st+k):st+k;for(let j=0;j<sz;j++)arr[k*sz+j]=a.array[vi*sz+j];}ng.setAttribute(n,new THREE.BufferAttribute(arr,sz));}return ng;};
   const put=(m,g,e)=>{if(!g.attributes.uv)g.setAttribute('uv',new THREE.BufferAttribute(new Float32Array(g.attributes.position.count*2),2));if(!g.attributes.normal)g.computeVertexNormals();for(const n of Object.keys(g.attributes))if(n!=='position'&&n!=='normal'&&n!=='uv')g.deleteAttribute(n);g.applyMatrix4(e.matrixWorld);const p0=g.attributes.position;const k=m.uuid+'|'+(e.castShadow?1:0)+'|'+e.renderOrder+'|'+Math.floor(p0.getX(0)/16)+'|'+Math.floor(p0.getZ(0)/16);let b=B_.get(k);if(!b)B_.set(k,b={m,cs:e.castShadow,ro:e.renderOrder,a:[]});b.a.push(g);};
   for(const gr of gs)gr.traverse(e=>{if(!e.isMesh||e.isInstancedMesh)return;const g=e.geometry,n=g.index?g.index.count:g.attributes.position.count;if(Array.isArray(e.material)){const grp=g.groups.length?g.groups:[{start:0,count:n,materialIndex:0}];for(const q of grp)put(e.material[q.materialIndex],sub(g,q.start,q.count),e);}else put(e.material,sub(g,0,n),e);});
