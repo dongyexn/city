@@ -327,11 +327,23 @@ const person=(px,py,pz,o={},pose={})=>{const g=new THREE.Group();g.position.set(
  {const brw=clay('#4a3526'),arc=(r,t,len,rot)=>{const q=new THREE.TorusGeometry(r,t,6,14,len);q.rotateZ(rot);q.rotateY(Math.PI/2);return q;};
   for(const sg of [1,-1]){hp(new THREE.SphereGeometry(.0105,12,10),dk,.069,HY-.012,sg*.036);hp(new THREE.SphereGeometry(.0038,8,6),wh,.0775,HY-.008,sg*.033);hp(arc(.017,.0022,Math.PI*.55,Math.PI*.225),brw,.069,HY+.004,sg*.037);
    hp(new THREE.SphereGeometry(.014,12,8),M('#ffb3b8'),.0605,HY-.03,sg*.05).scale.set(.18,.6,.95);hp(sph(.014,.6,1,1),skin,0,HY-.008,sg*.084);hp(arc(.0052,.0019,Math.PI,Math.PI),brw,.0762,HY-.022,sg*.0052);}}
- const hs=o.hs||0,capG=(th,r=HR*1.07)=>{const q=new THREE.SphereGeometry(r,20,12,0,Math.PI*2,0,Math.PI*th);q.scale(1,.98,1.05);return q;},cap=(m,th,tilt)=>{const e=hp(capG(th),m,-.004,HY+.004,0);e.rotation.z=tilt;return e;};
- if(hs===5){const hm=M('#ffcf33',{roughness:.35});cap(hair,.54,.95);cap(hm,.38,.38).scale.setScalar(1.12);const br=new THREE.CylinderGeometry(.1,.1,.012,20);hp(br,hm,-.02,HY+.036,0).rotation.z=.38;}
- else if(hs===4){const hm=M(o.hat||'#e0533a',{roughness:.6});cap(hair,.56,1.0);cap(hm,.38,.36).scale.setScalar(1.12);const br=new THREE.CylinderGeometry(.05,.05,.01,16);br.scale(1.2,1,1.25);hp(br,hm,.05,HY+.062,0).rotation.z=.36;}
- else{cap(hair,hs===1?.6:.5,hs===1?.8:.72);if(hs===1)for(const sg of [1,-1])hp(sph(.03,1.1,2.1,.6),hair,-.012,HY-.03,sg*.074);
-  if(hs===2){hp(sph(.022),hair,-.082,HY+.03,0);hp(sph(.036,.8,1.5,.9),hair,-.105,HY-.012,0).rotation.z=-.35;}if(hs===3)hp(sph(.04),hair,-.022,HY+.088,0);}
+ hgp.rotation.z=.16;
+ const hs=o.hs||0,rib=M(o.rib||'#ff8fa8'),H=(r,sx,sy,sz,x,y,z,rz=0,rx=0,m=hair)=>{const e=hp(sph(r,sx,sy,sz,14,10),m,x,HY+y,z);e.rotation.set(rx,0,rz);return e;},
+  cap=(m,th,tilt,sc=1.09)=>{const q=new THREE.SphereGeometry(HR*sc,24,14,0,Math.PI*2,0,Math.PI*th);q.scale(1,.96,1.09);const e=hp(q,m,-.004,HY+.003,0);e.rotation.z=tilt;return e;},
+  base=(th=.5,tilt=.74)=>{cap(hair,th,tilt);H(.076,.72,.93,1.1,-.024,.002,0);},
+  bangs=k=>{if(k===0)for(const z of [-1,0,1])H(.036,.42,.92,1.05,.056-.01*Math.abs(z),.036,z*.036,-.5);
+   else if(k===1){H(.05,.4,.8,1.25,.05,.04,.016,-.5,-.28);H(.03,.42,.95,1,.05,.036,-.05,-.5,.45);}
+   else for(const sg of [1,-1])H(.031,.5,1.05,1.15,.052,.036,sg*.036,-.5,-sg*.35);},
+  locks=len=>{for(const sg of [1,-1])H(.017,.75,len,.8,.014,-.012*len,sg*.082);};
+ if(hs===1){base(.6,.82);bangs(0);locks(2.5);H(.07,.7,.9,1.12,-.036,-.03,0);}
+ else if(hs===2){base();bangs(1);locks(1.5);H(.014,1,1,1.4,-.082,.046,0,0,0,rib);H(.03,.8,2.3,.9,-.118,-.006,0,-.4);H(.02,.8,1.6,.8,-.14,-.06,0,-.2);}
+ else if(hs===3){base();bangs(0);for(const sg of [1,-1]){H(.013,1,1,1,-.008,.05,sg*.088,0,0,rib);H(.03,.8,2.1,.8,-.016,-.004,sg*.112,0,-sg*.28);H(.02,.8,1.5,.8,-.02,-.058,sg*.128,0,-sg*.2);}}
+ else if(hs===4){base();bangs(0);locks(1.4);for(const sg of [1,-1]){H(.034,1,.95,1,-.014,.072,sg*.058);H(.012,1,.6,1,-.014,.05,sg*.058,0,0,rib);}}
+ else if(hs===5){base(.6,.82);bangs(1);locks(3);H(.068,.6,1.75,1.12,-.05,-.06,0,-.12);}
+ else if(hs===6){base();bangs(1);[[.01,.02,-.5,.3,.036],[-.02,-.03,-.1,-.5,.04],[-.045,.03,.5,.5,.036],[-.06,-.02,.8,-.3,.034]].forEach(([x,z,rz,rx,r])=>H(r,.8,1.05,.9,x,.066,z,rz,rx));}
+ else if(hs===7){const hm=M(o.hat||'#6fa0e6');base(.56,1.0);locks(1.3);cap(hm,.38,.36,1.2);const br=new THREE.CylinderGeometry(.05,.05,.01,16);br.scale(1.2,1,1.3);hp(br,hm,.052,HY+.064,0).rotation.z=.36;H(.008,1,1,1,-.03,.098,0,0,0,hm);}
+ else if(hs===8){const hm=M('#ffd24a');base(.54,.95);locks(1.2);cap(hm,.38,.38,1.2);hp(new THREE.CylinderGeometry(.103,.103,.012,22),hm,-.022,HY+.04,0).rotation.z=.38;}
+ else{base();bangs(1);if(!o.old)H(.014,.7,1.5,.7,-.012,.088,.01,.7,.4);}
  return P;};
 const X=(b,o)=>Object.assign({},b,o),CAT={
  res:[['단독주택 주황','house','#ff7a59'],['단독주택 파랑','house','#3d9df5'],['단독주택 회색','house','#5d6470'],['단독주택 초록','house','#3d8a63'],['단독주택 빨강','house','#d9534f'],
