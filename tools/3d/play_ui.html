@@ -19,12 +19,13 @@ button:disabled{color:var(--mut);cursor:default}
 .row button{font-weight:500;padding:8px 11px}
 #top{position:fixed;top:calc(12px + env(safe-area-inset-top,0px));right:max(16px,env(safe-area-inset-right,0px));display:flex;gap:2px;padding:6px}
 #top button{padding:10px 11px;min-width:40px}
+@media (pointer:coarse){#zin,#zout{display:none}}
 #msg{position:fixed;top:calc(72px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);white-space:nowrap;padding:10px 14px;font:600 14px var(--font);pointer-events:none;transition:opacity .2s}
 #msg:empty{opacity:0}
 @media (prefers-reduced-motion:reduce){#msg{transition:none}}
 </style>
 <canvas id="cv" tabindex="0" aria-label="도시"></canvas>
 <div id="msg" class="glass" role="status">불러오는 중</div>
-<div id="top" class="glass"><button id="undo" disabled aria-label="되돌리기" title="되돌리기">↶</button><button id="redo" disabled aria-label="다시하기" title="다시하기">↷</button><button id="zout" aria-label="축소" title="축소">−</button><button id="zin" aria-label="확대" title="확대">＋</button><button id="fit" title="도시 전체">전체</button><button id="reset">처음으로</button></div>
+<div id="top" class="glass"><button id="undo" disabled aria-label="되돌리기" title="되돌리기">↶</button><button id="redo" disabled aria-label="다시하기" title="다시하기">↷</button><button id="zout" aria-label="축소" title="축소">−</button><button id="zin" aria-label="확대" title="확대">＋</button><button id="fit" title="도시 전체">전체</button><button id="mo" aria-pressed="true" title="움직임 켜고 끄기">움직임</button><button id="reset">처음으로</button></div>
 <div id="pick" class="glass" hidden><div class="row" id="cats"></div><div class="row" id="items"></div></div>
 <div id="bar" class="glass" role="toolbar" aria-label="도구"></div>

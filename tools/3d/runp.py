@@ -13,7 +13,7 @@ async def main():
             body=open(path,'rb').read()
             if path.endswith('play.html'):body=b'<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body>'+body+b'</body></html>'
             await route.fulfill(body=body,content_type=ct)
-        await pg.route('**/*',h);await pg.goto('http://l/play.html');await pg.wait_for_function('window.__ready===1',timeout=300000);await pg.wait_for_timeout(8000)
+        await pg.route('**/*',h);await pg.goto('http://l/play.html#still');await pg.wait_for_function('window.__ready===1',timeout=150000);await pg.wait_for_timeout(8000)
         await pg.screenshot(path=os.path.join(D,'p0.png'))
         for step in json.loads(sys.argv[1]) if len(sys.argv)>1 else []:
             if step[0]=='click':await pg.get_by_role('button',name=step[1],exact=True).click()
