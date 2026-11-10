@@ -6,8 +6,8 @@ from math import sin,cos,pi,exp
 OUT=os.path.dirname(os.path.abspath(__file__));PART=os.environ.get('PART','all')
 bpy.ops.wm.read_factory_settings(use_empty=True);sc=bpy.context.scene;col=sc.collection
 # ===== 1) user's head/face script, executed unmodified =====
-exec(compile(open(os.path.join(OUT,'head_base.py')).read(),'head_base.py','exec'),{'__name__':'__main__'})
-head=bpy.data.objects['HEAD_Smooth_Rounded_Base'];HC=Vector(head.location);bpy.context.view_layer.update()
+exec(compile(open(os.path.join(OUT,'head_base_v2.py')).read(),'head_base_v2.py','exec'),{'__name__':'__main__'})
+head=bpy.data.objects['V2_HEAD_Rounded_Chibi'];HC=Vector(head.location);bpy.context.view_layer.update()
 HV=[head.matrix_world@v.co for v in head.data.vertices];bvh=BVHTree.FromPolygons(HV,[tuple(p.vertices) for p in head.data.polygons])
 U=3.3
 def SK(az,ph,off=0):
@@ -17,11 +17,11 @@ HEADONLY=PART=='head0'
 src=open(os.path.join(OUT,'hero.py')).read();cut=lambda a,b:src[src.index(a):src.index(b)]
 NS=dict(bpy=bpy,bmesh=bmesh,math=math,Vector=Vector,sin=sin,cos=cos,pi=pi,col=col,sc=sc,Q='draft')
 exec(cut('# ---------------- materials','# ---------------- proportions'),NS)
-SB=3.6;BZ=1.07-.48*SB
+SB=3.6;NK=1.23;BZ=NK-.48*SB
 if PART=='all':
     before=set(bpy.data.objects);exec(cut('# ---------------- body','# ---------------- hair'),NS)
     for o in set(bpy.data.objects)-before:o.scale=(SB,SB,SB);o.location=(0,0,BZ)
-TK=lambda x,y,z:Vector((x*3.1,y*3.1,1.07+(z-.48)*SB))
+TK=lambda x,y,z:Vector((x*3.1,y*3.1,NK+(z-.48)*SB))
 # ===== 3) hair: Bezier centre lines cast onto the real head mesh, lens section, tapered, curled tips =====
 mk=NS['mk'];M=NS['M'];M['hair']=NS['clay']('hair2','#e6cba2');M['hairb']=NS['clay']('hairb','#d6b98c')
 def bez(K,res=12):
