@@ -22,7 +22,7 @@ async def main():
                 for k in range(1,9):await pg.mouse.move(step[1]+(step[3]-step[1])*k/8,step[2]+(step[4]-step[2])*k/8)
                 await pg.mouse.up()
             elif step[0]=='wheel':await pg.mouse.move(640,400);await pg.mouse.wheel(0,step[1])
-            elif step[0]=='shot':await pg.wait_for_timeout(step[2] if len(step)>2 else 9000);await pg.screenshot(path=os.path.join(D,step[1]))
+            elif step[0]=='shot':await pg.wait_for_timeout(step[2] if len(step)>2 else 9000);await pg.screenshot(path=os.path.join(D,step[1]),timeout=180000)
             elif step[0]=='eval':print(await pg.evaluate(step[1]))
         await b.close()
 asyncio.run(main())
