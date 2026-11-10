@@ -308,28 +308,29 @@ bx(-.85,.85,.03,.16,cz0-.4,cz0+.4,M('#e9e4da'),.03);bx(-.5,.5,.16,.2,cz0-.25,cz0
  const BIG=[['종합경기장',stadium,5.6,4.2],['쇼핑몰',mall,4.2,3.2],['기차역',station,4.8,3.0],['대학교',univ,3.8,3.6],['놀이공원',wheel,3.7,3.7],['공장',factory,4.4,3.6]];
 const rotd=(cx,cz,dir,fn)=>{const g=new THREE.Group();g.position.set(cx,0,cz);g.rotation.y={'z+':0,'x+':Math.PI/2,'z-':Math.PI,'x-':-Math.PI/2}[dir];const pc=cur;pc.add(g);cur=g;fn();cur=pc;};
 /* clay person (~2 heads tall): matte hand-modelled look — every part is slightly lumpy. forward is +x. pose {rot,swing,sit,wave}; limbs hang from pivots so they can be animated */
-const CLAY=new Map(),clay=c=>{let m=CLAY.get(c);if(!m)CLAY.set(c,m=new THREE.MeshStandardMaterial({color:c,roughness:1,metalness:0,envMapIntensity:.04}));return m;};
+const CLAY=new Map(),clay=c=>{let m=CLAY.get(c);if(!m){const sc_=new THREE.Color(c).lerp(new THREE.Color('#ffffff'),.55);CLAY.set(c,m=new THREE.MeshPhysicalMaterial({color:c,roughness:1,metalness:0,envMapIntensity:.08,sheen:1,sheenRoughness:.45,sheenColor:sc_}));}return m;};
 const lump=(q,amp)=>{q.deleteAttribute('uv');q=mergeVertices(q,1e-5);const p=q.attributes.position,n=q.attributes.normal;for(let i=0;i<p.count;i++){const x=p.getX(i),y=p.getY(i),z=p.getZ(i),d=amp*(Math.sin(x*83+y*37+1.3)*Math.sin(y*71+z*29+.7)+.6*Math.sin(z*97+x*41+2.1));p.setXYZ(i,x+n.getX(i)*d,y+n.getY(i)*d,z+n.getZ(i)*d);}q.computeVertexNormals();return q;};
 const person=(px,py,pz,o={},pose={})=>{const g=new THREE.Group();g.position.set(px,py,pz);g.rotation.y=pose.rot||0;g.scale.setScalar(o.s||1);(o.par||cur).add(g);
  const skin=clay(o.skin||'#ffd9bd'),top=clay(o.top||'#5aa9f0'),bot=clay(o.bot||'#56627a'),hair=clay(o.hair||'#5a4030'),dk=clay('#2b2622'),shoe=clay(o.shoe||'#f6f1e8'),wh=clay('#ffffff'),M=clay;
- const part=(geo,m,x,y,z,par=g)=>{geo.computeBoundingSphere();const e=new THREE.Mesh(geo.attributes.uv&&geo.boundingSphere.radius>.012?lump(geo,Math.min(.0035,geo.boundingSphere.radius*.07)):geo,m);e.position.set(x,y,z);e.castShadow=true;e.receiveShadow=true;par.add(e);return e;},piv=(x,y,z,rz)=>{const p=new THREE.Group();p.position.set(x,y,z);p.rotation.z=rz;g.add(p);return p;},sph=(r,sx=1,sy=1,sz=1,ws=16,hs_=12)=>{const q=new THREE.SphereGeometry(r,ws,hs_);q.scale(sx,sy,sz);return q;};
+ const part=(geo,m,x,y,z,par=g)=>{geo.computeBoundingSphere();const e=new THREE.Mesh(geo,m);e.position.set(x,y,z);e.castShadow=true;e.receiveShadow=true;par.add(e);return e;},piv=(x,y,z,rz)=>{const p=new THREE.Group();p.position.set(x,y,z);p.rotation.z=rz;g.add(p);return p;},sph=(r,sx=1,sy=1,sz=1,ws=16,hs_=12)=>{const q=new THREE.SphereGeometry(r,ws,hs_);q.scale(sx,sy,sz);return q;};
  const a=pose.swing||0,sit=!!pose.sit,P={g,legs:[],arms:[]},HY=.07,HR=.078;
- for(const sg of [1,-1]){const p=piv(0,.118,sg*.026,sit?Math.PI/2:sg*a);part(new THREE.CapsuleGeometry(.025,.05,5,12),o.skirt?skin:bot,0,-.048,0,p);part(sph(.031,1.35,.8,1.05),shoe,.012,-.1,0,p);P.legs.push(p);}
- {part(sph(.056,.86,1.12,1.08),top,0,.172,0);part(sph(.05,.86,.62,1.08),o.skirt?(o.skirt===1?top:M(o.skirt)):bot,0,.124,0);}
- if(o.skirt){const k=new THREE.CylinderGeometry(.045,.078,.065,16,3);k.scale(.88,1,1.1);part(k,o.skirt===1?top:M(o.skirt),0,.112,0);}
- if(o.vest){part(sph(.059,.86,.95,1.1),M(o.vest),0,.168,0);}
- if(o.tie){part(sph(.012,.5,1.3,1.4),wh,.044,.2,0);part(sph(.007,.5,3,1.1),M(o.tie),.05,.182,0);}
- if(o.pack)part(new THREE.CapsuleGeometry(.034,.04,5,12),M(o.pack),-.06,.172,0).scale.set(.8,1,1.25);
- for(const sg of [1,-1]){const up=pose.wave&&sg>0,p=piv(0,.206,sg*.058,up?2.7:sit?.55:-sg*a*.9);p.rotation.x=-sg*.22;part(new THREE.CapsuleGeometry(.02,.05,5,10),top,0,-.038,0,p);part(sph(.023),skin,0,-.084,0,p);P.arms.push(p);}
+ for(const sg of [1,-1]){const p=piv(0,.085,sg*.03,sit?Math.PI/2:sg*a);part(new THREE.CapsuleGeometry(.027,.022,6,14),o.skirt?skin:bot,0,-.034,0,p);part(sph(.03,1.3,.8,1.05),shoe,.01,-.066,0,p);P.legs.push(p);}
+ {part(sph(.06,.9,1.0,1.1,20,16),top,0,.132,0);part(sph(.054,.9,.6,1.1,20,12),o.skirt?(o.skirt===1?top:M(o.skirt)):bot,0,.096,0);}
+ if(o.skirt){const k=new THREE.CylinderGeometry(.045,.078,.065,16,3);k.scale(.9,.8,1.1);part(k,o.skirt===1?top:M(o.skirt),0,.086,0);}
+ if(o.vest){part(sph(.067,.9,.8,1.1,20,14),M(o.vest),0,.128,0);}
+ if(o.tie){part(sph(.007,.5,3,1.1),M(o.tie),.054,.13,0);}
+ if(o.pack)part(new THREE.CapsuleGeometry(.034,.04,5,12),M(o.pack),-.062,.135,0).scale.set(.8,1,1.25);
+ for(const sg of [1,-1]){const up=pose.wave&&sg>0,p=piv(0,.158,sg*.062,up?2.5:sit?.55:-sg*a*.9);p.rotation.x=-sg*.3;part(new THREE.CapsuleGeometry(.02,.018,6,12),top,0,-.024,0,p);part(sph(.022),skin,0,-.052,0,p);P.arms.push(p);}
  if(o.balloon){part(new THREE.CylinderGeometry(.002,.002,.3,4),dk,0,.3,-.085);part(sph(.06,1,1.12,1),M(o.balloon,{roughness:.3}),0,.5,-.085);}
- const hgp=new THREE.Group();hgp.position.set(0,.212,0);hgp.scale.setScalar(1.32);g.add(hgp);P.head=hgp;const hp=(geo,m,x,y,z)=>part(geo,m,x,y,z,hgp);
- hp(sph(HR,1,.96,1.04,20,16),skin,0,HY,0);
- for(const sg of [1,-1]){hp(new THREE.SphereGeometry(.0105,10,8),dk,.071,HY-.004,sg*.03);hp(new THREE.SphereGeometry(.0085,8,6),M('#ffab9e'),.0665,HY-.022,sg*.046).scale.set(.3,.7,1.1);hp(sph(.014,.6,1,1),skin,0,HY-.008,sg*.08);}
- hp(new THREE.SphereGeometry(.0045,8,6),M('#b5553f'),.0765,HY-.022,0).scale.set(.5,.7,1.9);
+ const hgp=new THREE.Group();hgp.position.set(0,.166,0);hgp.scale.setScalar(1.62);g.add(hgp);P.head=hgp;const hp=(geo,m,x,y,z)=>part(geo,m,x,y,z,hgp);
+ hp(sph(HR,1,.93,1.08,28,20),skin,0,HY,0);
+ {const brw=clay('#4a3526'),arc=(r,t,len,rot)=>{const q=new THREE.TorusGeometry(r,t,6,14,len);q.rotateZ(rot);q.rotateY(Math.PI/2);return q;};
+  for(const sg of [1,-1]){hp(new THREE.SphereGeometry(.0105,12,10),dk,.069,HY-.012,sg*.036);hp(new THREE.SphereGeometry(.0038,8,6),wh,.0775,HY-.008,sg*.033);hp(arc(.017,.0022,Math.PI*.55,Math.PI*.225),brw,.069,HY+.004,sg*.037);
+   hp(new THREE.SphereGeometry(.014,12,8),M('#ffb3b8'),.0605,HY-.03,sg*.05).scale.set(.18,.6,.95);hp(sph(.014,.6,1,1),skin,0,HY-.008,sg*.084);hp(arc(.0052,.0019,Math.PI,Math.PI),brw,.0762,HY-.022,sg*.0052);}}
  const hs=o.hs||0,capG=(th,r=HR*1.07)=>{const q=new THREE.SphereGeometry(r,20,12,0,Math.PI*2,0,Math.PI*th);q.scale(1,.98,1.05);return q;},cap=(m,th,tilt)=>{const e=hp(capG(th),m,-.004,HY+.004,0);e.rotation.z=tilt;return e;};
- if(hs===5){const hm=M('#ffcf33',{roughness:.35});cap(hair,.58,.85);cap(hm,.42,.2).scale.setScalar(1.12);const br=new THREE.CylinderGeometry(.1,.1,.012,20);hp(br,hm,.012,HY+.03,0);}
- else if(hs===4){const hm=M(o.hat||'#e0533a',{roughness:.6});cap(hair,.6,.9);cap(hm,.42,.18).scale.setScalar(1.12);const br=new THREE.CylinderGeometry(.05,.05,.01,16);br.scale(1.2,1,1.25);hp(br,hm,.075,HY+.03,0);}
- else{cap(hair,hs===1?.66:.54,hs===1?.72:.62);if(hs===1)for(const sg of [1,-1])hp(sph(.03,1.1,2.1,.6),hair,-.012,HY-.03,sg*.074);
+ if(hs===5){const hm=M('#ffcf33',{roughness:.35});cap(hair,.54,.95);cap(hm,.38,.38).scale.setScalar(1.12);const br=new THREE.CylinderGeometry(.1,.1,.012,20);hp(br,hm,-.02,HY+.036,0).rotation.z=.38;}
+ else if(hs===4){const hm=M(o.hat||'#e0533a',{roughness:.6});cap(hair,.56,1.0);cap(hm,.38,.36).scale.setScalar(1.12);const br=new THREE.CylinderGeometry(.05,.05,.01,16);br.scale(1.2,1,1.25);hp(br,hm,.05,HY+.062,0).rotation.z=.36;}
+ else{cap(hair,hs===1?.6:.5,hs===1?.8:.72);if(hs===1)for(const sg of [1,-1])hp(sph(.03,1.1,2.1,.6),hair,-.012,HY-.03,sg*.074);
   if(hs===2){hp(sph(.022),hair,-.082,HY+.03,0);hp(sph(.036,.8,1.5,.9),hair,-.105,HY-.012,0).rotation.z=-.35;}if(hs===3)hp(sph(.04),hair,-.022,HY+.088,0);}
  return P;};
 const X=(b,o)=>Object.assign({},b,o),CAT={
@@ -378,7 +379,7 @@ const V=[{top:'#6fb2ee',bot:'#56627a',hs:0},{top:'#f7a8c0',skirt:1,hs:1,hair:'#3
 V.forEach((o,i)=>{const [x,z]=at((i-4.5)*.5,0);O.person(x,Y,z,o,{rot:F});});labels.push(['기본 10종 (어른 8 · 아이 2)',...at(0,.33)]);
 [0,.75,0,-.75].forEach((a,i)=>{const [x,z]=at(-2.3+i*.42,1.6);O.person(x,Y+(a?0:.012),z,V[0],{rot:Math.PI/4,swing:a});});labels.push(['걷기 (팔다리 흔들기)',...at(-1.67,1.95)]);
 {const [x,z]=at(-.2,1.6),g=new THREE.Group();g.position.set(x,Y,z);g.rotation.y=F;sc.add(g);const bm=new THREE.MeshStandardMaterial({color:'#a8774f',roughness:.7}),dm=new THREE.MeshStandardMaterial({color:'#3e434c'}),B=(w,h,d,px,py,pz,m)=>{const e=new THREE.Mesh(new RoundedBoxGeometry(w,h,d,2,.008),m);e.position.set(px,py,pz);e.castShadow=true;g.add(e);};B(.17,.03,.6,0,.125,0,bm);B(.03,.14,.6,-.085,.215,0,bm);for(const s of [-.24,.24])B(.15,.11,.03,0,.055,s,dm);
- O.person(.0,.036,-.14,{par:g,...V[1]},{sit:1});O.person(.0,.036,.15,{par:g,...V[6]},{sit:1});labels.push(['벤치에 앉기',...at(-.2,1.95)]);}
+ O.person(.0,.07,-.15,{par:g,...V[1]},{sit:1});O.person(.0,.07,.15,{par:g,...V[6]},{sit:1});labels.push(['벤치에 앉기',...at(-.2,1.95)]);}
 {const [x,z]=at(1.0,1.6);O.person(x,Y,z,V[3],{rot:F,wave:1});const [x2,z2]=at(1.45,1.6);O.person(x2,Y,z2,{...V[8],balloon:'#e0333a'},{rot:F});const [x3,z3]=at(1.85,1.6);O.person(x3,Y,z3,V[5],{rot:F-1.2});const [x4,z4]=at(2.2,1.6);O.person(x4,Y,z4,V[2],{rot:F+1.9});labels.push(['인사 · 풍선 · 대화',...at(1.6,1.95)]);}
 {O.lift(0);const [x,z]=at(-1.3,4.0);O.house(x-.34,x+.34,z-.34,z+.34,'#ff7a59','z+');const [cx,cz]=at(.2,4.15);O.car(cx,cz,true,'#ffc23d');[[-.45,4.2,2,.7],[-.72,4.25,7,-.7],[.95,4.15,4,.7],[1.3,4.1,9,0],[1.6,4.15,1,-.7]].forEach(([u,v,k,a])=>{const [px,pz]=at(u,v);O.person(px,Y,pz,V[k],{rot:Math.PI/4,swing:a});});
  const [bx,bz]=at(2.5,3.85);O.bld(bx-.34,bx+.34,bz-.34,bz+.34,3,O.CAT.com[2][2],'z+');labels.push(['크기 비교 (주택 · 차 · 상가)',...at(.3,4.7)]);}
