@@ -24,8 +24,11 @@ def mk(name,V,F,mat,sub=0):
     return o
 # ---- head (context only) ----
 R=.245;HC=Vector((0,0,.665))
+CHIN=Vector((0,-.64,-.77)).normalized();NOSE=Vector((0,-1,-.3)).normalized()
+def bump(d):
+    d=Vector(d).normalized();a=d.angle(CHIN);b=d.angle(NOSE);return 1+.11*exp(-(a/.27)**2)+.07*exp(-(b/.085)**2)
 def skull(d):
-    x,y,z=d;ck=1+.055*exp(-((z+.3)/.4)**2);return Vector((x*1.03*ck,y*(.92 if y<0 else 1.0)*(1+.02*exp(-((z+.3)/.4)**2)),z*(.97 if z>0 else .9)))*R
+    x,y,z=d;ck=1+.055*exp(-((z+.3)/.4)**2);return Vector((x*1.03*ck,y*(.92 if y<0 else 1.0)*(1+.02*exp(-((z+.3)/.4)**2)),z*(.97 if z>0 else .9)))*R*bump(d)
 def sphere_dirs(nu=40,nv=26):
     V=[Vector((0,0,1))];F=[]
     for i in range(1,nv):
@@ -36,7 +39,7 @@ def sphere_dirs(nu=40,nv=26):
     for i in range(nv-2):
         for j in range(nu):F.append((1+i*nu+j,1+(i+1)*nu+j,1+(i+1)*nu+(j+1)%nu,1+i*nu+(j+1)%nu))
     return V,F
-dv,df=sphere_dirs();head=mk('head',[HC+skull(d) for d in dv],df,'skin',sub=1)
+dv,df=sphere_dirs(96,64);head=mk('head',[HC+skull(d) for d in dv],df,'skin',sub=1)
 def SK(az,ph,off=0):
     d=Vector((sin(az)*sin(ph),-cos(az)*sin(ph),cos(ph)));return HC+skull(d)+d*off
 def decal(az,el,rx,rz,mat,off,dx=0,dz=0):
