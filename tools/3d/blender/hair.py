@@ -14,7 +14,7 @@ def clay(name,rgb,gloss=False,bump=.1):
     if not gloss:
         n=nt.nodes.new('ShaderNodeTexNoise');n.inputs['Scale'].default_value=60;n.inputs['Detail'].default_value=6;bp=nt.nodes.new('ShaderNodeBump');bp.inputs['Strength'].default_value=bump;bp.inputs['Distance'].default_value=.004;nt.links.new(n.outputs[0],bp.inputs['Height']);nt.links.new(bp.outputs[0],b.inputs['Normal'])
     return m
-M={k:clay(k,v) for k,v in dict(skin='#ffe9da',hair='#e6cba2',hairb='#d6b98c',pink='#ffaaa6',stand='#c9c6d6').items()}
+M={k:clay(k,v) for k,v in dict(skin='#ffe9da',hair='#e6cba2',hairb='#d6b98c',pink='#ffaaa6',mouth='#c47a70',stand='#c9c6d6').items()}
 for k,v in dict(ink='#352d4a',eye='#5f4aa0',pupil='#43306e',hl='#ffffff').items():M[k]=clay(k,v,gloss=True)
 def mk(name,V,F,mat,sub=0):
     me=bpy.data.meshes.new(name);me.from_pydata([tuple(v) for v in V],[],F);me.update();me.polygons.foreach_set('use_smooth',[True]*len(me.polygons))
@@ -25,8 +25,7 @@ def mk(name,V,F,mat,sub=0):
 # ---- head (context only) ----
 R=.245;HC=Vector((0,0,.665))
 def skull(d):
-    x,y,z=d;ck=1+.1*exp(-((z+.35)/.4)**2);fy=.94 if y<0 else 1.02;tp=1-.25*((-z-.6)/.4)**1.4 if z<-.6 else 1
-    return Vector((x*ck*tp*1.04,y*fy*tp,z*.94))*R
+    x,y,z=d;ck=1+.055*exp(-((z+.3)/.4)**2);return Vector((x*1.03*ck,y*(.92 if y<0 else 1.0)*(1+.02*exp(-((z+.3)/.4)**2)),z*(.97 if z>0 else .9)))*R
 def sphere_dirs(nu=40,nv=26):
     V=[Vector((0,0,1))];F=[]
     for i in range(1,nv):
@@ -49,7 +48,7 @@ def decal(az,el,rx,rz,mat,off,dx=0,dz=0):
         for j in range(n):F.append((1+k*n+j,1+(k+1)*n+j,1+(k+1)*n+(j+1)%n,1+k*n+(j+1)%n))
     o=mk('d',V,F,mat,sub=1);m=o.modifiers.new('sw','SHRINKWRAP');m.target=head;m.wrap_mode='ABOVE_SURFACE';m.offset=off;o.modifiers.move(1,0)
 for sg in (1,-1):
-    decal(sg*.44,-.2,.052,.064,'ink',.0012,dz=.004);decal(sg*.44,-.2,.044,.055,'eye',.0022);decal(sg*.44,-.2,.022,.03,'pupil',.0032,dz=.006);decal(sg*.44,-.2,.012,.013,'hl',.0042,dx=-sg*.013,dz=.028);decal(sg*.8,-.5,.04,.026,'pink',.0012)
+    decal(sg*.43,-.16,.052,.064,'ink',.0012,dz=.004);decal(sg*.43,-.16,.044,.055,'eye',.0022);decal(sg*.43,-.16,.022,.03,'pupil',.0032,dz=.006);decal(sg*.43,-.16,.012,.013,'hl',.0042,dx=-sg*.013,dz=.028);decal(sg*.78,-.44,.04,.026,'pink',.0012)
 # ---- strand = Bezier centre line + variable lens section + curled tip ----
 def bez(K,res=12):
     K=[Vector(k) for k in K];n=len(K);T=[(K[min(n-1,i+1)]-K[max(0,i-1)])*(.5 if 0<i<n-1 else 1) for i in range(n)];P=[]
@@ -71,7 +70,7 @@ def frames(P,n0):
         tg=(P[min(N-1,i+1)]-P[max(0,i-1)]).normalized();n=n-tg*n.dot(tg);n=n.normalized() if n.length>1e-6 else tg.orthogonal().normalized();T.append(tg);Nn.append(n.copy())
     return T,Nn
 ss=lambda x:max(0,min(1,x))**2*(3-2*max(0,min(1,x)))
-STR={'fringe':[],'side':[],'back':[],'ahoge':[]}
+STR={'mouth':[],'fringe':[],'side':[],'back':[],'ahoge':[]}
 def strand(grp,K,w0,th0,curl=None,groove=.0,N=34,flat=.5):
     P=resample(bez(K),N);T,Nn=frames(P,P[0]-HC+Vector((0,0,.05)))
     if curl:
@@ -104,6 +103,12 @@ def group_mesh(name,mat='hair'):
 lerp=lambda a,b,t:a+(b-a)*t
 def onskull(az0,az1,ph0,ph1,off,bulge=0,n=4,pw=1.4):
     return [SK(lerp(az0,az1,(k/n)**pw),lerp(ph0,ph1,k/n),off+bulge*sin(pi*k/n)) for k in range(n+1)]
+for sg in (1,-1):
+    K=[]
+    for q in range(7):
+        a=pi*q/6;d=Vector((sin(sg*.045+sg*.045*cos(a)),-1,-.46-.04*sin(a))).normalized();K.append(HC+skull(d)+d*.001)
+    strand('mouth',K,.0045,.0045,flat=1,N=14)
+HAIR=os.environ.get('HAIR','1')=='1'
 # 1) FRINGE: nine leaf-shaped locks from the crown swirl over the forehead; tips reach the top of the eyes and flick sideways
 for i,(a0,a1,ph,w,lay) in enumerate([(.0,.06,1.6,.034,1),(.2,.3,1.46,.046,0),(-.2,-.31,1.47,.046,0),(.42,.6,1.5,.05,1),(-.42,-.6,1.5,.05,1),(.66,.9,1.62,.05,0),(-.66,-.9,1.62,.05,0),(.1,.17,1.36,.03,1),(-.1,-.15,1.38,.03,1)]):
     sg=1 if a1>=a0 else -1;K=onskull(a0,a1,.07,ph,.014+.013*lay,bulge=.014)
@@ -127,16 +132,12 @@ for i in range(8):
 # 4) AHOGE: one crescent
 CR=Vector((0,.0,.895));strand('ahoge',[CR+Vector((0,.012,-.02)),CR+Vector((0,.04,.05)),CR+Vector((0,.02,.11)),CR+Vector((0,-.04,.135)),CR+Vector((0,-.09,.11)),CR+Vector((0,-.1,.075))],.03,.03,flat=1,N=30)
 # base: scalp cap + neck curtain under the locks (so gaps read as grooves, not holes)
-keep=[(d.z>.3 or (d.y>.05 and d.z>-.75)) for d in dv];mk('cap',[HC+skull(d)*1.025+Vector((0,.004,0)) for d in dv],[f for f in df if all(keep[i] for i in f)],'hairb',sub=1)
-cv=[];cf=[];rings=[(.66,.13,.05,.17),(.55,.17,.06,.2),(.42,.19,.07,.22),(.3,.2,.08,.23),(.22,.17,.06,.23)]
-for z,rx,ry,cy in rings:
-    for j in range(24):a=j/24*2*pi;cv.append((cos(a)*rx,cy+sin(a)*ry,z))
-for i in range(len(rings)-1):
-    for j in range(24):cf.append((i*24+j,(i+1)*24+j,(i+1)*24+(j+1)%24,i*24+(j+1)%24))
-cv+=[(0,.17,.68),(0,.23,.2)];cf+=[(len(cv)-2,(j+1)%24,j) for j in range(24)]+[(len(cv)-1,(len(rings)-1)*24+j,(len(rings)-1)*24+(j+1)%24) for j in range(24)];mk('curtain',cv,cf,'hairb',sub=1)
+if HAIR:keep=[(d.z>.3 or (d.y>.05 and d.z>-.75)) for d in dv];mk('cap',[HC+skull(d)*1.025+Vector((0,.004,0)) for d in dv],[f for f in df if all(keep[i] for i in f)],'hairb',sub=1)
 NS=sum(len(v) for v in STR.values())
 if MODE=='curve':
-    for g in STR:group_mesh(g)
+    for g in STR:
+        if g=='mouth':group_mesh(g,'mouth')
+        elif HAIR:group_mesh(g)
 else:
     # SDF sculpt: every strand sample is an oriented ellipsoid; smooth-union into a voxel field, marching cubes, light smooth
     from skimage import measure
@@ -165,6 +166,6 @@ cam=bpy.data.cameras.new('cam');cam.type='ORTHO';co=bpy.data.objects.new('cam',c
 sc.render.engine='CYCLES';sc.cycles.device='CPU';sc.cycles.samples=40;sc.cycles.use_denoising=True;sc.view_settings.view_transform='Standard'
 def shot(name,ang,elev,scale=1.16,tz=.56):
     d=Vector((sin(ang)*cos(elev),-cos(ang)*cos(elev),sin(elev)));co.location=Vector((0,.04,tz))+d*6;co.rotation_euler=(-d).to_track_quat('-Z','Y').to_euler();cam.ortho_scale=scale;piv.rotation_euler=(0,0,ang)
-    sc.render.resolution_x=560;sc.render.resolution_y=640;sc.render.filepath=os.path.join(OUT,'hr_%s_%s.png'%(MODE,name));bpy.ops.render.render(write_still=True)
-for n_,a,e in [('front',0,.03),('f34',-.6,.15),('side',pi/2,.03),('back',pi,.03),('b34',pi-.65,.2),('top',.0,1.0)]:shot(n_,a,e)
+    sc.render.resolution_x=560;sc.render.resolution_y=640;sc.render.filepath=os.path.join(OUT,'hr_%s%s_%s.png'%(MODE,'' if HAIR else 'bald',name));bpy.ops.render.render(write_still=True)
+for n_,a,e in [('front',0,.03),('f34',-.6,.15),('side',pi/2,.03)]+([('back',pi,.03),('b34',pi-.65,.2),('top',.0,1.0)] if os.environ.get('ALL') else []):shot(n_,a,e,*((.8,.68) if os.environ.get('ZOOM') else ()))
 print('STRANDS',NS,{g:len(v) for g,v in STR.items()})
