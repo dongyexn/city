@@ -311,7 +311,7 @@ const rotd=(cx,cz,dir,fn)=>{const g=new THREE.Group();g.position.set(cx,0,cz);g.
 const person=(px,py,pz,o={},pose={})=>{const g=new THREE.Group();g.position.set(px,py,pz);g.rotation.y=pose.rot||0;g.scale.setScalar(o.s||1);(o.par||cur).add(g);
  const skin=M(o.skin||'#ffdcc0',{roughness:.65}),top=M(o.top||'#3d9df5',{roughness:.7}),bot=M(o.bot||'#3e4a5c',{roughness:.7}),hair=M(o.hair||'#4a3526',{roughness:.8}),dk=M('#2b2622',{roughness:.3}),shoe=M(o.shoe||'#f4f4f2'),wh=M('#ffffff',{roughness:.3});
  const part=(geo,m,x,y,z,par=g)=>{const e=new THREE.Mesh(geo,m);e.position.set(x,y,z);e.castShadow=true;e.receiveShadow=true;par.add(e);return e;},piv=(x,y,z,rz)=>{const p=new THREE.Group();p.position.set(x,y,z);p.rotation.z=rz;g.add(p);return p;},sph=(r,sx=1,sy=1,sz=1,ws=14,hs_=10)=>{const q=new THREE.SphereGeometry(r,ws,hs_);q.scale(sx,sy,sz);return q;};
- const a=pose.swing||0,sit=!!pose.sit,P={g,legs:[],arms:[]},HY=.288,HR=.078;
+ const a=pose.swing||0,sit=!!pose.sit,P={g,legs:[],arms:[]},HY=.07,HR=.078;
  for(const sg of [1,-1]){const p=piv(0,.118,sg*.026,sit?Math.PI/2:sg*a);part(new THREE.CapsuleGeometry(.019,.066,4,10),o.skirt?skin:bot,0,-.05,0,p);part(sph(.026,1.35,.72,1),shoe,.01,-.104,0,p);P.legs.push(p);}
  {const b=new THREE.CylinderGeometry(.034,.046,.1,14);b.scale(.8,1,1.12);part(b,top,0,.168,0);part(sph(.0345,.8,.55,1.12),top,0,.218,0);part(sph(.043,.8,.6,1.12),o.skirt?(o.skirt===1?top:M(o.skirt)):bot,0,.12,0);}
  if(o.skirt){const k=new THREE.CylinderGeometry(.04,.07,.06,16);k.scale(.85,1,1.1);part(k,o.skirt===1?top:M(o.skirt),0,.112,0);}
@@ -320,14 +320,15 @@ const person=(px,py,pz,o={},pose={})=>{const g=new THREE.Group();g.position.set(
  if(o.pack)part(new THREE.CapsuleGeometry(.03,.04,4,10),M(o.pack),-.05,.17,0).scale.set(.75,1,1.25);
  for(const sg of [1,-1]){const up=pose.wave&&sg>0,p=piv(0,.212,sg*.05,up?2.7:sit?.55:-sg*a*.9);p.rotation.x=sg*.16;part(new THREE.CapsuleGeometry(.0145,.058,4,8),top,0,-.04,0,p);part(sph(.018),skin,0,-.086,0,p);P.arms.push(p);}
  if(o.balloon){part(new THREE.CylinderGeometry(.002,.002,.3,4),dk,0,.3,-.085);part(sph(.06,1,1.12,1),M(o.balloon,{roughness:.3}),0,.5,-.085);}
- part(sph(HR,1,.96,1.04,20,16),skin,0,HY,0);
- for(const sg of [1,-1]){part(sph(.017,.45,1.3,.95),dk,.066,HY-.006,sg*.031);part(sph(.0055),wh,.0735,HY+.006,sg*.027);part(sph(.012,.25,.6,1),M('#ffa3a3',{roughness:.8}),.0665,HY-.026,sg*.037);part(sph(.014,.6,1,1),skin,0,HY-.008,sg*.08);}
- part(sph(.006,.5,.6,1.8),M('#c9705a'),.074,HY-.036,0);
- const hs=o.hs||0,capG=(th,r=HR*1.07)=>{const q=new THREE.SphereGeometry(r,20,12,0,Math.PI*2,0,Math.PI*th);q.scale(1,.98,1.05);return q;},cap=(m,th,tilt)=>{const e=part(capG(th),m,-.004,HY+.004,0);e.rotation.z=tilt;return e;};
- if(hs===5){const hm=M('#ffcf33',{roughness:.35});cap(hair,.58,.85);cap(hm,.42,.2).scale.setScalar(1.06);const br=new THREE.CylinderGeometry(.1,.1,.012,20);part(br,hm,.012,HY+.03,0);}
- else if(hs===4){const hm=M(o.hat||'#e0533a',{roughness:.6});cap(hair,.6,.9);cap(hm,.42,.18).scale.setScalar(1.05);const br=new THREE.CylinderGeometry(.05,.05,.01,16);br.scale(1.2,1,1.25);part(br,hm,.075,HY+.03,0);}
- else{cap(hair,hs===1?.66:.54,hs===1?.72:.62);if(hs===1)for(const sg of [1,-1])part(sph(.03,1.1,2.1,.6),hair,-.012,HY-.03,sg*.074);
-  if(hs===2){part(sph(.022),hair,-.082,HY+.03,0);part(sph(.036,.8,1.5,.9),hair,-.105,HY-.012,0).rotation.z=-.35;}if(hs===3)part(sph(.04),hair,-.022,HY+.088,0);}
+ const hgp=new THREE.Group();hgp.position.set(0,.212,0);hgp.scale.setScalar(1.32);g.add(hgp);P.head=hgp;const hp=(geo,m,x,y,z)=>part(geo,m,x,y,z,hgp);
+ hp(sph(HR,1,.96,1.04,20,16),skin,0,HY,0);
+ for(const sg of [1,-1]){hp(sph(.017,.45,1.3,.95),dk,.066,HY-.006,sg*.031);hp(sph(.0055),wh,.0735,HY+.006,sg*.027);hp(sph(.012,.25,.6,1),M('#ffa3a3',{roughness:.8}),.0665,HY-.026,sg*.037);hp(sph(.014,.6,1,1),skin,0,HY-.008,sg*.08);}
+ hp(sph(.006,.5,.6,1.8),M('#c9705a'),.074,HY-.036,0);
+ const hs=o.hs||0,capG=(th,r=HR*1.07)=>{const q=new THREE.SphereGeometry(r,20,12,0,Math.PI*2,0,Math.PI*th);q.scale(1,.98,1.05);return q;},cap=(m,th,tilt)=>{const e=hp(capG(th),m,-.004,HY+.004,0);e.rotation.z=tilt;return e;};
+ if(hs===5){const hm=M('#ffcf33',{roughness:.35});cap(hair,.58,.85);cap(hm,.42,.2).scale.setScalar(1.06);const br=new THREE.CylinderGeometry(.1,.1,.012,20);hp(br,hm,.012,HY+.03,0);}
+ else if(hs===4){const hm=M(o.hat||'#e0533a',{roughness:.6});cap(hair,.6,.9);cap(hm,.42,.18).scale.setScalar(1.05);const br=new THREE.CylinderGeometry(.05,.05,.01,16);br.scale(1.2,1,1.25);hp(br,hm,.075,HY+.03,0);}
+ else{cap(hair,hs===1?.66:.54,hs===1?.72:.62);if(hs===1)for(const sg of [1,-1])hp(sph(.03,1.1,2.1,.6),hair,-.012,HY-.03,sg*.074);
+  if(hs===2){hp(sph(.022),hair,-.082,HY+.03,0);hp(sph(.036,.8,1.5,.9),hair,-.105,HY-.012,0).rotation.z=-.35;}if(hs===3)hp(sph(.04),hair,-.022,HY+.088,0);}
  return P;};
 const X=(b,o)=>Object.assign({},b,o),CAT={
  res:[['단독주택 주황','house','#ff7a59'],['단독주택 파랑','house','#3d9df5'],['단독주택 회색','house','#5d6470'],['단독주택 초록','house','#3d8a63'],['단독주택 빨강','house','#d9534f'],
