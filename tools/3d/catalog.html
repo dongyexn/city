@@ -181,15 +181,17 @@ const roundB=(x,z)=>at(x,z,0,-2.6,()=>{/* modern B: rounded-corner mixed-use wit
   for(let i=0;i<fl;i++)ext(.07-.005,B+.5+i*FHb+.12,.012,M('#ffffff',{roughness:.3,transparent:true,opacity:.6,side:THREE.DoubleSide}),false);
   ext(-.2,B+.5+fl*FHb,.2,wt);bx(x0+.15,x1-.3,B+.5+fl*FHb+.2,B+.5+fl*FHb+.24,z0+.15,z1-.3,M('#9fd27f',{roughness:.8}),.02,false);}
  });
-const fountain=(cx_,cz_)=>at(cx_,cz_,-1.65,-2.15,()=>{/* landscaped fountain plaza */{const cx=-1.65,cz=-2.15,pav=M('#e9e3d8',{roughness:.8}),stone=M('#d9d3c8',{roughness:.6}),wat=new THREE.MeshPhysicalMaterial({color:'#4fb6f0',roughness:.05,clearcoat:1,envMapIntensity:1}),jet=new THREE.MeshStandardMaterial({color:'#e8f6ff',transparent:true,opacity:.7,roughness:.1});
-  add(new THREE.CylinderGeometry(1.05,1.05,.03,48),pav,cx,B+.015,cz,false);
-  add(new THREE.CylinderGeometry(.62,.64,.12,48),stone,cx,B+.06,cz);add(new THREE.CylinderGeometry(.55,.55,.1,48),wat,cx,B+.075,cz,false);
-  add(new THREE.CylinderGeometry(.06,.08,.22,16),stone,cx,B+.2,cz);add(new THREE.CylinderGeometry(.24,.18,.05,32),stone,cx,B+.32,cz);add(new THREE.CylinderGeometry(.2,.2,.02,32),wat,cx,B+.345,cz,false);
-  add(new THREE.CylinderGeometry(.04,.05,.14,12),stone,cx,B+.41,cz);add(new THREE.CylinderGeometry(.12,.09,.03,24),stone,cx,B+.49,cz);
-  add(new THREE.CylinderGeometry(.012,.04,.32,12),jet,cx,B+.66,cz,false);add(new THREE.SphereGeometry(.05,12,8),jet,cx,B+.82,cz,false);
-  for(let i=0;i<8;i++){const a=i/8*Math.PI*2;const e=add(new THREE.CylinderGeometry(.006,.02,.28,8),jet,cx+Math.cos(a)*.13,B+.42,cz+Math.sin(a)*.13,false);e.rotation.z=Math.cos(a)*.6;e.rotation.x=-Math.sin(a)*.6;}
-  
-  for(const a of [Math.PI*.25,Math.PI*1.25,Math.PI*.75]){const bxp=cx+Math.cos(a)*.85,bzp=cz+Math.sin(a)*.85;const e=add(new THREE.BoxGeometry(.32,.03,.1),M('#b9855a'),bxp,B+.08,bzp);e.rotation.y=-a+Math.PI/2;}}
+const fountain=(cx_,cz_)=>at(cx_,cz_,-1.65,-2.15,()=>{const cx=-1.65,cz=-2.15,st1=M('#e9e3d8',{roughness:.75}),st2=M('#d2cabb',{roughness:.7}),st3=M('#b9a98e',{roughness:.7}),wat=new THREE.MeshPhysicalMaterial({color:'#4fb6f0',roughness:.05,clearcoat:1,envMapIntensity:1}),jet=new THREE.MeshStandardMaterial({color:'#e8f6ff',transparent:true,opacity:.6,roughness:.1,depthWrite:false}),gold=M('#e7c36a',{metalness:.6,roughness:.3}),C=(rt,rb,h,m,y,sh=true,n=48)=>add(new THREE.CylinderGeometry(rt,rb,h,n),m,cx,B+y+h/2,cz,sh);
+  C(1.3,1.32,.03,st3,0,false);C(1.22,1.22,.034,st1,0,false);C(1.0,1.0,.038,st2,0,false);C(.93,.93,.042,st1,0,false);for(let i=0;i<8;i++){const a=i/8*Math.PI*2,e=add(new THREE.BoxGeometry(.3,.006,.07),st3,cx+Math.cos(a)*1.08,B+.04,cz+Math.sin(a)*1.08,false);e.rotation.y=-a;}
+  C(.86,.88,.05,st2,.03);C(.78,.8,.05,st1,.08);C(.7,.72,.16,st2,.13);{const e=add(new THREE.TorusGeometry(.69,.035,10,48),st1,cx,B+.29,cz);e.rotation.x=Math.PI/2;}C(.655,.655,.02,wat,.25,false);
+  for(let i=0;i<12;i++){const a=i/12*Math.PI*2;add(new THREE.SphereGeometry(.035,10,8),st1,cx+Math.cos(a)*.69,B+.33,cz+Math.sin(a)*.69);}
+  for(const r of [.3,.48]){const e=add(new THREE.TorusGeometry(r,.006,4,40),M('#eaf7ff',{transparent:true,opacity:.7}),cx,B+.272,cz,false);e.rotation.x=Math.PI/2;}
+  C(.11,.14,.06,st1,.25);C(.075,.095,.3,st2,.31,true,10);C(.3,.12,.07,st1,.6);C(.27,.27,.012,wat,.665,false);{const e=add(new THREE.TorusGeometry(.295,.02,8,36),st1,cx,B+.67,cz);e.rotation.x=Math.PI/2;}
+  C(.05,.065,.2,st2,.67,true,10);C(.17,.07,.05,st1,.86);C(.15,.15,.01,wat,.905,false);C(.03,.04,.1,st2,.91);add(new THREE.SphereGeometry(.045,12,10),gold,cx,B+1.05,cz);
+  add(new THREE.CylinderGeometry(.285,.31,.4,36,1,true),jet,cx,B+.47,cz,false);add(new THREE.CylinderGeometry(.16,.2,.2,28,1,true),jet,cx,B+.78,cz,false);
+  for(let i=0;i<8;i++){const a=(i+.5)/8*Math.PI*2,e=add(new THREE.TorusGeometry(.14,.011,6,14,Math.PI),jet,cx+Math.cos(a)*.47,B+.27,cz+Math.sin(a)*.47,false);e.rotation.y=-a;e.scale.y=1.7;add(new THREE.CylinderGeometry(.018,.022,.04,8),st3,cx+Math.cos(a)*.61,B+.29,cz+Math.sin(a)*.61,false);}
+  for(let i=0;i<4;i++){const a=i/4*Math.PI*2+Math.PI/4,x=cx+Math.cos(a)*1.1,z=cz+Math.sin(a)*1.1;add(new THREE.CylinderGeometry(.016,.022,.5,8),M('#23262b',{metalness:.3,roughness:.5}),x,B+.28,z);add(new THREE.SphereGeometry(.055,12,10),M('#fff3d6',{emissive:'#ffffff',emissiveIntensity:.4}),x,B+.56,z,false);add(new THREE.CylinderGeometry(.03,.03,.012,10),M('#23262b'),x,B+.51,z,false);
+   const b=i/4*Math.PI*2,ux=cx+Math.cos(b)*1.1,uz=cz+Math.sin(b)*1.1;add(new THREE.CylinderGeometry(.1,.06,.12,14),st2,ux,B+.1,uz);add(new THREE.SphereGeometry(.095,12,8),M('#4f9e45',{roughness:.85}),ux,B+.19,uz);for(let k=0;k<5;k++){const t=k/5*Math.PI*2;add(new THREE.SphereGeometry(.026,8,6),M(['#ff8fb1','#ffd23d','#ffffff','#ff6f61','#b48cff'][(k+i)%5]),ux+Math.cos(t)*.065,B+.25,uz+Math.sin(t)*.065,false);}}
  });
 const roofCafe=(x,z)=>at(x,z,-1.35,-.15,()=>{/* rooftop-terrace cafe */{bld(-1.35,-.3,-.15,.8,2,{wall:'#f7f5f1',wood:1,roof:'#b98a5e'});const y=B+.64;for(const [a,b] of [[-1.0,.2],[-.6,.5]]){add(new THREE.CylinderGeometry(.012,.012,.32,6),wm,a,y+.16,b);add(new THREE.ConeGeometry(.2,.09,16),M('#2f8f6b'),a,y+.34,b);}
   bx(-1.35,-.3,y,y+.12,.77,.8,glz,.005,false);bx(-.33,-.3,y,y+.12,-.15,.8,glz,.005,false);}
@@ -246,7 +248,9 @@ const greenhouse=(x,z)=>at(x,z,3.35,3.5,()=>{/* greenhouse cafe */{const x0=3.35
   for(let i=0;i<4;i++){bx(-1.75+i*.24,-1.6+i*.24,.9,.98,-.95,-.82,M('#d9dde3'),.012);}bx(.5,.9,1.35,1.5,-.9,-.5,M('#d9dde3'),.02);
   for(const x of [-1.6,-1.2,.4,.8])tree1(x,1.25,.9);});
  const station=(cx,cz)=>BG(cx,cz,()=>{const st=M('#eadfce'),wh=M('#f6f6f4'),bl=M('#4a6fa5',{roughness:.35,metalness:.3}),dk=M('#3e434c');
-  bx(-2,1.5,0,.62,-1.2,-.2,st,.03);{const g=new THREE.CylinderGeometry(.52,.52,3.5,28);g.scale(1,.75,1);const e=add(g,bl,-.25,.62,-.7);e.rotation.z=Math.PI/2;for(let k=0;k<8;k++){const r=add(new THREE.TorusGeometry(.525,.014,6,28,Math.PI),wh,-1.9+k*.47,.62,-.7,false);r.rotation.y=Math.PI/2;r.scale.y=.75;}}
+  bx(-2,1.5,0,.62,-1.2,-.2,st,.03);{const g=new THREE.CylinderGeometry(.52,.52,3.5,28);g.scale(1,.75,1);const e=add(g,bl,-.25,.62,-.7);e.rotation.z=Math.PI/2;for(let k=0;k<8;k++){const r=add(new THREE.TorusGeometry(.53,.03,8,28,Math.PI),wh,-1.9+k*.47,.62,-.7);r.rotation.y=Math.PI/2;r.scale.y=.75;if(k<7&&k%2===0){const pg=new THREE.CylinderGeometry(.524,.524,.47,28,1,true,-Math.PI/2,Math.PI);pg.rotateZ(Math.PI/2);pg.scale(1,.75,1);add(pg,M('#6f93c8',{roughness:.35,metalness:.3,side:THREE.DoubleSide}),-1.9+k*.47+.235,.62,-.7,false);}}}
+  for(const z of [-1.2,-.2]){bx(-2.03,1.53,.58,.68,z-.045,z+.045,wh,.02);for(let k=0;k<8;k++)bx(-1.9+k*.47-.03,-1.9+k*.47+.03,.5,.6,z-.03+(z>-.5?.03:-.03),z+.03+(z>-.5?.03:-.03),wh,.008,false);}
+  bx(-.75,.25,.7,.9,-.19,-.15,M('#2f4f8a',{roughness:.4}),.015);bx(-.6,.1,.77,.83,-.15,-.144,wh,.002,false);for(const x of [-.6,.1])bx(x-.012,x+.012,.66,.72,-.185,-.16,dk,.004,false);
   for(const x of [-2.0,1.5]){const g=new THREE.CylinderGeometry(.47,.47,.03,28);g.rotateZ(Math.PI/2);g.scale(1,.75,1);add(g,MG,x,.62,-.7,false);for(let k=1;k<6;k++){const a=k/6*Math.PI,e=add(new THREE.BoxGeometry(.036,.34,.014),wh,x,.62+Math.sin(a)*.17*.9,-.7+Math.cos(a)*.22,false);e.rotation.x=Math.PI/2-a;}const g2=new THREE.TorusGeometry(.5,.03,6,28,Math.PI);g2.rotateY(Math.PI/2);g2.scale(1,.75,1);add(g2,wh,x,.62,-.7);}
   for(let k=1;k<9;k++){if(k===4||k===5)continue;const a=k/9*Math.PI;add(new THREE.BoxGeometry(3.5,.014,.014),M('#7f9fd0',{roughness:.4,metalness:.3}),-.25,.62+Math.sin(a)*.525*.75,-.7+Math.cos(a)*.525,false);}
   bx(-1.8,1.3,1.0,1.03,-.84,-.56,MG,.008,false);bx(-1.82,1.32,.995,1.02,-.87,-.84,wh,.006,false);bx(-1.82,1.32,.995,1.02,-.56,-.53,wh,.006,false);for(let k=0;k<=10;k++)bx(-1.8+k*.31-.008,-1.8+k*.31+.008,1.0,1.04,-.86,-.54,wh,.003,false);
@@ -297,6 +301,7 @@ bx(-.85,.85,.03,.16,cz0-.4,cz0+.4,M('#e9e4da'),.03);bx(-.5,.5,.16,.2,cz0-.25,cz0
   bx(1.35,2.05,0,.56,.35,1.15,M('#f4f5f7'),.02);bx(1.33,2.07,.56,.6,.33,1.17,wh,.01);wins(1.4,2.0,.14,.3,1.15,3,'z');wins(1.4,2.0,.36,.5,1.15,3,'z');wins(.45,1.05,.14,.3,2.05,2,'x');wins(.45,1.05,.36,.5,2.05,2,'x');bx(1.45,1.95,.62,.8,1.05,1.1,M('#3d7de0'),.012);bx(1.52,1.8,.68,.74,1.1,1.106,wh,.002,false);
   for(let i=0;i<3;i++){bx(-1.7+i*.34,-1.42+i*.34,.1,.34,.9,1.18,M(['#3d7de0','#e0533a','#2fa86a'][i]),.012);for(let k=1;k<4;k++)bx(-1.7+i*.34+k*.07,-1.693+i*.34+k*.07,.1,.34,1.18,1.186,dk,.001,false);}bx(-.5,-.2,.1,.2,.95,1.2,M('#a8774f'),.008);bx(-.48,-.22,.2,.3,.97,1.18,M('#a8774f'),.008);});
  const BIG=[['종합경기장',stadium,5.6,4.2],['쇼핑몰',mall,4.2,3.2],['기차역',station,4.8,3.0],['대학교',univ,3.8,3.6],['놀이공원',wheel,3.7,3.7],['공장',factory,4.4,3.6]];
+const rotd=(cx,cz,dir,fn)=>{const g=new THREE.Group();g.position.set(cx,0,cz);g.rotation.y={'z+':0,'x+':Math.PI/2,'z-':Math.PI,'x-':-Math.PI/2}[dir];const pc=cur;pc.add(g);cur=g;fn();cur=pc;};
 const X=(b,o)=>Object.assign({},b,o),CAT={
  res:[['단독주택 주황','house','#ff7a59'],['단독주택 파랑','house','#3d9df5'],['단독주택 회색','house','#5d6470'],['단독주택 초록','house','#3d8a63'],['단독주택 빨강','house','#d9534f'],
   ['타운하우스 화이트',3,TOWN],['타운하우스 벽돌',3,{wall:'#b9694c',brick:1,ww:.36,pitch:'#4a4f58',noroof:1}],['타운하우스 민트',2,{wall:'#dff0e8',frame:'#3d7a5c',ww:.36,pitch:'#3d7a5c'}],
@@ -324,7 +329,7 @@ const X=(b,o)=>Object.assign({},b,o),CAT={
   ['주민센터',2,X(WOOD,{flag:1})],['법원',4,X(STONE,{wall:'#ece6da',ww:.24,pitch:'#8a8f98'})],['발전소',2,{wall:'#bfc5cc',frame:'#3e434c',ww:.4,roof:'#aab1ba',stack:2,noroof:1}],
   ['변전소',1,{wall:'#8f97a3',frame:'#ffc23d',ww:.5,roof:'#7a828e',solar:1,noroof:1}],['정수장',2,{wall:'#dcecf7',frame:'#3d7de0',ww:.4,roof:'#c4d8e8',tank:1}],
   ['버스터미널',1,{wall:'#f4f5f7',shop:'#3d7de0',awn:'#3e434c',roof:'#dfe3ea',rsign:'#3d7de0',noroof:1}],['체육관',2,{wall:'#eef2f6',frame:'#3d7de0',ww:.44,pitch:'#3d7de0'}]]};
-return {CAT,BIG,lift,bld,house,car,gas,towerA,roundB,fountain,roofCafe,shopHouse,restaurant,greenhouse,STY:{APT,OFF,SHOP,VIL,CVS,STONE,BAND,BRICK,GBRICK,WOOD,TOWN,NEIGH,BAKE,PHAR},crown,PAL,TRK,PIT,LEAF,FH};};
+return {CAT,BIG,rotd,lift,bld,house,car,gas,towerA,roundB,fountain,roofCafe,shopHouse,restaurant,greenhouse,STY:{APT,OFF,SHOP,VIL,CVS,STONE,BAND,BRICK,GBRICK,WOOD,TOWN,NEIGH,BAKE,PHAR},crown,PAL,TRK,PIT,LEAF,FH};};
 
 window.renderBig=async(VW,VH)=>{
 const r=new THREE.WebGLRenderer({antialias:true,alpha:true,preserveDrawingBuffer:true});r.setSize(VW,VH);r.setPixelRatio(1);r.shadowMap.enabled=true;r.shadowMap.type=THREE.PCFSoftShadowMap;r.toneMapping=THREE.ACESFilmicToneMapping;r.toneMappingExposure=1.08;r.outputColorSpace=THREE.SRGBColorSpace;
