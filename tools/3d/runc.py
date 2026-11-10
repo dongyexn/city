@@ -10,7 +10,8 @@ async def main():
             if path.endswith('.js'):ct='application/javascript'
             await route.fulfill(path=path,content_type=ct)
         await pg.route('http://l/**',h);await pg.goto('http://l/catalog.html');await pg.wait_for_function('window.ready===1',timeout=120000)
-        for c,t in [('res','주거 20종'),('com','상업 20종'),('off','업무 20종'),('pub','공공 20종')]:
+        for c,t in []:
             d=await pg.evaluate('render(2600,1500,"%s","%s")'%(c,t));open(os.path.join(D,'catalog_%s.png'%c),'wb').write(base64.b64decode(d.split(',')[1]))
+        d=await pg.evaluate('renderBig(2600,1700)');open(os.path.join(D,'catalog_big.png'),'wb').write(base64.b64decode(d.split(',')[1]))
         await b.close()
 asyncio.run(main())
