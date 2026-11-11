@@ -56,11 +56,28 @@ button:disabled{color:var(--mut);cursor:default}
 .row .sep{flex:none;width:1px;margin:6px 4px;background:rgba(255,255,255,.14)}
 #msg{position:fixed;top:calc(72px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);white-space:nowrap;padding:10px 14px;font:600 14px var(--font);pointer-events:none;transition:opacity .2s}
 #msg:empty{opacity:0}
+#menu{position:fixed;top:calc(64px + env(safe-area-inset-top,0px));right:max(12px,env(safe-area-inset-right,0px));padding:6px;display:flex;flex-direction:column;gap:2px;min-width:140px}
+#menu button{text-align:left}
+/* phones: every bar spans the width, tools share it evenly, rare actions move into the ⋯ menu */
+@media (max-width:600px){
+ #top{left:max(12px,env(safe-area-inset-left,0px));right:max(12px,env(safe-area-inset-right,0px));top:calc(10px + env(safe-area-inset-top,0px));justify-content:space-between;padding:4px}
+ #top button{padding:10px 6px;min-width:38px;font-size:13px}
+ #bar{left:max(12px,env(safe-area-inset-left,0px));right:max(12px,env(safe-area-inset-right,0px));transform:none;max-width:none;padding:4px;gap:2px;bottom:calc(10px + env(safe-area-inset-bottom,0px))}
+ #bar button{flex:1 1 0;min-width:0;padding:12px 0;font-size:13px}
+ #pick{left:max(12px,env(safe-area-inset-left,0px));right:max(12px,env(safe-area-inset-right,0px));transform:none;width:auto;bottom:calc(66px + env(safe-area-inset-bottom,0px));padding:4px}
+ #cats{flex-wrap:wrap;row-gap:2px}
+ #cats .sep{flex-basis:100%;width:auto;height:0;margin:0}
+ .row .dir{min-width:40px;padding:8px 8px}
+ .card{width:66px}.card .ic{width:50px;height:50px}
+ #env,#isl{top:calc(62px + env(safe-area-inset-top,0px));left:max(12px,env(safe-area-inset-left,0px));right:max(12px,env(safe-area-inset-right,0px));width:auto}
+ #isl{max-height:calc(100% - 200px)}
+ #msg{top:calc(62px + env(safe-area-inset-top,0px));max-width:calc(100% - 24px);overflow:hidden;text-overflow:ellipsis;font-size:13px}
+}
 @media (prefers-reduced-motion:reduce){#msg{transition:none}}
 </style>
 <div id="stars" aria-hidden="true"></div><div id="sun" aria-hidden="true"></div><div id="moon" aria-hidden="true"></div><canvas id="cv" tabindex="0" aria-label="도시"></canvas><div id="haze" aria-hidden="true"></div>
 <div id="msg" class="glass" role="status">불러오는 중</div>
-<div id="top" class="glass"><button id="undo" disabled aria-label="되돌리기" title="되돌리기">↶</button><button id="redo" disabled aria-label="다시하기" title="다시하기">↷</button><button id="zout" aria-label="축소" title="축소">−</button><button id="zin" aria-label="확대" title="확대">＋</button><button id="fit" title="도시 전체">전체</button><button id="islb" aria-pressed="false" title="섬 저장·새 섬">섬</button><button id="envb" aria-pressed="false" title="시간·날씨">시간</button><button id="photo" title="사진 찍기">사진</button><button id="mo" aria-pressed="true" title="움직임 켜고 끄기">움직임</button><button id="reset">처음으로</button></div>
+<div id="top" class="glass"><button id="undo" disabled aria-label="되돌리기" title="되돌리기">↶</button><button id="redo" disabled aria-label="다시하기" title="다시하기">↷</button><button id="zout" aria-label="축소" title="축소">−</button><button id="zin" aria-label="확대" title="확대">＋</button><button id="fit" title="도시 전체">전체</button><button id="islb" aria-pressed="false" title="섬 저장·새 섬">섬</button><button id="envb" aria-pressed="false" title="시간·날씨">시간</button><button id="photo" title="사진 찍기">사진</button><button id="mo" aria-pressed="true" title="움직임 켜고 끄기">움직임</button><button id="reset">처음으로</button><button id="more" aria-label="더 보기" aria-expanded="false" hidden>⋯</button></div><div id="menu" class="glass" hidden></div>
 <div id="isl" class="glass" hidden></div>
 <div id="env" class="glass" hidden><div class="er"><span id="tlab">13:00</span><input id="tval" type="range" min="0" max="24" step=".25" aria-label="시간"><button id="tauto" aria-pressed="false">흐르기</button></div><div class="er"><button data-wx="clear">맑음</button><button data-wx="rain">비</button><button data-wx="snow">눈</button></div></div>
 <div id="shot" hidden><canvas id="shotc"></canvas><div class="glass sbar"><button id="stilt" aria-pressed="true">미니어처</button><button id="ssave">저장</button><button id="sclose">닫기</button></div></div>
