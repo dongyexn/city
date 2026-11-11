@@ -158,15 +158,16 @@ else:
         d=sdf(G,parts,k)-off;d=np.maximum(d,np.maximum(zlo-Z,Z-zhi))
         if cut:d=np.maximum(d,-sdf(G,cut,0))
         v,f,_,_=measure.marching_cubes(d,0,spacing=(h,h,h));o=mk(name,v+lo,[tuple(int(i) for i in t[::-1]) for t in f],mat);m=o.modifiers.new('sm','SMOOTH');m.factor=.5;m.iterations=3
-    TB=[(.13,.078),(.16,.094),(.22,.1),(.3,.097),(.37,.088),(.41,.072),(.435,.045),(.447,.02)]
-    TOR=[loft(TB),e((0,0,.45),(.034,.032,.03))];LEGS=both(lambda s:e((s*.044,0,.1),(.028,.028,.07)));ARMS=both(lambda s:e((s*.112,0,.318),(.028,.028,.098),(0,-s*.07,0)))
-    HANDS=both(lambda s:e((s*.119,0,.212),.033))
+    TB=[(.13,.08),(.16,.095),(.22,.1),(.31,.101),(.375,.1),(.41,.09),(.432,.066),(.445,.035),(.45,.012)]
+    TOR=[loft(TB),e((0,0,.45),(.034,.032,.03))];LEGS=both(lambda s:e((s*.045,0,.11),(.027,.027,.07)));ARMS=both(lambda s:e((s*.118,0,.3),(.029,.029,.088),(0,-s*.06,0)))
+    HANDS=both(lambda s:e((s*.124,0,.205),.032))
     ARM[:]=ARMS;LEG[:]=LEGS;HAND[:]=HANDS
     build('skinbody',TOR+[e((0,0,.15),(.07,.06,.04))],.03,skinM);build('arm',ARMS,0,skinM);build('hand',HANDS,0,skinM);build('leg',LEGS,0,skinM)
-    build('shoe',both(lambda s:e((s*.044,-.012,.028),(.04,.056,.028))),.01,shoeM)
-    sl=.25 if VAR in (5,8) else .29
-    shellB('shirt',TOR,.03,clothM,.015,.205,.43)
-    shellB('sleeve',ARMS,0,clothM,.013,sl,.43)
+    build('shoe',both(lambda s:e((s*.045,-.016,.034),(.036,.054,.024),p=2.4))+both(lambda s:e((s*.045,-.05,.03),(.034,.03,.02)))+both(lambda s:e((s*.044,0,.052),(.03,.03,.02))),.012,shoeM)
+    build('sole',both(lambda s:e((s*.045,-.018,.008),(.039,.06,.009),p=3.5)),.01,clay('sole','#f4f1ea'))
+    sl=.24 if VAR in (5,8) else .3
+    shellB('shirt',TOR,.03,clothM,.015,.205,.445)
+    shellB('sleeve',ARMS,0,clothM,.013,sl,.41)
     if PT in ('skirt','longskirt'):
         lo_=.075 if PT=='skirt' else .03;build('pants',[loft([(lo_,.135),(lo_+.03,.13),(.2,.108),(.225,.104)],sc=.98)],0,pantsM)
     else:
@@ -191,9 +192,66 @@ ex,ez=V['eye']
 for s in (1,-1):
     feat((s*ex,-1,ez),(.03,.012,.04),ink,.2);feat((s*ex-.03,-1,ez+.055),(.01,.005,.01),white,1.6);feat((s*(ex+.3),-1,ez-.16),(.042,.006,.026),pink,.2)
     feat((s*.03,-1,ez-.2),(.022,.006,.006),ink,.3,roll=s*.5)
+if os.environ.get('TEMPLATE'):
+    import bmesh
+    col=bpy.data.collections.new('주민_%02d'%VAR);sc.collection.children.link(col)
+    PV={}
+    for a in ARM:c,r,Rm,p=a;PV['ARM_L' if c[0]>0 else 'ARM_R']=c+Rm@np.array([0,0,r[2]])
+    for a in LEG:PV['LEG_L' if a[0][0]>0 else 'LEG_R']=a[0]+np.array([0,0,a[1][2]])
+    MAP={'skin':'HEAD','ears':'HEAD_EARS','hair':'HAIR','hat':'HAT','skinbody':'BODY','shirt':'SHIRT','pants':'PANTS','cloth':'SHIRT','f':'FACE'}
+    SIDE={'arm':('ARM',''),'hand':('ARM','_HAND'),'sleeve':('ARM','_SLEEVE'),'leg':('LEG',''),'shoe':('LEG','_SHOE'),'sole':('LEG','_SOLE'),'pleg':('LEG','_PANTS')}
+    dg=bpy.context.evaluated_depsgraph_get();src=[o for o in list(bpy.data.objects) if o.type=='MESH' and o.name.split('.')[0]!='floor'];made=[]
+    def add(bm,name,mats,piv=None):
+        bmesh.ops.recalc_face_normals(bm,faces=bm.faces[:])
+        nt=len(bm.faces)
+        if nt>9000:
+            bmesh.ops.triangulate(bm,faces=bm.faces[:])
+        me=bpy.data.meshes.new(name);bm.to_mesh(me);bm.free()
+        for m in mats:me.materials.append(m)
+        me.polygons.foreach_set('use_smooth',[True]*len(me.polygons))
+        o=bpy.data.objects.new(name,me);col.objects.link(o)
+        if piv is not None:
+            me.transform(Matrix.Translation(Vector(-piv)));o.location=Vector(piv)
+        if len(me.polygons)>9000:
+            d=o.modifiers.new('d','DECIMATE');d.ratio=9000/len(me.polygons)
+            bpy.context.view_layer.objects.active=o;o.select_set(True)
+            with bpy.context.temp_override(object=o,active_object=o):bpy.ops.object.modifier_apply(modifier='d')
+        made.append(o);return o
+    for o in src:
+        base=o.name.split('.')[0];me=bpy.data.meshes.new_from_object(o.evaluated_get(dg));mats=list(o.data.materials)
+        bm=bmesh.new();bm.from_mesh(me);bpy.data.meshes.remove(me)
+        if base in SIDE:
+            pre,suf=SIDE[base]
+            for sg,tag in ((1,'L'),(-1,'R')):
+                b2=bm.copy();bmesh.ops.delete(b2,geom=[v for v in b2.verts if (v.co.x>0)!=(sg>0)],context='VERTS')
+                if b2.verts:add(b2,pre+'_'+tag+suf,mats,PV.get(pre+'_'+tag))
+                else:b2.free()
+            bm.free()
+        else:add(bm,MAP.get(base,base.upper()),mats)
+    for o in src:bpy.data.objects.remove(o)
+    fc=[o for o in made if o.name.startswith('FACE')]
+    if len(fc)>1:
+        for o in made:o.select_set(False)
+        for o in fc:o.select_set(True)
+        bpy.context.view_layer.objects.active=fc[0]
+        with bpy.context.temp_override(active_object=fc[0],selected_editable_objects=fc,selected_objects=fc):bpy.ops.object.join()
+        fc[0].name='FACE'
+    for o in list(bpy.data.objects):
+        if o.users_collection and o.users_collection[0]!=col:bpy.data.objects.remove(o)
+    for o in list(col.objects):
+        b=o.name.split('.')[0]
+        for j in ('ARM_L','ARM_R','LEG_L','LEG_R'):
+            if b.startswith(j+'_') and j in col.objects:o.parent=col.objects[j];o.location=(0,0,0)
+    RN={'c0':'피부','c1':'상의','c2':'신발','c3':'머리카락','pants':'하의','hat':'모자','sole':'밑창','ink':'눈','wh':'눈_하이라이트','pk':'볼터치','pants.001':'하의'}
+    for m in list(bpy.data.materials):
+        if m.users==0:continue
+        b=m.node_tree.nodes.get('Principled BSDF') if m.use_nodes else None
+        if b:m.diffuse_color=tuple(b.inputs['Base Color'].default_value)
+        if m.name in RN:m.name=RN[m.name]
+    bpy.ops.wm.save_as_mainfile(filepath=os.environ['TEMPLATE']);print('SAVED',len(col.objects));raise SystemExit
 if os.environ.get('EXPORT'):
     import json,base64
-    TGT=dict(skinbody=240,shirt=240,sleeve=50,pleg=60,skin=520,hair=700,hat=360,cloth=220,pants=160,ears=60,arm=60,hand=50,leg=60,shoe=70,f=28)
+    TGT=dict(sole=40,skinbody=240,shirt=240,sleeve=50,pleg=60,skin=520,hair=700,hat=360,cloth=220,pants=160,ears=60,arm=60,hand=50,leg=60,shoe=70,f=28)
     dg=bpy.context.evaluated_depsgraph_get();parts={}
     def piv_arm(a):c,r,Rm,p=a;return c+Rm@np.array([0,0,r[2]])
     PIV={'body':np.zeros(3)}
@@ -221,7 +279,7 @@ if os.environ.get('EXPORT'):
             return name+('L' if 1 else '')
         groups=[]
         if base in('arm','hand','sleeve'):groups=[('armL',cx>0),('armR',cx<=0)]
-        elif base in('leg','shoe','pleg'):groups=[('legL',cx>0),('legR',cx<=0)]
+        elif base in('leg','shoe','pleg','sole'):groups=[('legL',cx>0),('legR',cx<=0)]
         else:groups=[('body',np.ones(len(T),bool))]
         for g,mask in groups:
             TT=T[mask]
