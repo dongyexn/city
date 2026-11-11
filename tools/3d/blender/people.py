@@ -31,7 +31,7 @@ both=lambda f:[f(1),f(-1)]
 def loft(prof,ysc=.84,sc=1.0):
     zs=np.array([a for a,b in prof]);rs=np.array([b for a,b in prof]);zd=np.linspace(zs[0],zs[-1],240);rd=np.interp(zd,zs,rs);ker=np.exp(-np.linspace(-2,2,31)**2);ker/=ker.sum();rd=np.convolve(np.pad(rd,15,mode='edge'),ker,mode='valid')
     return (np.zeros(3),np.ones(3),np.eye(3),(zd,rd*sc,rd*sc*ysc))
-ARM=[];HAND=[];LEG=[];UP=-.01 if VI==4 else .06;LEGH=.065 if VI==4 else .085;LW=.058 if VI==4 else .036;AW=.048 if VI==4 else .036;HW=.05 if VI==4 else .04
+ARM=[];HAND=[];LEG=[];UP=-.01 if VI==4 else .06;LEGH=.055 if VI==4 else .085;LW=.042 if VI==4 else .036;AW=.034 if VI==4 else .036;HW=.042 if VI==4 else .04
 def arms(x,z,l=.1,a=.5,w=.055,y=0):
     for s in (1,-1):
         c=Vector((s*(x+.025),y,z+UP));Rm=Euler((0,-s*a,0),'XYZ').to_matrix();ARM.append(e(tuple(c),(AW,AW,l),(0,-s*a,0)));HAND.append(e(tuple(c+Rm@Vector((0,0,-l-.012))),HW))
@@ -40,7 +40,7 @@ def hands(x,z,r=.05,y=0,keep=False):
     if keep:HAND.extend(both(lambda s:e((s*x,y,z+UP),.04)))
     return []
 def feet(x=.08,r=(.075,.1,.05),y=-.02):
-    x=min(x,.085) if VI!=4 else .07;LEG.extend(both(lambda s:e((s*x,0,LEGH),(LW,LW,LEGH))));return both(lambda s:e((s*x,y,r[2]*.9),(min(r[0],.07),min(r[1],.095),r[2])))
+    x=min(x,.085) if VI!=4 else .05;LEG.extend(both(lambda s:e((s*x,0,LEGH),(LW,LW,LEGH))));return both(lambda s:e((s*x,y,r[2]*.9),(min(r[0],.07),min(r[1],.095),r[2])))
 def shell(hz,hr,p=2,g=1.11):return e((0,.015,hz+.02),tuple(v*g for v in hr),p=p)
 # ---------- ten silhouettes (1.5 heads tall: head ~0.6, body ~0.3) ----------
 VAR=int(os.environ.get('VAR','0'))
@@ -97,9 +97,9 @@ def var4(v,k):
         v['hair']=[RD(1.03,2.6),e((0,.15,.48),(.28,.16,.2),p=2.4)];v['hairx']=L+[e((.06,-.3,.71),(.2,.045,.06),(0,.35,0))];v['cut']=[FACE(.7),box_lo(.3)]+SC(.25,.59);v['pt']='skirt'
         C=dict(skin=SK[1],top='#f6c1d0',shoe='#8a4a5a',hair='#9a5a2c',pants='#6b8ec4')
     v['C']=C;v.setdefault('hatx',[])
-    TP=[(.125,.064),(.138,.087),(.16,.09),(.2,.087),(.24,.074),(.268,.056),(.285,.036),(.292,.02)];TP=[(.12,.11),(.14,.165),(.19,.19),(.27,.188),(.35,.17),(.41,.14),(.455,.095),(.48,.04)]
+    TP=[(.125,.064),(.138,.087),(.16,.09),(.2,.087),(.24,.074),(.268,.056),(.285,.036),(.292,.02)];TP=[(.12,.085),(.14,.103),(.2,.11),(.3,.108),(.38,.1),(.42,.082),(.445,.05),(.455,.02)]
     if v['pt'] in ('skirt','longskirt'):
-        lo_=.075 if v['pt']=='skirt' else .02;v['pants']=[loft([(lo_,.205),(lo_+.03,.2),(.19,.19)]+TP[3:],sc=.98)];v['pantscut']=[box_hi(.21)]
+        lo_=.075 if v['pt']=='skirt' else .02;v['pants']=[loft([(lo_,.14),(lo_+.03,.135),(.2,.112)]+TP[3:],sc=.98)];v['pantscut']=[box_hi(.21)]
     return v
 def variant(i):
     v=dict(pantscut=[],pants=[],skin=[],cloth=[],clothcut=[],shoe=[],hair=[],cut=[],hairx=[],eye=(.42,-.05),hz=.62)
@@ -110,7 +110,7 @@ def variant(i):
     if i==3:   # tall egg head + pill body, side-swept
         hr=(.29,.28,.36);v.update(hz=.66,eye=(.4,-.12),col=('#f6d2b8','#a8d5a2','#4a4a5a','#c98b4a'));v['skin']=[e((0,0,.66),hr)]+hands(.17,.12,.045);v['cloth']=[e((0,0,.2),(.13,.12,.2))]+arms(.15,.2,.1,.2,.05);v['shoe']=feet(.07);v['hair']=[shell(.66,hr)];v['cut']=[e((.1,-.3,.55),(.3,.22,.24),(0,.4,0))]
     if i==4:   # rounded-square head + block body, cap
-        hr=(.27,.28,.29);v.update(hz=.6,col=('#ffd9c0','#f2c14e','#3f4a6b','#3f6fb5'));v['skin']=[e((0,0,.64),(.27,.28,.25),p=4),e((0,-.005,.53),(.21,.235,.12),p=3),e((0,0,.3),(.04,.04,.03))]+hands(.23,.15);TP=[(.125,.064),(.138,.087),(.16,.09),(.2,.087),(.24,.074),(.268,.056),(.285,.036),(.292,.02)];TP=[(.12,.11),(.14,.165),(.19,.19),(.27,.188),(.35,.17),(.41,.14),(.455,.095),(.48,.04)];v['cloth']=[loft(TP)]+arms(.17,.38,.075,1.0);v['clothcut']=[e((0,0,.205-.5),(.5,.5,.5),p=8)];v['pants']=[loft([(.13,.064),(.14,.088)]+TP[2:],sc=.97)]+both(lambda s:e((s*.07,0,.14),(.066,.064,.06)));v['pantscut']=[e((0,0,.215+.5),(.5,.5,.5),p=8),e((0,0,.1-.5),(.5,.5,.5),p=8)];v['shoe']=feet(.055,(.06,.075,.035));v['hair']=[shell(.6,hr,4,1.08)];v['cut']=[e((0,0,.36),(.6,.6,.33),p=6)];v['hairx']=[e((0,-.3,.71),(.18,.15,.03))]
+        hr=(.27,.28,.29);v.update(hz=.6,col=('#ffd9c0','#f2c14e','#3f4a6b','#3f6fb5'));v['skin']=[e((0,0,.64),(.27,.28,.25),p=4),e((0,-.005,.53),(.21,.235,.12),p=3),e((0,0,.3),(.04,.04,.03))]+hands(.23,.15);TP=[(.125,.064),(.138,.087),(.16,.09),(.2,.087),(.24,.074),(.268,.056),(.285,.036),(.292,.02)];TP=[(.12,.085),(.14,.103),(.2,.11),(.3,.108),(.38,.1),(.42,.082),(.445,.05),(.455,.02)];v['cloth']=[loft(TP)]+arms(.122,.31,.1,.1);v['clothcut']=[e((0,0,.205-.5),(.5,.5,.5),p=8)];v['pants']=[loft([(.13,.064),(.14,.088)]+TP[2:],sc=.97)]+both(lambda s:e((s*.052,0,.135),(.05,.05,.05)));v['pantscut']=[e((0,0,.215+.5),(.5,.5,.5),p=8),e((0,0,.1-.5),(.5,.5,.5),p=8)];v['shoe']=feet(.055,(.05,.07,.032));v['hair']=[shell(.6,hr,4,1.08)];v['cut']=[e((0,0,.36),(.6,.6,.33),p=6)];v['hairx']=[e((0,-.3,.71),(.18,.15,.03))]
     if i==5:   # pear head (low cheeks) + flared dress, twin buns
         v.update(hz=.58,eye=(.42,.0),col=('#ffe0cf','#c9a7e8','#6a4a6a','#6b4a3a'));v['skin']=[e((0,0,.68),(.27,.26,.26)),e((0,0,.54),(.36,.29,.2))]+hands(.2,.2,.045);v['cloth']=[e((0,0,.23),(.11,.1,.13)),e((0,0,.1),(.22,.19,.11))]+arms(.16,.26,.08,.6,.045);v['shoe']=feet(.07,(.055,.075,.04));v['hair']=[e((0,.02,.7),(.3,.29,.28)),e((0,.03,.56),(.385,.3,.2))];v['cut']=[e((0,-.34,.52),(.33,.25,.25))];v['hairx']=both(lambda s:e((s*.33,.04,.88),(.13,.12,.12)))
     if i==6:   # wide oval head with ears + ball body on little legs, buzz cut
@@ -129,7 +129,7 @@ def variant(i):
     v['skin']=v['skin'][:1]+[e((0,-HR[1]*.66,hz-HR[2]*.6),(.1,.085,.075))]+v['skin'][1:]
     ears=both(lambda s:e((s*(HR[0]+.012),.02,hz-.04),(.058,.04,.075)));v['ears']=ears
     if i!=10:v['cut']=v['cut']+both(lambda s:e((s*(HR[0]+.02),-.03,hz-.035),(.1,.13,.11)))
-    HD=.1 if i==4 else 0
+    HD=.07 if i==4 else 0
     for kk in ('pantscut','pants','skin','cloth','clothcut','hair','cut','hairx','ears','hat','hatcut','hatx'):
         if kk not in v:continue
         v[kk]=[(c+np.array([0,0,UP+(HD if (kk in ('hair','cut','hairx','ears','hat','hatcut','hatx') or (kk=='skin' and j<3)) else 0)]),r,Rm,p) for j,(c,r,Rm,p) in enumerate(v[kk])]
@@ -144,12 +144,37 @@ def build(name,parts,k,mat,cut=None,extra=None):
     if cut:d=np.maximum(d,-sdf(G,cut,0))
     if extra:d1=sdf(G,extra,k);hh=np.clip(.5+.5*(d-d1)/.02,0,1);d=d*(1-hh)+d1*hh-.02*hh*(1-hh)
     v,f,_,_=measure.marching_cubes(d,0,spacing=(h,h,h));o=mk(name,v+lo,[tuple(int(i) for i in t[::-1]) for t in f],mat);m=o.modifiers.new('sm','SMOOTH');m.factor=.5;m.iterations=3
-build('skin',V['skin'],.04,skinM);build('ears',V['ears'],0,skinM);build('arm',ARM,0,clothM);build('hand',HAND,0,skinM);pantsM=clay('pants',V['C']['pants'] if 'C' in V else ('#6f8fc0' if VI==4 else '#59607a'));PT=V.get('pt','shorts')
-if PT=='long':LEG=[(c,r*np.array([1.18,1.18,1]),Rm,p) for c,r,Rm,p in LEG]
-if PT=='longskirt':LEG=[]
-build('leg',LEG,0,pantsM if PT=='long' else (skinM if VI in (2,4,5,7) else pantsM));
+LAYER=VI==4 and VAR>0
+build('skin',V['skin'],.04,skinM);build('ears',V['ears'],0,skinM);pantsM=clay('pants',V['C']['pants'] if 'C' in V else ('#6f8fc0' if VI==4 else '#59607a'));PT=V.get('pt','shorts')
+if not LAYER:
+    build('arm',ARM,0,clothM);build('hand',HAND,0,skinM)
+    if PT=='long':LEG=[(c,r*np.array([1.18,1.18,1]),Rm,p) for c,r,Rm,p in LEG]
+    if PT=='longskirt':LEG=[]
+    build('leg',LEG,0,pantsM if PT=='long' else (skinM if VI in (2,4,5,7) else pantsM));
+else:
+    # layered figure: a plain skin body first, then clothes as thin shells dilated off that body
+    Z=G[...,2]
+    def shellB(name,parts,k,mat,off,zlo,zhi,cut=None):
+        d=sdf(G,parts,k)-off;d=np.maximum(d,np.maximum(zlo-Z,Z-zhi))
+        if cut:d=np.maximum(d,-sdf(G,cut,0))
+        v,f,_,_=measure.marching_cubes(d,0,spacing=(h,h,h));o=mk(name,v+lo,[tuple(int(i) for i in t[::-1]) for t in f],mat);m=o.modifiers.new('sm','SMOOTH');m.factor=.5;m.iterations=3
+    TB=[(.13,.078),(.16,.094),(.22,.1),(.3,.097),(.37,.088),(.41,.072),(.435,.045),(.447,.02)]
+    TOR=[loft(TB),e((0,0,.45),(.034,.032,.03))];LEGS=both(lambda s:e((s*.044,0,.1),(.028,.028,.07)));ARMS=both(lambda s:e((s*.112,0,.318),(.028,.028,.098),(0,-s*.07,0)))
+    HANDS=both(lambda s:e((s*.119,0,.212),.033))
+    ARM[:]=ARMS;LEG[:]=LEGS;HAND[:]=HANDS
+    build('skinbody',TOR+[e((0,0,.15),(.07,.06,.04))],.03,skinM);build('arm',ARMS,0,skinM);build('hand',HANDS,0,skinM);build('leg',LEGS,0,skinM)
+    build('shoe',both(lambda s:e((s*.044,-.012,.028),(.04,.056,.028))),.01,shoeM)
+    sl=.25 if VAR in (5,8) else .29
+    shellB('shirt',TOR,.03,clothM,.015,.205,.43)
+    shellB('sleeve',ARMS,0,clothM,.013,sl,.43)
+    if PT in ('skirt','longskirt'):
+        lo_=.075 if PT=='skirt' else .03;build('pants',[loft([(lo_,.135),(lo_+.03,.13),(.2,.108),(.225,.104)],sc=.98)],0,pantsM)
+    else:
+        shellB('pants',TOR+[e((0,0,.15),(.07,.06,.04))],.03,pantsM,.016,.125,.215)
+        shellB('pleg',LEGS,0,pantsM,.014,.045 if PT=='long' else .1,.16)
 if V.get('hat'):build('hat',V['hat'],.02,clay('hat',V['C'].get('hat','#888888')),V['hatcut'],V['hatx'])
-build('pants',V['pants'],.02,pantsM,V['pantscut']);build('cloth',V['cloth'],.035,clothM,V['clothcut']);build('shoe',V['shoe'],.02,shoeM);build('hair',V['hair'],.03,hairM,V['cut'],V['hairx'])
+if not LAYER:build('pants',V['pants'],.02,pantsM,V['pantscut']);build('cloth',V['cloth'],.035,clothM,V['clothcut']);build('shoe',V['shoe'],.02,shoeM)
+build('hair',V['hair'],.03,hairM,V['cut'],V['hairx'])
 # face seated on the sculpted head surface
 HP=[V['skin'][0]]+[p for p in V['skin'][1:] if p[1].max()>.09];Hc=np.array([0,0,V['hz']])
 def surf(d):
@@ -168,7 +193,7 @@ for s in (1,-1):
     feat((s*.03,-1,ez-.2),(.022,.006,.006),ink,.3,roll=s*.5)
 if os.environ.get('EXPORT'):
     import json,base64
-    TGT=dict(skin=520,hair=700,hat=360,cloth=220,pants=160,ears=60,arm=60,hand=50,leg=60,shoe=70,f=28)
+    TGT=dict(skinbody=240,shirt=240,sleeve=50,pleg=60,skin=520,hair=700,hat=360,cloth=220,pants=160,ears=60,arm=60,hand=50,leg=60,shoe=70,f=28)
     dg=bpy.context.evaluated_depsgraph_get();parts={}
     def piv_arm(a):c,r,Rm,p=a;return c+Rm@np.array([0,0,r[2]])
     PIV={'body':np.zeros(3)}
@@ -195,8 +220,8 @@ if os.environ.get('EXPORT'):
         def side(name):
             return name+('L' if 1 else '')
         groups=[]
-        if base in('arm','hand'):groups=[('armL',cx>0),('armR',cx<=0)]
-        elif base in('leg','shoe'):groups=[('legL',cx>0),('legR',cx<=0)]
+        if base in('arm','hand','sleeve'):groups=[('armL',cx>0),('armR',cx<=0)]
+        elif base in('leg','shoe','pleg'):groups=[('legL',cx>0),('legR',cx<=0)]
         else:groups=[('body',np.ones(len(T),bool))]
         for g,mask in groups:
             TT=T[mask]
