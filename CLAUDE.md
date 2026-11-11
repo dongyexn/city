@@ -4,8 +4,9 @@
 
 ## 구조
 - `src/game.js` 게임 전체 로직(생성·렌더·스프라이트), `src/head.html` CSS·UI 마크업.
-- `python3 tools/build.py` → `index.html`(GitHub Pages), `build/pixel-city.html`(아티팩트), `build/dbg.html`(테스트 훅 `window.__pc.ev`).
-- `index.html`은 빌드 산출물. 직접 고치지 말고 src를 고친 뒤 빌드.
+- `python3 tools/build.py` → `classic.html`(GitHub Pages의 2D 도트판), `build/pixel-city.html`(아티팩트), `build/dbg.html`(테스트 훅 `window.__pc.ev`).
+- `python3 tools/3d/pages.py` → `index.html`(GitHub Pages 기본 화면, 3D 섬 도시. 원본은 `tools/3d/`).
+- `index.html`·`classic.html`은 빌드 산출물. 직접 고치지 말고 원본을 고친 뒤 빌드.
 
 ## 검증 (변경마다 필수)
 1. `python3 tools/build.py` (node --check 포함)
