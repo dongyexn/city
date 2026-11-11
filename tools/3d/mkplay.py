@@ -13,5 +13,5 @@ s=s.replace("new THREE.CanvasTexture(...a)","new __CT(...a)").replace("new THREE
 s=s.replace("L.shadow.mapSize.set(4096,4096)","L.shadow.mapSize.set(SHM,SHM)")
 s="const SHM=(navigator.maxTouchPoints>1&&Math.min(screen.width,screen.height)<900)?2048:4096;window.MS2=1;window.NOCURB=1;\n"+s
 cdn='https://cdn.jsdelivr.net/npm/three@0.160.0/'
-out=open(D+'/play_ui.html').read()+'<script type="application/json" id="map">'+open(D+'/map_%s.json'%(sys.argv[1] if len(sys.argv)>1 else '11')).read()+'</script>\n<script type="importmap">{"imports":{"three":"'+cdn+'build/three.module.js","three/addons/":"'+cdn+'examples/jsm/"}}</script>\n<script type="module">'+s+open(D+'/play_game.js').read()+'</script>\n'
+out=open(D+'/play_ui.html').read()+'<script type="application/json" id="map">'+open(D+'/map_%s.json'%(sys.argv[1] if len(sys.argv)>1 else '11')).read()+'</script>\n<script type="application/json" id="ppl">'+open(D+'/ppl.json').read()+'</script>\n<script type="importmap">{"imports":{"three":"'+cdn+'build/three.module.js","three/addons/":"'+cdn+'examples/jsm/"}}</script>\n<script type="module">'+s+open(D+'/play_game.js').read()+'</script>\n'
 open(D+'/play.html','w').write(out);print(len(out))
