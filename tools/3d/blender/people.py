@@ -128,7 +128,7 @@ def variant(i):
     if i==6:v['skin']=[v['skin'][0]]
     v['skin']=v['skin'][:1]+[e((0,-HR[1]*.66,hz-HR[2]*.6),(.1,.085,.075))]+v['skin'][1:]
     ears=both(lambda s:e((s*(HR[0]+.012),.02,hz-.04),(.058,.04,.075)));v['ears']=ears
-    if i!=10:v['cut']=v['cut']+both(lambda s:e((s*(HR[0]+.02),.0,hz-.04),(.1,.1,.105)))
+    if i!=10:v['cut']=v['cut']+both(lambda s:e((s*(HR[0]+.02),-.03,hz-.035),(.1,.13,.11)))
     HD=-.085 if i==4 else 0
     for kk in ('pantscut','pants','skin','cloth','clothcut','hair','cut','hairx','ears','hat','hatcut','hatx'):
         if kk not in v:continue

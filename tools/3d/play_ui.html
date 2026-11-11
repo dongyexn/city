@@ -20,6 +20,13 @@ button:disabled{color:var(--mut);cursor:default}
 #top{position:fixed;top:calc(12px + env(safe-area-inset-top,0px));right:max(16px,env(safe-area-inset-right,0px));display:flex;gap:2px;padding:6px}
 #top button{padding:10px 11px;min-width:40px}
 @media (pointer:coarse){#zin,#zout{display:none}}
+.card{display:flex;flex-direction:column;align-items:center;gap:3px;flex:none;width:78px;padding:6px 4px 5px}
+.card .ic{width:60px;height:60px;border-radius:10px;display:grid;place-items:center;font:600 22px var(--font);color:var(--mut);object-fit:contain}
+.card span:not(.ic){font:500 11px var(--font);color:var(--mut);max-width:72px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.card[aria-pressed="true"] span:not(.ic){color:#fff}
+.card img.ic[src=""],.card img.ic:not([src]){background:rgba(255,255,255,.06)}
+.row .dir{padding:8px 10px;min-width:38px}
+.row .sep{flex:none;width:1px;margin:6px 4px;background:rgba(255,255,255,.14)}
 #msg{position:fixed;top:calc(72px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);white-space:nowrap;padding:10px 14px;font:600 14px var(--font);pointer-events:none;transition:opacity .2s}
 #msg:empty{opacity:0}
 @media (prefers-reduced-motion:reduce){#msg{transition:none}}
