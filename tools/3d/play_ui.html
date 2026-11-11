@@ -25,6 +25,16 @@ button:disabled{color:var(--mut);cursor:default}
 #tlab{font:600 14px var(--font);min-width:48px;text-align:center;font-variant-numeric:tabular-nums}
 #tval{flex:1;accent-color:var(--acc);min-width:0}
 #env .er button{flex:1}
+#isl{position:fixed;top:calc(72px + env(safe-area-inset-top,0px));right:max(16px,env(safe-area-inset-right,0px));padding:8px;display:flex;flex-direction:column;gap:4px;width:min(380px,calc(100% - 32px));max-height:calc(100% - 180px);overflow:auto}
+#isl .slot{display:flex;align-items:center;gap:10px;padding:6px;border-radius:12px}
+#isl .slot.cur{background:rgba(255,255,255,.06)}
+#isl .th{width:64px;height:40px;border-radius:8px;object-fit:cover;flex:none;background:rgba(255,255,255,.06)}
+#isl .st{flex:1;display:flex;flex-direction:column;min-width:0}
+#isl .st b{font:600 14px var(--font);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#isl .st span{font:500 12px var(--font);color:var(--mut)}
+#isl .newi{display:flex;flex-direction:column;gap:6px;padding:6px 2px 2px}
+#isl .er{display:flex;gap:4px}#isl .er button{flex:1}#isl .go{background:var(--on)}
+#isl .card .ic{image-rendering:pixelated;background:transparent}
 #shot{position:fixed;inset:0;background:rgba(8,12,20,.72);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:16px;z-index:20}
 #shotc{max-width:100%;max-height:calc(100% - 80px);border-radius:12px;box-shadow:0 8px 40px rgba(0,0,0,.4)}
 #shot .sbar{display:flex;gap:4px;padding:6px}
@@ -42,7 +52,8 @@ button:disabled{color:var(--mut);cursor:default}
 </style>
 <canvas id="cv" tabindex="0" aria-label="도시"></canvas>
 <div id="msg" class="glass" role="status">불러오는 중</div>
-<div id="top" class="glass"><button id="undo" disabled aria-label="되돌리기" title="되돌리기">↶</button><button id="redo" disabled aria-label="다시하기" title="다시하기">↷</button><button id="zout" aria-label="축소" title="축소">−</button><button id="zin" aria-label="확대" title="확대">＋</button><button id="fit" title="도시 전체">전체</button><button id="envb" aria-pressed="false" title="시간·날씨">시간</button><button id="photo" title="사진 찍기">사진</button><button id="mo" aria-pressed="true" title="움직임 켜고 끄기">움직임</button><button id="reset">처음으로</button></div>
+<div id="top" class="glass"><button id="undo" disabled aria-label="되돌리기" title="되돌리기">↶</button><button id="redo" disabled aria-label="다시하기" title="다시하기">↷</button><button id="zout" aria-label="축소" title="축소">−</button><button id="zin" aria-label="확대" title="확대">＋</button><button id="fit" title="도시 전체">전체</button><button id="islb" aria-pressed="false" title="섬 저장·새 섬">섬</button><button id="envb" aria-pressed="false" title="시간·날씨">시간</button><button id="photo" title="사진 찍기">사진</button><button id="mo" aria-pressed="true" title="움직임 켜고 끄기">움직임</button><button id="reset">처음으로</button></div>
+<div id="isl" class="glass" hidden></div>
 <div id="env" class="glass" hidden><div class="er"><span id="tlab">13:00</span><input id="tval" type="range" min="0" max="24" step=".25" aria-label="시간"><button id="tauto" aria-pressed="false">흐르기</button></div><div class="er"><button data-wx="clear">맑음</button><button data-wx="rain">비</button><button data-wx="snow">눈</button></div></div>
 <div id="shot" hidden><canvas id="shotc"></canvas><div class="glass sbar"><button id="stilt" aria-pressed="true">미니어처</button><button id="ssave">저장</button><button id="sclose">닫기</button></div></div>
 <div id="pick" class="glass" hidden><div class="row" id="cats"></div><div class="row" id="items"></div></div>

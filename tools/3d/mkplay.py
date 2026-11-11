@@ -13,5 +13,10 @@ s=s.replace("new THREE.CanvasTexture(...a)","new __CT(...a)").replace("new THREE
 s=s.replace("L.shadow.mapSize.set(4096,4096)","L.shadow.mapSize.set(SHM,SHM)")
 s="const SHM=(navigator.maxTouchPoints>1&&Math.min(screen.width,screen.height)<900)?2048:4096;window.MS2=1;window.NOCURB=1;\n"+s
 cdn='https://cdn.jsdelivr.net/npm/three@0.160.0/'
-out=open(D+'/play_ui.html').read()+'<script type="application/json" id="map">'+open(D+'/map_%s.json'%(sys.argv[1] if len(sys.argv)>1 else '11')).read()+'</script>\n<script type="application/json" id="ppl">'+open(D+'/ppl.json').read()+'</script>\n<script type="importmap">{"imports":{"three":"'+cdn+'build/three.module.js","three/addons/":"'+cdn+'examples/jsm/"}}</script>\n<script type="module">'+s+open(D+'/play_game.js').read()+'</script>\n'
+import zlib,base64,json as _j
+KEEP=['N','HN','K','TWA','H','terr','kind','lvl','deco','ocean','LVL','lmkA']
+def _pack(sd):
+    d=_j.load(open(D+'/map_%s.json'%sd));d={k:d[k] for k in KEEP};c=zlib.compressobj(9,zlib.DEFLATED,-15);return base64.b64encode(c.compress(_j.dumps(d,separators=(',',':')).encode())+c.flush()).decode()
+MAPS={'11':None,'22':_pack(22),'33':_pack(33),'7':_pack(7)}
+out=open(D+'/play_ui.html').read()+'<script type="application/json" id="map">'+open(D+'/map_%s.json'%(sys.argv[1] if len(sys.argv)>1 else '11')).read()+'</script>\n<script type="application/json" id="maps">'+_j.dumps(MAPS)+'</script>\n<script type="application/json" id="ppl">'+open(D+'/ppl.json').read()+'</script>\n<script type="importmap">{"imports":{"three":"'+cdn+'build/three.module.js","three/addons/":"'+cdn+'examples/jsm/"}}</script>\n<script type="module">'+s+open(D+'/play_game.js').read()+'</script>\n'
 open(D+'/play.html','w').write(out);print(len(out))
