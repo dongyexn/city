@@ -11,3 +11,7 @@
 
 변환: `python import_people.py 입력.blend 출력.json` (bpy 필요) → `tools/3d/ppl.json` 교체 → `python3 tools/3d/pages.py`.
 템플릿 재생성: `people.py`를 `VAR=n TEMPLATE=…/vn.blend`로 실행 → `make_template.py 폴더 출력.blend`.
+
+# 곰 모델 각색
+`adapt_bear.py`: CGTrader 무료 모델 Sunny Lazy Bear(.blend)를 사람 주민 8명 템플릿으로 각색. 원본 모델과 각색 .blend는 재배포 금지라 저장소에 넣지 않는다(게임에는 변환된 메시만 포함).
+사용: `FACE=dot|happy|bean|sleepy python adapt_bear.py 원본.blend 출력.blend`
