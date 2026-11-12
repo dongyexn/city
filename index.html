@@ -128,7 +128,7 @@ const SNCAT={res:'hanok 한옥 1 1|cabin 통나무오두막 1 1|peanut 땅콩주
   off:'setback 셋백타워 1 1|broadcast 방송국 1 1|cowork 코워킹 1 1|datacenter 데이터센터 2 1|hotel 호텔 2 1|bankHQ 은행본점 2 1|twinTower 트윈타워 2 2|roundTower 원통타워 2 2|lab 연구소 2 2|convention 컨벤션 3 2',
   ind:'silo 사일로 1 1|wind 풍력발전 1 1|kiln 벽돌가마 1 1|waterTower 급수탑 1 1|pylon 송전탑 1 1|printShop 인쇄소 1 1|flourMill 제분소 1 1|coldStore 냉동창고 2 1|brewery 양조장 2 1|recycle 재활용센터 2 1|sawmill 목재소 2 1|truckDepot 트럭차고지 2 1|dairy 우유공장 2 1|bakery 제빵공장 2 1|foundry 주물공장 2 1|paperMill 제지공장 2 2|chemTanks 화학탱크 2 2|solarFarm 태양광 2 2|containerYard 컨테이너야적장 2 2|oilTanks 정유탱크 2 2|cementPlant 시멘트공장 2 2|greenhouseFarm 비닐하우스 2 2|carPlant 자동차공장 3 2|fab 반도체공장 3 2',
   pub:'church 성당 1 1|lighthouse 등대 1 1|chapel 교회 1 1|kinder 유치원 1 1|policeBox 파출소 1 1|fireStation 119안전센터 1 1|observatory 천문대 1 1|lectureHall 강의동 2 1|natatorium 실내수영장 2 1|temple 사찰 2 2',
-  fac:'tennis 테니스장 2 1|basketball 농구장 2 1|bigWheel 대관람차 2 2|nightMarket 야시장 2 2|viewTower 전망타워 2 2|miniGolf 미니골프 2 2|festival 축제광장 2 2|iceRink 스케이트장 2 2|ferry 여객선터미널 3 2|botanic 식물원 3 2|golfRange 골프연습장 3 2|campsite 캠핑장 3 2|market 전통시장 3 2|equestrian 승마장 3 2|aquarium 수족관 3 3|zoo 동물원 3 3|arena 아레나 3 3|waterpark 워터파크 3 3|driveIn 자동차극장 3 3|lakePark 호수공원 3 3|palace 고궁 4 3|ballpark 야구장 4 4|airport 소형공항 5 3'},SNF=['','','','','','',...Object.values(SNCAT).flatMap(L=>L.split('|').map(s=>s.split(' ')[0]))];window.__SNF=SNF;
+  fac:'tennis 테니스장 2 1|basketball 농구장 2 1|bigWheel 대관람차 2 2|nightMarket 야시장 2 2|viewTower 전망타워 2 2|miniGolf 미니골프 2 2|festival 축제광장 2 2|iceRink 스케이트장 2 2|ferry 여객선터미널 3 2|botanic 식물원 3 2|golfRange 골프연습장 3 2|campsite 캠핑장 3 2|market 전통시장 3 2|equestrian 승마장 3 2|aquarium 수족관 3 3|zoo 동물원 3 3|arena 아레나 3 3|waterpark 워터파크 3 3|driveIn 자동차극장 3 3|lakePark 호수공원 3 3|palace 고궁 4 3|ballpark 야구장 4 4|airport 소형공항 5 3'},SNF=['','','','','','',...Object.values(SNCAT).flatMap(L=>L.split('|').map(s=>s.split(' ')[0]))];SNF.push('tw2','tw3','tw5','tw8','tw17');window.__SNF=SNF;
 /*NEWOBJ{*/
 /* ===== 신규 건물·소품 시안: 게임 OBJ 라이브러리와 같은 도구(add·bx·M·RB)로 만든다 =====
    좌표: 한 칸 = 1, 바닥 높이 B. 1칸 건물은 ±.34 안, 시설은 넘겨받은 크기 안. */
@@ -1110,6 +1110,8 @@ const X=(b,o)=>Object.assign({},b,o),CAT={
   ['주민센터',2,X(WOOD,{flag:1})],['법원',4,X(STONE,{wall:'#ece6da',ww:.24,pitch:'#8a8f98'})],['발전소',2,{wall:'#bfc5cc',frame:'#3e434c',ww:.4,roof:'#aab1ba',stack:2,noroof:1}],
   ['변전소',1,{wall:'#8f97a3',frame:'#ffc23d',ww:.5,roof:'#7a828e',solar:1,noroof:1}],['정수장',2,{wall:'#dcecf7',frame:'#3d7de0',ww:.4,roof:'#c4d8e8',tank:1}],
   ['버스터미널',1,{wall:'#f4f5f7',shop:'#3d7de0',awn:'#3e434c',roof:'#dfe3ea',rsign:'#3d7de0',noroof:1}],['체육관',2,{wall:'#eef2f6',frame:'#3d7de0',ww:.44,pitch:'#3d7de0'}]]};
+/* 10층 이상 오피스 타워는 2×2 (1칸에 세우면 너무 가늘다) */
+CAT.off.forEach((e,k)=>{if(e[1]>=10)BIG.push([e[0],(cx,cz)=>bld(cx-.84,cx+.84,cz-.84,cz+.84,e[1],e[2]),2,2,'off','tw'+k]);});
 const API={heroine,person,JET,CAT,BIG,PROP,PN,rotd,lift,bld,house,car,gas,towerA,roundB,fountain,roofCafe,shopHouse,restaurant,greenhouse,STY:{APT,OFF,SHOP,VIL,CVS,STONE,BAND,BRICK,GBRICK,WOOD,TOWN,NEIGH,BAKE,PHAR},crown,PAL,TRK,PIT,LEAF,FH};
 /* play build: calls are recorded per lift() and only executed for placements not already cached */
 if(window.OBC){const C=window.OBC;let rec={h:0,calls:[]},exec=false;const wrap=(n,f)=>(...a)=>{if(exec)return f(...a);rec.calls.push([n,f,a]);};
@@ -1560,7 +1562,7 @@ if(DS.length)sc.add(new THREE.Mesh(mergeGeometries(DS),paint));
   {const fb=ED.fb.get(i);if(fb){built[i]=1;nb++;const e=O.CAT[fb[0]][fb[1]],fd=fb[2]||rdir(x,y);if(e[1]==='house')O.house(bx0,bx1,bz0,bz1,e[2],fd);else O.bld(bx0,bx1,bz0,bz1,e[1],e[2],fd);continue;}if(ED.frozen){done[i]=2;continue;}}
   if(k>=K.RES&&k<=K.FIRE&&k!==K.PARK){const nb2=(built[i-1]?1:0)+(built[i-N]?1:0)+(y>0&&x>0&&built[i-N-1]?1:0);if(nb2>=2||(nb2===1&&hs(i,21)<.55)){done[i]=2;continue;}built[i]=1;}
   if(k===K.RES){nb++;const C=O.CAT.res.filter(e=>L>1?e[1]!=='house':(e[1]==='house'||e[1]<=4)),e=C[((r*997)|0)%C.length];window.PLACED.push([i,'res',O.CAT.res.indexOf(e)]);if(e[1]==='house')O.house(bx0,bx1,bz0,bz1,e[2],rdir(x,y));else O.bld(bx0,bx1,bz0,bz1,e[1],e[2],rdir(x,y));}
-  else if(k===K.COM){nb++;const C=L<=1?O.CAT.com.filter(e=>e[1]<=2):L===2?O.CAT.com.filter(e=>e[1]>=2):L===3?O.CAT.off.filter(e=>e[1]<=8):O.CAT.off.filter(e=>e[1]>=7),e=C[((r*997)|0)%C.length],fl=e[1],st=e[2];window.PLACED.push(O.CAT.com.includes(e)?[i,'com',O.CAT.com.indexOf(e)]:[i,'off',O.CAT.off.indexOf(e)]);O.bld(bx0,bx1,bz0,bz1,fl,st,rdir(x,y));}
+  else if(k===K.COM){nb++;const C=L<=1?O.CAT.com.filter(e=>e[1]<=2):L===2?O.CAT.com.filter(e=>e[1]>=2):L===3?O.CAT.off.filter(e=>e[1]<=8):O.CAT.off.filter(e=>e[1]>=7&&e[1]<=9),e=C[((r*997)|0)%C.length],fl=e[1],st=e[2];window.PLACED.push(O.CAT.com.includes(e)?[i,'com',O.CAT.com.indexOf(e)]:[i,'off',O.CAT.off.indexOf(e)]);O.bld(bx0,bx1,bz0,bz1,fl,st,rdir(x,y));}
   else if(k===K.IND){nb++;const C=O.CAT.ind,j=((r*997)|0)%C.length,e=C[j];window.PLACED.push([i,'ind',j]);O.bld(bx0,bx1,bz0,bz1,e[1],e[2],rdir(x,y));}
   else if(k>=K.POWER&&k<=K.FIRE){nb++;const e=O.CAT.pub[((r*997)|0)%20];window.PLACED.push([i,'pub',((r*997)|0)%20]);O.bld(bx0,bx1,bz0,bz1,e[1],e[2],rdir(x,y));}}
  /* trees: icon cypress, instanced (forest deco + parks) */
@@ -1684,8 +1686,8 @@ return {sc,hT,LH,land,riv,BIGP,PLACED:window.PLACED,bounds:[bx0,bx1,bz0,bz1],wat
    Layout rules: blocks between roads keep a walkway every few frontage tiles and a paved path through the middle, terraces never step more
    than one level where people walk, and every terrace edge inside a town gets a slope or stairs now and then. */
 const GTYPES=[['city','도시'],['metro','대도시'],['ind','공업'],['farm','농촌'],['forest','숲속마을']],GSHAPES=[['round','둥근'],['long','길쭉한'],['twin','쌍둥이'],['crescent','초승달'],['archi','군도']];
-const genIsland=(type,shape,num)=>{
- const N=128,HN=129,K={EMPTY:0,ROAD:1,RES:2,COM:3,IND:4,POWER:5,WATER:6,POLICE:7,FIRE:8,PARK:9,LMK:10},TWA=1,NN=N*N;
+const genIsland=(type,shape,num,NS=128)=>{
+ const N=NS,HN=NS+1,Sc=NS/128,K={EMPTY:0,ROAD:1,RES:2,COM:3,IND:4,POWER:5,WATER:6,POLICE:7,FIRE:8,PARK:9,LMK:10},TWA=1,NN=N*N;
  let sd=((num*2654435761)^0x9e3779b9)>>>0||7;const R=()=>{sd^=sd<<13;sd>>>=0;sd^=sd>>>17;sd^=sd<<5;sd>>>=0;return sd/4294967296;};
  const PT=new Float32Array(65536);for(let i=0;i<65536;i++)PT[i]=R();
  const vn=(x,y)=>{const X=Math.floor(x),Y=Math.floor(y),fx=x-X,fy=y-Y,ux=fx*fx*(3-2*fx),uy=fy*fy*(3-2*fy),g=(a,b)=>PT[((b&255)<<8)|(a&255)];return (g(X,Y)*(1-ux)+g(X+1,Y)*ux)*(1-uy)+(g(X,Y+1)*(1-ux)+g(X+1,Y+1)*ux)*uy;};
@@ -1693,19 +1695,19 @@ const genIsland=(type,shape,num)=>{
  const id=(x,y)=>y*N+x,In=(x,y)=>x>=0&&y>=0&&x<N&&y<N,D4=[[1,0],[-1,0],[0,1],[0,-1]];
  /* 1. shape */
  const cx=N/2,cy=N/2,an=R()*Math.PI,ca=Math.cos(an),sa=Math.sin(an),blobs=[];
- if(shape==='twin'){const o=20+R()*6;blobs.push([cx-ca*o,cy-sa*o,26+R()*5],[cx+ca*o,cy+sa*o,24+R()*6]);}
- else if(shape==='archi'){const n=4+((R()*3)|0);for(let k=0;k<n;k++){const a=k/n*6.283+R()*.6,r=k===0?0:22+R()*16;blobs.push([cx+Math.cos(a)*r,cy+Math.sin(a)*r,k===0?20+R()*4:10+R()*7]);}}
- else blobs.push([cx,cy,46]);
+ if(shape==='twin'){const o=(20+R()*6)*Sc;blobs.push([cx-ca*o,cy-sa*o,(26+R()*5)*Sc],[cx+ca*o,cy+sa*o,(24+R()*6)*Sc]);}
+ else if(shape==='archi'){const n=4+((R()*3)|0);for(let k=0;k<n;k++){const a=k/n*6.283+R()*.6,r=k===0?0:(22+R()*16)*Sc;blobs.push([cx+Math.cos(a)*r,cy+Math.sin(a)*r,(k===0?20+R()*4:10+R()*7)*Sc]);}}
+ else blobs.push([cx,cy,46*Sc]);
  const sh=(x,y)=>{const u=(x-cx)*ca+(y-cy)*sa,v=-(x-cx)*sa+(y-cy)*ca;
-  if(shape==='long')return Math.hypot(u/56,v/27);
-  if(shape==='crescent'){const d=Math.hypot(x-cx,y-cy)/48,d2=Math.hypot(x-(cx+ca*26),y-(cy+sa*26))/30;return Math.max(d,2-d2);}
-  if(shape==='twin'){let m=9;for(const [bx,by,br] of blobs)m=Math.min(m,Math.hypot(x-bx,y-by)/br);const [a,b]=blobs,t=Math.max(0,Math.min(1,((x-a[0])*(b[0]-a[0])+(y-a[1])*(b[1]-a[1]))/((b[0]-a[0])**2+(b[1]-a[1])**2))),px=a[0]+(b[0]-a[0])*t,py=a[1]+(b[1]-a[1])*t;return Math.min(m,Math.hypot(x-px,y-py)/9);}
+  if(shape==='long')return Math.hypot(u/56/Sc,v/27/Sc);
+  if(shape==='crescent'){const d=Math.hypot(x-cx,y-cy)/48/Sc,d2=Math.hypot(x-(cx+ca*26*Sc),y-(cy+sa*26*Sc))/30/Sc;return Math.max(d,2-d2);}
+  if(shape==='twin'){let m=9;for(const [bx,by,br] of blobs)m=Math.min(m,Math.hypot(x-bx,y-by)/br);const [a,b]=blobs,t=Math.max(0,Math.min(1,((x-a[0])*(b[0]-a[0])+(y-a[1])*(b[1]-a[1]))/((b[0]-a[0])**2+(b[1]-a[1])**2))),px=a[0]+(b[0]-a[0])*t,py=a[1]+(b[1]-a[1])*t;return Math.min(m,Math.hypot(x-px,y-py)/9/Sc);}
   let m=9;for(const [bx,by,br] of blobs)m=Math.min(m,Math.hypot(x-bx,y-by)/br);return m;};
  const ocean=new Uint8Array(NN).fill(1);
- for(let y=4;y<N-4;y++)for(let x=4;x<N-4;x++){const d=sh(x,y)+(fbm(x/18,y/18)-.5)*.55;if(d<1)ocean[id(x,y)]=0;}
+ for(let y=4;y<N-4;y++)for(let x=4;x<N-4;x++){const d=sh(x,y)+(fbm(x/18/Sc,y/18/Sc)-.5)*.55;if(d<1)ocean[id(x,y)]=0;}
  /* keep the big pieces only */
  {const lab=new Int32Array(NN).fill(-1),sz=[];for(let i=0;i<NN;i++){if(ocean[i]||lab[i]>=0)continue;const q=[i];lab[i]=sz.length;let n=0;while(q.length){const j=q.pop();n++;const x=j%N,y=(j/N)|0;for(const [dx,dy] of D4){const xx=x+dx,yy=y+dy;if(!In(xx,yy))continue;const k=id(xx,yy);if(!ocean[k]&&lab[k]<0){lab[k]=sz.length;q.push(k);}}}sz.push(n);}
-  const mx=Math.max(...sz);for(let i=0;i<NN;i++)if(!ocean[i]&&sz[lab[i]]<(shape==='archi'?40:mx*.25))ocean[i]=1;}
+  const mx=Math.max(...sz);for(let i=0;i<NN;i++)if(!ocean[i]&&sz[lab[i]]<(shape==='archi'?40*Sc*Sc:mx*.25))ocean[i]=1;}
  /* distance to the coast */
  const cd=new Int16Array(NN).fill(999);{const q=[];for(let i=0;i<NN;i++)if(ocean[i]){cd[i]=0;q.push(i);}for(let h=0;h<q.length;h++){const i=q[h],x=i%N,y=(i/N)|0;for(const [dx,dy] of D4){const xx=x+dx,yy=y+dy;if(!In(xx,yy))continue;const k=id(xx,yy);if(cd[k]>cd[i]+1){cd[k]=cd[i]+1;q.push(k);}}}}
  /* 2. terraces */
@@ -1718,7 +1720,7 @@ const genIsland=(type,shape,num)=>{
  const land=i=>!ocean[i];const centres=[];{for(const [bx,by] of blobs){let best=-1,bd=1e9;for(let i=0;i<NN;i++){if(!land(i)||cd[i]<5)continue;const d=Math.hypot(i%N-bx,((i/N)|0)-by);if(d<bd){bd=d;best=i;}}if(best>=0)centres.push([best%N,(best/N)|0]);}}
  if(!centres.length)centres.push([cx,cy]);
  const cdist=(x,y)=>{let m=1e9;for(const [a,b] of centres)m=Math.min(m,Math.hypot(x-a,y-b));return m;};
- const RAD={metro:60,city:34,ind:38,farm:44,forest:24}[type]*(shape==='archi'?.55:shape==='twin'?.8:1);
+ const RAD={metro:60,city:34,ind:38,farm:44,forest:24}[type]*(shape==='archi'?.55:shape==='twin'?.8:1)*Sc;
  const dev=(x,y)=>{const i=id(x,y);if(!land(i)||cd[i]<2)return false;return cdist(x,y)/RAD+(fbm(x/14+40,y/14)-.5)*.6<1;};
  /* 4. river (not on the small archipelago pieces) */
  const terr=new Uint8Array(NN),kind=new Uint8Array(NN),lvl=new Uint8Array(NN),deco=new Uint8Array(NN),pv=new Uint8Array(NN),sl=new Uint8Array(NN),prop=new Uint8Array(NN),lmkA=new Int32Array(NN).fill(-1);
@@ -1753,9 +1755,10 @@ const genIsland=(type,shape,num)=>{
   ind:'coldStore 2 1|brewery 2 1|recycle 2 1|sawmill 2 1|truckDepot 2 1|dairy 2 1|bakery 2 1|foundry 2 1|paperMill 2 2|chemTanks 2 2|solarFarm 2 2|containerYard 2 2|oilTanks 2 2|cementPlant 2 2|carPlant 3 2|fab 3 2|kiln 1 1|waterTower 1 1|pylon 1 1|printShop 1 1|silo 1 1|wind 1 1',
   pub:'church 1 1|chapel 1 1|kinder 1 1|policeBox 1 1|fireStation 1 1|observatory 1 1|lectureHall 2 1|natatorium 2 1|temple 2 2',
   fac:'tennis 2 1|basketball 2 1|miniGolf 2 2|festival 2 2|iceRink 2 2|nightMarket 2 2|bigWheel 2 2|viewTower 2 2|lakePark 3 3|botanic 3 2|market 3 2|zoo 3 3|aquarium 3 3|arena 3 3|waterpark 3 3|driveIn 3 3|golfRange 3 2',
+  tow:'tw2 2 2|tw3 2 2|tw5 2 2|tw8 2 2|tw17 2 2|twinTower 2 2|roundTower 2 2|mixedTower 2 2',
   farm:'greenhouseFarm 2 2|flourMill 1 1|dairy 2 1|equestrian 3 2|silo 1 1|wind 1 1|waterTower 1 1',vil:'hanok 1 1|cabin 1 1|country 1 1|peanut 1 1',wild:'campsite 3 2|observatory 1 1|lighthouse 1 1'};
  const BIGS=[],bigm=new Uint8Array(NN),used={};
- const poolOf=z=>{const t=type,q=R();if(t==='metro')return z==='com'?(q<.65?'off':'com'):z==='res'?'mres':z==='park'?'fac':null;if(t==='city')return z==='com'?(q<.3?'off':'com'):z==='res'?'res':z==='pub'?'pub':z==='park'?'fac':null;
+ const poolOf=(z,L)=>{const t=type,q=R();if(t==='metro')return z==='com'?(L>=4?'tow':q<.65?'off':'com'):z==='res'?'mres':z==='park'?'fac':null;if(t==='city')return z==='com'?(q<.3?'off':'com'):z==='res'?'res':z==='pub'?'pub':z==='park'?'fac':null;
   if(t==='ind')return z==='ind'?'ind':z==='com'?'com':z==='res'?'res':null;if(t==='farm')return z==='field'?'farm':z==='res'||z==='com'?'vil':null;return z==='res'?'vil':z==='wild'?'wild':null;};
  const placeBig=(c,pk,b)=>{const L=GB[pk].split('|').map(e=>e.split(' ')).sort((a,b2)=>(used[a[0]]||0)-(used[b2[0]]||0)+(R()-.5)*1.5);
   for(const [f,ws,ds] of L.slice(0,4)){const w=+ws,d=+ds;for(let t=0;t<30;t++){const i=c[(R()*c.length)|0],x=i%N,y=(i/N)|0,Lv=LVL[i];
@@ -1777,7 +1780,7 @@ const genIsland=(type,shape,num)=>{
   const w=x1-x0+1,h=y1-y0+1;
   if((type==='city'||type==='metro')&&w>=5&&h>=5&&c.length>=w*h-2&&R()<(nPlaza<3?.22:.06)){nPlaza++;const s=w>=7&&h>=7?6:4,ax=x0+((w-s)>>1),ay=y0+((h-s)>>1),a=id(ax,ay),L0=LVL[a];
    for(const i of c){pave(i);}for(let yy=ay;yy<ay+s;yy++)for(let xx=ax;xx<ax+s;xx++){const i=id(xx,yy);kind[i]=K.LMK;lmkA[i]=a;LVL[i]=L0;pv[i]=0;}continue;}
-  {const b=blk[c[0]],pk=poolOf(z);if(pk){const n=z==='ind'?(R()<.6?2:1):pk==='fac'?(R()<.55?1:0):pk==='farm'||pk==='wild'?(R()<.35?1:0):pk==='vil'?(R()<.3?1:0):type==='metro'?(R()<.5?1:0)+(c.length>40&&R()<.25?1:0):(R()<.45?1:0);for(let k=0;k<n;k++)placeBig(c,pk,b);}}
+  {const b=blk[c[0]],pk=poolOf(z,L);if(pk){const n=z==='ind'?(R()<.6?2:1):pk==='fac'?(R()<.55?1:0):pk==='farm'||pk==='wild'?(R()<.35?1:0):pk==='vil'?(R()<.3?1:0):pk==='tow'?2+(c.length>30?1:0):type==='metro'?(R()<.5?1:0)+(c.length>40&&R()<.25?1:0):(R()<.45?1:0);for(let k=0;k<n;k++)placeBig(c,pk,b);}}
   if(z==='park'){for(const i of c){if(bigm[i]){pave(i);continue;}kind[i]=K.PARK;if(R()<.3)tree(i);}const m=c[(c.length/2)|0];if(!bigm[m])prop[m]=1;continue;}
   if(z==='field'){for(const i of c){if(bigm[i])continue;if(nearR(i)&&R()<.06){kind[i]=K.RES;lvl[i]=1;}else terr[i]=10;}continue;}
   if(z==='wild'){for(const i of c)if(!bigm[i]&&R()<.55)tree(i);continue;}
@@ -1808,10 +1811,10 @@ const symM=(M,s)=>{const T=(u8,n,w)=>{const o=new Uint8Array(u8.length);for(let 
  for(const k of ['terr','kind','lvl','deco','ocean','LVL'])O[k]=b64e(T(b64d(M[k]),M.N,1));O.H=b64e(T(b64d(M.H),M.HN,1));{const n=M.N,la=T(b64d(M.lmkA),n,4),L=new Int32Array(la.buffer);for(let i=0;i<L.length;i++){const v=L[i];if(v<0)continue;const u=v%n,w=(v/n)|0,a=s&1?n-1-u:u,b=s&2?n-1-w:w;L[i]=s&4?a*n+b:b*n+a;}O.lmkA=b64e(la);}return O;};
 /* lmkA holds each complex's anchor tile index, so those indices are moved with the tiles */
 const rollSeed=()=>{const ks=Object.keys(POOL);if(!ks.length)return '22';let sd;do{sd=ks[(Math.random()*ks.length)|0]+':'+((Math.random()*8)|0);}while(ks.length>1&&META.slots[META.cur]&&META.slots[META.cur].seed===sd);return sd;};
-const getMap=async sd=>{sd=String(sd);if(MAPC[sd])return MAPC[sd];if(sd.startsWith('g:')){const [,t,sh,n]=sd.split(':');return MAPC[sd]=genIsland(t,sh,+n);}const [bk,sy]=sd.split(':'),src=POOL[bk]||MAPS[bk];if(!src)return MAPC['11'];const r=new Response(new Blob([b64d(src)]).stream().pipeThrough(new DecompressionStream('deflate-raw')));let M=JSON.parse(await r.text());if(sy&&+sy)M=symM(M,+sy);return MAPC[sd]=M;};
+const getMap=async sd=>{sd=String(sd);if(MAPC[sd])return MAPC[sd];if(sd.startsWith('g:')){const [,t,sh,n,z]=sd.split(':');return MAPC[sd]=genIsland(t,sh,+n,+z||128);}const [bk,sy]=sd.split(':'),src=POOL[bk]||MAPS[bk];if(!src)return MAPC['11'];const r=new Response(new Blob([b64d(src)]).stream().pipeThrough(new DecompressionStream('deflate-raw')));let M=JSON.parse(await r.text());if(sy&&+sy)M=symM(M,+sy);return MAPC[sd]=M;};
 const fresh=(M=MAP,blank=false)=>{const g={N:M.N,HN:M.HN,K:M.K,TWA:M.TWA,H:b64d(M.H),terr:b64d(M.terr),kind:b64d(M.kind),lvl:b64d(M.lvl),deco:b64d(M.deco),ocean:b64d(M.ocean),LVL:b64d(M.LVL),lmkA:new Int32Array(b64d(M.lmkA).buffer),man:new Uint8Array(M.N*M.N),pv:new Uint8Array(M.N*M.N),sl:new Uint8Array(M.N*M.N),prop:new Uint8Array(M.N*M.N)};for(const k of ['pv','sl','prop'])if(M[k])g[k].set(b64d(M[k]));if(blank){g.kind.fill(0);g.lmkA.fill(-1);g.prop.fill(0);g.pv.fill(0);}return g;};
 let GS=fresh();const ED=window.ED={fb:new Map(),big:null,frozen:false};
-const N=GS.N,K=GS.K;
+let N=GS.N;const K=GS.K;
 const cv=$('cv'),r=new THREE.WebGLRenderer({canvas:cv,antialias:true,alpha:true,powerPreference:'high-performance'});r.setPixelRatio(Math.min(devicePixelRatio||1,MOB?1.5:2));r.shadowMap.enabled=true;r.shadowMap.type=THREE.PCFSoftShadowMap;r.shadowMap.autoUpdate=false;r.toneMapping=THREE.ACESFilmicToneMapping;r.toneMappingExposure=1.08;r.outputColorSpace=THREE.SRGBColorSpace;r.debug.checkShaderErrors=false;
 const cam=new THREE.OrthographicCamera(-1,1,1,-1,.1,900),V={tx:N/2,tz:N/2,k:38,r:0,a:Math.PI/4};let W=null,need=true;
 const hi=new THREE.Group(),hm=new THREE.MeshBasicMaterial({color:'#ffffff',transparent:true,opacity:.45,depthTest:false}),hg=new THREE.BoxGeometry(.96,.06,.96);hi.renderOrder=99;
@@ -2071,7 +2074,7 @@ const zoomAt=(f,cx,cy)=>{const a=ground(cx,cy);V.k=Math.max(2.4,Math.min(120,V.k
 const USG=window.__USGN||(window.__USGN={value:1});let rotA=null;
 const rotView=d=>{const c=ground(innerWidth/2,innerHeight/2);V.tx=c[0];V.tz=c[1];V.r=(V.r+d+4)%4;const a0=V.a,a1=Math.PI/4+V.r*Math.PI/2,da=Math.atan2(Math.sin(a1-a0),Math.cos(a1-a0)),t0=performance.now();ctxClose();
  const st=()=>{const k=Math.min(1,(performance.now()-t0)/320),e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;V.a=a0+da*e;if(k>.5)USG.value=V.r%2?-1:1;setCam();applyEnv();r.shadowMap.needsUpdate=true;if(k<1)rotA=requestAnimationFrame(st);else{V.a=a1;setCam();if(stroke===null&&tool!=='move')drawUI();}};cancelAnimationFrame(rotA);st();};
-const fit=()=>{let sx=0,sz=0,n=0;for(let i=0;i<N*N;i++)if(GS.kind[i]===K.ROAD){sx+=i%N;sz+=(i/N)|0;n++;}if(n){V.tx=sx/n;V.tz=sz/n;}V.k=innerWidth<700?34:50;setCam();};
+const fit=()=>{let sx=0,sz=0,n=0;for(let i=0;i<N*N;i++)if(GS.kind[i]===K.ROAD){sx+=i%N;sz+=(i/N)|0;n++;}if(n){V.tx=sx/n;V.tz=sz/n;}V.k=(innerWidth<700?34:50)*N/128;setCam();};
 /* ---- ghost preview + thumbnails: a private OBJ factory builds one prototype per item/direction ---- */
 const GH=new THREE.Group();GH.userData.keep=1;const clrH=()=>{hi.clear();GH.clear();};let O2=null,R2=null;const PRO=new Map(),GHO=new Map(),GMAT=new Map(),TH=new Map();
 const o2=()=>{if(!O2){const k=window.__KEEPTX;window.__KEEPTX=true;R2=new THREE.Group();const ob=window.OBC;window.OBC=undefined;try{O2=OBJ(THREE,RoundedBoxGeometry,R2);}finally{window.OBC=ob;}window.__KEEPTX=k;}return O2;};
@@ -2172,7 +2175,7 @@ const drawUI=()=>{const bar=$('bar');bs=1;bar.replaceChildren(...TOOLS.filter(t=
   const dirs=(tool==='bld'?[['자동',0]]:[]).concat([1,2,3,4].map(d=>[arw(d),d]).sort((a,b)=>'↙↘↗↖'.indexOf(a[0])-'↙↘↗↖'.indexOf(b[0]))),cur=tool==='big'?(rot||1):rot,dl=document.createElement('span');dl.className='sep';
  const db=dirs.map(([t,v])=>{const b=mkb(t,cur===v,()=>{rot=v;re();},v?'방향 '+t:'방향 자동');b.className='dir';b.title='방향 (R)';return b;});
  $('cats').replaceChildren(...catBtns());const c=selCat<CATS.length?CATS[selCat][0]:'fac',BL=O.BIG.map((e,i)=>[e,i]).filter(([e])=>(e[4]||'fac')===c);
- $('items').replaceChildren(...(c==='fac'?[]:O.CAT[c].map((e,i)=>card(c+':'+i+':z+',e[0],tool==='bld'&&selItem===i,()=>{selItem=i;if(tool!=='bld'){const k=selCat;setTool('bld');selCat=k;}re();}))),...BL.map(([e,i])=>bigCard(e,i)));};
+ $('items').replaceChildren(...(c==='fac'?[]:O.CAT[c].map((e,i)=>c==='off'&&e[1]>=10?null:card(c+':'+i+':z+',e[0],tool==='bld'&&selItem===i,()=>{selItem=i;if(tool!=='bld'){const k=selCat;setTool('bld');selCat=k;}re();})).filter(Boolean)),...BL.map(([e,i])=>bigCard(e,i)));};
 const arw=d=>{const D=[null,[0,1],[1,0],[0,-1],[-1,0]][d],v=new THREE.Vector3(D[0],0,D[1]).transformDirection(cam.matrixWorldInverse);return v.x>=0?(v.y>=0?'↗':'↘'):(v.y>=0?'↖':'↙');};
 const syncTop=()=>{$('undo').disabled=!UN.length;$('redo').disabled=!RE.length;};
 /* seasons: 0 봄 1 여름 2 가을 3 겨울. Everything is shader uniforms or a material colour, eased over a few seconds — no rebuild, so switching costs nothing */
@@ -2214,25 +2217,26 @@ addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;const k=e.ke
  else if(k.startsWith('Arrow')){e.preventDefault();const s=90;panPx(k==='ArrowLeft'?s:k==='ArrowRight'?-s:0,k==='ArrowUp'?s:k==='ArrowDown'?-s:0);}});
 addEventListener('keyup',e=>{if(e.key===' ')space=false;});
 /* ---- islands: three save slots, each remembers which terrain it was made from ---- */
-const boot=async()=>{SKEY=SLOTK(META.cur);const sl=META.slots[META.cur]||(META.slots[META.cur]={seed:'11'});GS=fresh(await getMap(sl.seed||'11'),!!sl.blank);ED.fb=new Map();const MP=MAPC[String(sl.seed||'11')];ED.big=sl.blank?[]:MP&&MP.big?MP.big.map(b=>b.slice()):/^g:(farm|forest):/.test(sl.seed||'')?[]:null;ED.auto=!sl.blank&&!!(MP&&MP.big&&MP.auto);ED.frozen=!!sl.blank;
+const boot=async()=>{SKEY=SLOTK(META.cur);const sl=META.slots[META.cur]||(META.slots[META.cur]={seed:'11'});GS=fresh(await getMap(sl.seed||'11'),!!sl.blank);N=GS.N;ED.fb=new Map();const MP=MAPC[String(sl.seed||'11')];ED.big=sl.blank?[]:MP&&MP.big?MP.big.map(b=>b.slice()):/^g:(farm|forest):/.test(sl.seed||'')?[]:null;ED.auto=!sl.blank&&!!(MP&&MP.big&&MP.auto);ED.frozen=!!sl.blank;
  const had=load();if(had)ED.auto=false;rebuild();if(!had&&!sl.blank){ED.fb=new Map(W.PLACED.map(p=>[p[0],[p[1],p[2]]]));ED.big=W.BIGP.map(b=>b.slice());ED.auto=false;ED.frozen=true;}UN.length=0;RE.length=0;drawUI();syncTop();msg('');};
 const makeIsland=async(slot,seed,blank)=>{msg('섬을 만드는 중',0);try{localStorage.removeItem(SLOTK(slot));}catch(e){}META.cur=slot;META.slots[slot]={seed:String(seed),blank,t:Date.now(),name:(blank?'빈 섬':String(seed).startsWith('g:')?(GTYPES.find(t=>t[0]===String(seed).split(':')[1])||[0,'도시'])[1]+' 섬':'도시 섬')+' '+slot};saveMeta();await new Promise(r=>setTimeout(r,16));await boot();save();fit();$('isl').hidden=true;$('islb').setAttribute('aria-pressed','false');};
 const openSlot=async slot=>{if(slot===META.cur)return;thumbNow();META.cur=slot;saveMeta();msg('불러오는 중',0);await new Promise(r=>setTimeout(r,16));await boot();fit();$('isl').hidden=true;$('islb').setAttribute('aria-pressed','false');};
 const thumbNow=()=>{if(!W)return;clrH();r.render(W.sc,cam);const c=document.createElement('canvas');c.width=160;c.height=100;const g=c.getContext('2d'),a=cv.width/cv.height,sw=Math.min(cv.width,cv.height*1.6),sh=sw/1.6;g.fillStyle='#3fa2f5';g.fillRect(0,0,160,100);g.drawImage(cv,(cv.width-sw)/2,(cv.height-sh)/2,sw,sh,0,0,160,100);const sl=META.slots[META.cur]||(META.slots[META.cur]={});sl.thumb=c.toDataURL('image/jpeg',.7);saveMeta();};
 const miniMap=M=>{const c=document.createElement('canvas'),n=M.N;c.width=c.height=n;const g=c.getContext('2d'),im=g.createImageData(n,n),oc=b64d(M.ocean),te=b64d(M.terr),ki=b64d(M.kind),lv=b64d(M.LVL);for(let i=0;i<n*n;i++){let col=[0,0,0,0];if(!oc[i]){const l=lv[i]||1,s=.82+l*.06;col=te[i]===M.TWA?[94,196,242,255]:ki[i]===M.K.ROAD?[150,156,170,255]:ki[i]>=2&&ki[i]!==M.K.PARK?[232,226,214,255]:[124*s|0,196*s|0,67*s|0,255];}im.data.set(col,i*4);}g.putImageData(im,0,0);return c.toDataURL();};
-let newFor=0,newSeed='rand',newRand=null,newBlank=false,owr=0,newType='city',newShape='any';
+let newFor=0,newSeed='rand',newRand=null,newBlank=false,owr=0,newType='city',newShape='any',newSize=128;
 const drawIsl=async()=>{const p=$('isl'),rows=[];for(let i=1;i<=3;i++){const sl=META.slots[i],has=!!(sl&&(sl.t||i===1)),r_=document.createElement('div');r_.className='slot'+(i===META.cur?' cur':'');const im=document.createElement(sl&&sl.thumb?'img':'span');im.className='th';if(sl&&sl.thumb){im.src=sl.thumb;im.alt='';}
   const tx=document.createElement('div');tx.className='st';const nm=document.createElement('b');nm.textContent=has?(sl.name||'섬 '+i):'빈 슬롯';const dt=document.createElement('span');dt.textContent=i===META.cur?'지금 섬':has&&sl.t?new Date(sl.t).toLocaleDateString('ko-KR',{month:'short',day:'numeric'})+' '+new Date(sl.t).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'}):'';tx.append(nm,dt);
   r_.append(im,tx);if(has&&i!==META.cur)r_.append(mkb('열기',null,()=>openSlot(i)));r_.append(mkb('새로 생성',newFor===i,()=>{newFor=newFor===i?0:i;owr=0;newSeed='rand';newRand=null;drawIsl();}));rows.push(r_);}
  const kids=[...rows];if(newFor){const box=document.createElement('div');box.className='newi';const grid=document.createElement('div');grid.className='row';
   /* generated islands: pick a town type and an island shape, the card shows the roll; tapping it again rolls a new one */
-  const roll=()=>{const sh=newShape==='any'?GSHAPES[(Math.random()*GSHAPES.length)|0][0]:newShape;newRand='g:'+newType+':'+sh+':'+((Math.random()*1e6)|0);};if(!newRand||!newRand.startsWith('g:'))roll();
+  const roll=()=>{const sh=newShape==='any'?GSHAPES[(Math.random()*GSHAPES.length)|0][0]:newShape;newRand='g:'+newType+':'+sh+':'+((Math.random()*1e6)|0)+(newSize>128?':'+newSize:'');};if(!newRand||!newRand.startsWith('g:'))roll();
   const tr=document.createElement('div');tr.className='er';tr.append(...GTYPES.map(([k,l])=>mkb(l,newType===k,()=>{newType=k;newSeed='rand';roll();drawIsl();})));
+  const zr=document.createElement('div');zr.className='er';zr.append(...[[128,'보통 섬'],[176,'큰 섬']].map(([v,l])=>mkb(l,newSize===v,()=>{newSize=v;newSeed='rand';roll();drawIsl();})));
   const sr=document.createElement('div');sr.className='er';sr.append(mkb('무작위 모양',newShape==='any',()=>{newShape='any';newSeed='rand';roll();drawIsl();}),...GSHAPES.map(([k,l])=>mkb(l,newShape===k,()=>{newShape=k;newSeed='rand';roll();drawIsl();})));
   {const M=await getMap(newRand),b=mkb('',newSeed==='rand',()=>{if(newSeed==='rand')roll();newSeed='rand';drawIsl();},'생성 섬');b.className='card';const im=document.createElement('img');im.className='ic';im.alt='';im.src=M.__mini||(M.__mini=miniMap(M));const t=document.createElement('span');t.textContent=newSeed==='rand'?'다시 굴리기':'생성 섬';b.append(im,t);grid.append(b);}
   for(const sd of Object.keys(MAPS)){const M=await getMap(sd),b=mkb('',newSeed===sd,()=>{newSeed=sd;drawIsl();},'지형 '+sd);b.className='card';const im=document.createElement('img');im.className='ic';im.alt='';im.src=M.__mini||(M.__mini=miniMap(M));const t=document.createElement('span');t.textContent='기본 '+(Object.keys(MAPS).indexOf(sd)+1);b.append(im,t);grid.append(b);}
   const opt=document.createElement('div');opt.className='er';opt.append(mkb('도시와 함께',!newBlank,()=>{newBlank=false;drawIsl();}),mkb('빈 섬',newBlank,()=>{newBlank=true;drawIsl();}));
-  const sl=META.slots[newFor],busyS=!!(sl&&(sl.t||newFor===1)),go=mkb(busyS&&owr<1?'덮어쓰기':'만들기',null,()=>{if(busyS&&owr<1){owr=1;go.textContent='한 번 더 누르면 덮어씀';return;}makeIsland(newFor,newSeed==='rand'?newRand:newSeed,newBlank);});go.className='go';opt.append(go);box.append(tr,sr,grid,opt);kids.push(box);}
+  const sl=META.slots[newFor],busyS=!!(sl&&(sl.t||newFor===1)),go=mkb(busyS&&owr<1?'덮어쓰기':'만들기',null,()=>{if(busyS&&owr<1){owr=1;go.textContent='한 번 더 누르면 덮어씀';return;}makeIsland(newFor,newSeed==='rand'?newRand:newSeed,newBlank);});go.className='go';opt.append(go);box.append(tr,sr,zr,grid,opt);kids.push(box);}
  p.replaceChildren(...kids);};
 $('islb').onclick=()=>{const p=$('isl');p.hidden=!p.hidden;$('islb').setAttribute('aria-pressed',p.hidden?'false':'true');if(!p.hidden){$('env').hidden=true;$('envb').setAttribute('aria-pressed','false');thumbNow();newFor=0;drawIsl();}};
 resize();setTimeout(async()=>{await boot();fit();syncTop();syncMo();requestAnimationFrame(loop);window.__ready=1;},30);

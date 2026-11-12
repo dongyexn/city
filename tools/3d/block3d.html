@@ -12,7 +12,7 @@ const SNCAT={res:'hanok 한옥 1 1|cabin 통나무오두막 1 1|peanut 땅콩주
   off:'setback 셋백타워 1 1|broadcast 방송국 1 1|cowork 코워킹 1 1|datacenter 데이터센터 2 1|hotel 호텔 2 1|bankHQ 은행본점 2 1|twinTower 트윈타워 2 2|roundTower 원통타워 2 2|lab 연구소 2 2|convention 컨벤션 3 2',
   ind:'silo 사일로 1 1|wind 풍력발전 1 1|kiln 벽돌가마 1 1|waterTower 급수탑 1 1|pylon 송전탑 1 1|printShop 인쇄소 1 1|flourMill 제분소 1 1|coldStore 냉동창고 2 1|brewery 양조장 2 1|recycle 재활용센터 2 1|sawmill 목재소 2 1|truckDepot 트럭차고지 2 1|dairy 우유공장 2 1|bakery 제빵공장 2 1|foundry 주물공장 2 1|paperMill 제지공장 2 2|chemTanks 화학탱크 2 2|solarFarm 태양광 2 2|containerYard 컨테이너야적장 2 2|oilTanks 정유탱크 2 2|cementPlant 시멘트공장 2 2|greenhouseFarm 비닐하우스 2 2|carPlant 자동차공장 3 2|fab 반도체공장 3 2',
   pub:'church 성당 1 1|lighthouse 등대 1 1|chapel 교회 1 1|kinder 유치원 1 1|policeBox 파출소 1 1|fireStation 119안전센터 1 1|observatory 천문대 1 1|lectureHall 강의동 2 1|natatorium 실내수영장 2 1|temple 사찰 2 2',
-  fac:'tennis 테니스장 2 1|basketball 농구장 2 1|bigWheel 대관람차 2 2|nightMarket 야시장 2 2|viewTower 전망타워 2 2|miniGolf 미니골프 2 2|festival 축제광장 2 2|iceRink 스케이트장 2 2|ferry 여객선터미널 3 2|botanic 식물원 3 2|golfRange 골프연습장 3 2|campsite 캠핑장 3 2|market 전통시장 3 2|equestrian 승마장 3 2|aquarium 수족관 3 3|zoo 동물원 3 3|arena 아레나 3 3|waterpark 워터파크 3 3|driveIn 자동차극장 3 3|lakePark 호수공원 3 3|palace 고궁 4 3|ballpark 야구장 4 4|airport 소형공항 5 3'},SNF=['','','','','','',...Object.values(SNCAT).flatMap(L=>L.split('|').map(s=>s.split(' ')[0]))];window.__SNF=SNF;
+  fac:'tennis 테니스장 2 1|basketball 농구장 2 1|bigWheel 대관람차 2 2|nightMarket 야시장 2 2|viewTower 전망타워 2 2|miniGolf 미니골프 2 2|festival 축제광장 2 2|iceRink 스케이트장 2 2|ferry 여객선터미널 3 2|botanic 식물원 3 2|golfRange 골프연습장 3 2|campsite 캠핑장 3 2|market 전통시장 3 2|equestrian 승마장 3 2|aquarium 수족관 3 3|zoo 동물원 3 3|arena 아레나 3 3|waterpark 워터파크 3 3|driveIn 자동차극장 3 3|lakePark 호수공원 3 3|palace 고궁 4 3|ballpark 야구장 4 4|airport 소형공항 5 3'},SNF=['','','','','','',...Object.values(SNCAT).flatMap(L=>L.split('|').map(s=>s.split(' ')[0]))];SNF.push('tw2','tw3','tw5','tw8','tw17');window.__SNF=SNF;
 /*NEWOBJ{*/
 /* ===== 신규 건물·소품 시안: 게임 OBJ 라이브러리와 같은 도구(add·bx·M·RB)로 만든다 =====
    좌표: 한 칸 = 1, 바닥 높이 B. 1칸 건물은 ±.34 안, 시설은 넘겨받은 크기 안. */
@@ -994,6 +994,8 @@ const X=(b,o)=>Object.assign({},b,o),CAT={
   ['주민센터',2,X(WOOD,{flag:1})],['법원',4,X(STONE,{wall:'#ece6da',ww:.24,pitch:'#8a8f98'})],['발전소',2,{wall:'#bfc5cc',frame:'#3e434c',ww:.4,roof:'#aab1ba',stack:2,noroof:1}],
   ['변전소',1,{wall:'#8f97a3',frame:'#ffc23d',ww:.5,roof:'#7a828e',solar:1,noroof:1}],['정수장',2,{wall:'#dcecf7',frame:'#3d7de0',ww:.4,roof:'#c4d8e8',tank:1}],
   ['버스터미널',1,{wall:'#f4f5f7',shop:'#3d7de0',awn:'#3e434c',roof:'#dfe3ea',rsign:'#3d7de0',noroof:1}],['체육관',2,{wall:'#eef2f6',frame:'#3d7de0',ww:.44,pitch:'#3d7de0'}]]};
+/* 10층 이상 오피스 타워는 2×2 (1칸에 세우면 너무 가늘다) */
+CAT.off.forEach((e,k)=>{if(e[1]>=10)BIG.push([e[0],(cx,cz)=>bld(cx-.84,cx+.84,cz-.84,cz+.84,e[1],e[2]),2,2,'off','tw'+k]);});
 const API={heroine,person,JET,CAT,BIG,PROP,PN,rotd,lift,bld,house,car,gas,towerA,roundB,fountain,roofCafe,shopHouse,restaurant,greenhouse,STY:{APT,OFF,SHOP,VIL,CVS,STONE,BAND,BRICK,GBRICK,WOOD,TOWN,NEIGH,BAKE,PHAR},crown,PAL,TRK,PIT,LEAF,FH};
 /* play build: calls are recorded per lift() and only executed for placements not already cached */
 if(window.OBC){const C=window.OBC;let rec={h:0,calls:[]},exec=false;const wrap=(n,f)=>(...a)=>{if(exec)return f(...a);rec.calls.push([n,f,a]);};
@@ -1445,7 +1447,7 @@ if(DS.length)sc.add(new THREE.Mesh(mergeGeometries(DS),paint));
   {const fb=ED.fb.get(i);if(fb){built[i]=1;nb++;const e=O.CAT[fb[0]][fb[1]],fd=fb[2]||rdir(x,y);if(e[1]==='house')O.house(bx0,bx1,bz0,bz1,e[2],fd);else O.bld(bx0,bx1,bz0,bz1,e[1],e[2],fd);continue;}if(ED.frozen){done[i]=2;continue;}}
   if(k>=K.RES&&k<=K.FIRE&&k!==K.PARK){const nb2=(built[i-1]?1:0)+(built[i-N]?1:0)+(y>0&&x>0&&built[i-N-1]?1:0);if(nb2>=2||(nb2===1&&hs(i,21)<.55)){done[i]=2;continue;}built[i]=1;}
   if(k===K.RES){nb++;const C=O.CAT.res.filter(e=>L>1?e[1]!=='house':(e[1]==='house'||e[1]<=4)),e=C[((r*997)|0)%C.length];window.PLACED.push([i,'res',O.CAT.res.indexOf(e)]);if(e[1]==='house')O.house(bx0,bx1,bz0,bz1,e[2],rdir(x,y));else O.bld(bx0,bx1,bz0,bz1,e[1],e[2],rdir(x,y));}
-  else if(k===K.COM){nb++;const C=L<=1?O.CAT.com.filter(e=>e[1]<=2):L===2?O.CAT.com.filter(e=>e[1]>=2):L===3?O.CAT.off.filter(e=>e[1]<=8):O.CAT.off.filter(e=>e[1]>=7),e=C[((r*997)|0)%C.length],fl=e[1],st=e[2];window.PLACED.push(O.CAT.com.includes(e)?[i,'com',O.CAT.com.indexOf(e)]:[i,'off',O.CAT.off.indexOf(e)]);O.bld(bx0,bx1,bz0,bz1,fl,st,rdir(x,y));}
+  else if(k===K.COM){nb++;const C=L<=1?O.CAT.com.filter(e=>e[1]<=2):L===2?O.CAT.com.filter(e=>e[1]>=2):L===3?O.CAT.off.filter(e=>e[1]<=8):O.CAT.off.filter(e=>e[1]>=7&&e[1]<=9),e=C[((r*997)|0)%C.length],fl=e[1],st=e[2];window.PLACED.push(O.CAT.com.includes(e)?[i,'com',O.CAT.com.indexOf(e)]:[i,'off',O.CAT.off.indexOf(e)]);O.bld(bx0,bx1,bz0,bz1,fl,st,rdir(x,y));}
   else if(k===K.IND){nb++;const C=O.CAT.ind,j=((r*997)|0)%C.length,e=C[j];window.PLACED.push([i,'ind',j]);O.bld(bx0,bx1,bz0,bz1,e[1],e[2],rdir(x,y));}
   else if(k>=K.POWER&&k<=K.FIRE){nb++;const e=O.CAT.pub[((r*997)|0)%20];window.PLACED.push([i,'pub',((r*997)|0)%20]);O.bld(bx0,bx1,bz0,bz1,e[1],e[2],rdir(x,y));}}
  /* trees: icon cypress, instanced (forest deco + parks) */
