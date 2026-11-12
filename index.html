@@ -799,7 +799,7 @@ const DT2=ptex(512,(g,n,R)=>{dirtPaint(g,n,R,0,n,false);for(let k=0;k<45;k++){co
     /* top: mostly the bilinear patch (a touch of the hip/valley crease kept), then eased so the ramp rounds into the ground at both ends;
        edges use the same profile so neighbouring ramps still meet, and the low edge dips a little to hide the seam below */
     const cx=C4[odd][0]>0,cz=C4[odd][1]>0,F=(u,v)=>{const B=hs[0]*(1-u)*(1-v)+hs[1]*u*(1-v)+hs[2]*u*v+hs[3]*(1-u)*v;if(nh===2)return B;const a=cx?u:1-u,b=cz?v:1-v,Pc=nh===1?Math.min(a,b):1-Math.min(a,b);return Pc*.15+B*.85;},
-      Ez=f=>f+(f*f*(3-2*f)-f)*.5,Hh=(u,v)=>{const f=Ez(F(u,v));return -h-.025*(1-f)+f*(RH+.025);},GN=8,e=1e-3,
+      Ez=f=>f+(f*f*(3-2*f)-f)*.5,Hh=(u,v)=>{const f=Ez(F(u,v));return -h-.025*(1-f)+f*RH;},GN=8,e=1e-3,
       nrm=(u,v)=>{const dx=(Hh(Math.min(1,u+e),v)-Hh(Math.max(0,u-e),v))/(Math.min(1,u+e)-Math.max(0,u-e)),dz=(Hh(u,Math.min(1,v+e))-Hh(u,Math.max(0,v-e)))/(Math.min(1,v+e)-Math.max(0,v-e)),l=Math.hypot(dx,1,dz);return [-dx/l,1/l,-dz/l];};
     for(let j=0;j<GN;j++)for(let i=0;i<GN;i++){const q=[[i,j],[i+1,j],[i+1,j+1],[i,j+1]].map(([a,b])=>{const u=a/GN,v=b/GN,y=Hh(u,v);return {p:[u-.5,y,v-.5],n:nrm(u,v),t:y+1};});
      for(const [A,B,C] of [[q[0],q[2],q[1]],[q[0],q[3],q[2]]]){P.push(...A.p,...B.p,...C.p);Nn.push(...A.n,...B.n,...C.n);TY.push(A.t,B.t,C.t);}}
