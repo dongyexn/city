@@ -792,7 +792,7 @@ const DT2=ptex(512,(g,n,R)=>{dirtPaint(g,n,R,0,n,false);for(let k=0;k<45;k++){co
     else if(b&&dot(DV[b],d)===0&&sAt(x+DV[b][0],y+DV[b][1],T)!==dd){const d2=DV[b];hs=C4.map(c=>dot(c,d)<0&&dot(c,d2)<0?0:1);}
     const key=hs.join('');if(!G.has(key))G.set(key,{hs,L:[]});G.get(key).L.push([x,y,T,tp]);}
    const pv=new THREE.Vector3();let nS=0;
-   for(const {hs,L} of G.values()){const P=[],Nn=[],TY=[],RH=LH-.05,Y=k=>-h+hs[k]*RH,V=k=>[C4[k][0],Y(k),C4[k][1]];
+   for(const {hs,L} of G.values()){const P=[],Nn=[],TY=[],RH=LH-.022,Y=k=>-h+hs[k]*RH,V=k=>[C4[k][0],Y(k),C4[k][1]];
     const tri=(a,b,c,ty,n)=>{const u=[b[0]-a[0],b[1]-a[1],b[2]-a[2]],v=[c[0]-a[0],c[1]-a[1],c[2]-a[2]];let cr=[u[1]*v[2]-u[2]*v[1],u[2]*v[0]-u[0]*v[2],u[0]*v[1]-u[1]*v[0]];if(!n){const l=Math.hypot(...cr);n=cr.map(q=>q/l);if(n[1]<0)n=n.map(q=>-q);}if(cr[0]*n[0]+cr[1]*n[1]+cr[2]*n[2]<0){[b,c]=[c,b];ty=[ty[0],ty[2],ty[1]];}P.push(...a,...b,...c);TY.push(...ty);for(let k=0;k<3;k++)Nn.push(...n);};
     const nh=hs.reduce((p,q)=>p+q,0),odd=nh===1?hs.indexOf(1):nh===3?hs.indexOf(0):0,o2=(odd+2)%4,o1=(odd+1)%4,o3=(odd+3)%4;
     /* top: blend of the crisp hip/valley (min/max) and the bilinear patch, so corner creases are softened but edges stay straight and meet the neighbours */
