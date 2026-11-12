@@ -18,5 +18,15 @@ KEEP=['N','HN','K','TWA','H','terr','kind','lvl','deco','ocean','LVL','lmkA']
 def _pack(sd):
     d=_j.load(open(D+'/map_%s.json'%sd));d={k:d[k] for k in KEEP};c=zlib.compressobj(9,zlib.DEFLATED,-15);return base64.b64encode(c.compress(_j.dumps(d,separators=(',',':')).encode())+c.flush()).decode()
 MAPS={'11':None,'22':_pack(22),'33':_pack(33),'7':_pack(7)}
-out=open(D+'/play_ui.html').read()+'<script type="application/json" id="map">'+open(D+'/map_%s.json'%(sys.argv[1] if len(sys.argv)>1 else '11')).read()+'</script>\n<script type="application/json" id="maps">'+_j.dumps(MAPS)+'</script>\n<script type="application/json" id="ppl">'+open(D+'/ppl.json').read()+'</script>\n<script type="importmap">{"imports":{"three":"'+cdn+'build/three.module.js","three/addons/":"'+cdn+'examples/jsm/"}}</script>\n<script type="module">'+s+open(D+'/play_game.js').read()+'</script>\n'
+import glob as _g
+sys.path.insert(0,D);from mstat import st as _st
+def _packp(path):
+    d=_j.load(open(path));d={k:d[k] for k in KEEP};c=zlib.compressobj(9,zlib.DEFLATED,-15);return base64.b64encode(c.compress(_j.dumps(d,separators=(',',':')).encode())+c.flush()).decode()
+POOL={}
+if not _g.glob(D+'/maps/map_*.json') and os.path.exists(D+'/pool.json'):POOL=_j.load(open(D+'/pool.json'))
+for _p in sorted(_g.glob(D+'/maps/map_*.json')):
+    _l,_b,_r,_w,_h=_st(_p)
+    if _l>=1800 and _b>=150:POOL['r'+_p.split('_')[-1][:-5]]=_packp(_p)
+if _g.glob(D+'/maps/map_*.json'):_j.dump(POOL,open(D+'/pool.json','w'))
+out=open(D+'/play_ui.html').read()+'<script type="application/json" id="map">'+open(D+'/map_%s.json'%(sys.argv[1] if len(sys.argv)>1 else '11')).read()+'</script>\n<script type="application/json" id="maps">'+_j.dumps(MAPS)+'</script>\n<script type="application/json" id="pool">'+_j.dumps(POOL)+'</script>\n<script type="application/json" id="ppl">'+open(D+'/ppl.json').read()+'</script>\n<script type="importmap">{"imports":{"three":"'+cdn+'build/three.module.js","three/addons/":"'+cdn+'examples/jsm/"}}</script>\n<script type="module">'+s+open(D+'/play_game.js').read()+'</script>\n'
 open(D+'/play.html','w').write(out);print(len(out))
