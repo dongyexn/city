@@ -55,7 +55,7 @@ button:disabled{color:var(--mut);cursor:default}
 #shot{position:fixed;inset:0;background:rgba(8,12,20,.72);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:16px;z-index:20}
 #shotc{max-width:100%;max-height:calc(100% - 80px);border-radius:12px;box-shadow:0 8px 40px rgba(0,0,0,.4)}
 #shot .sbar{display:flex;gap:4px;padding:6px}
-.card{display:flex;flex-direction:column;align-items:center;gap:3px;flex:none;width:78px;padding:6px 4px 5px}
+.card{display:flex;flex-direction:column;align-items:center;gap:3px;flex:none;width:78px;padding:6px 4px 5px;position:relative}.card .sz{position:absolute;top:4px;right:5px;font:600 9px/1.4 var(--font);font-style:normal;color:#e8edf3;background:rgba(20,24,30,.55);padding:0 4px;border-radius:5px;pointer-events:none}
 .card .ic{width:60px;height:60px;border-radius:10px;display:grid;place-items:center;font:600 22px var(--font);color:var(--mut);object-fit:contain}
 .card span:not(.ic){font:500 11px var(--font);color:var(--mut);max-width:72px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .card[aria-pressed="true"] span:not(.ic){color:#fff}
