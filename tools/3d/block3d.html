@@ -772,9 +772,9 @@ const DT2=ptex(512,(g,n,R)=>{dirtPaint(g,n,R,0,n,false);for(let k=0;k<45;k++){co
      for(let j=0;j<28;j++){const u=(j+hsh(k,j)*.9)/28;BU.push([...on(u,-.06+hsh(k,j+9)*.14,fw_-.01-hsh(k,j+3)*.06),.06+hsh(k,j+5)**2*.07]);}
      for(let j=0;j<10;j++){const u=(j+hsh(k,j+40))/10;BU.push([...on(u,.16+hsh(k,j+41)*.1,fw_-.1-hsh(k,j+43)*.14),.045+hsh(k,j+45)*.04]);}
      for(let j=0;j<4;j++){const u=hsh(k,j+30);BU.push([...on(u,.3,fw_-.3-hsh(k,j+33)*.2),.025+hsh(k,j+35)*.025]);}});
-    if(BU.length){const bm=new THREE.MeshToonMaterial({color:'#dfeaf0',gradientMap:window.__TGR,emissive:'#bcd6e2',emissiveIntensity:.45}),bi=new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1,2),bm,BU.length),M=new THREE.Matrix4(),Q=new THREE.Quaternion(),V3=new THREE.Vector3(),S3=new THREE.Vector3();
+    if(false){const bm=new THREE.MeshToonMaterial({color:'#dfeaf0',gradientMap:window.__TGR,emissive:'#bcd6e2',emissiveIntensity:.45}),bi=new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1,2),bm,BU.length),M=new THREE.Matrix4(),Q=new THREE.Quaternion(),V3=new THREE.Vector3(),S3=new THREE.Vector3();
      BU.forEach(([x,y,z,r],k)=>{M.compose(V3.set(x,y,z),Q,S3.set(r,r*.72,r));bi.setMatrixAt(k,M);});bi.renderOrder=5;sc.add(bi);window.__BUB=bi;}}
-   for(const [P,U,m] of [[PT,UTp,mT]]){const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(P,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(U,2));const e=new THREE.Mesh(g,m);e.renderOrder=5;sc.add(e);}}window.NFALL=FALL.length/18;
+   for(const [P,U,m] of []){const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(P,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(U,2));const e=new THREE.Mesh(g,m);e.renderOrder=5;sc.add(e);}}window.NFALL=FALL.length/18;
 
  {const PI=[];if(D.pv)for(let y=0;y<N;y++)for(let x=0;x<N;x++){const i=y*N+x;if(riv(x,y)&&D.pv[i]===4)PI.push([x,y]);}window.NPIER=PI.length;
   if(PI.length){const tx=window.__BTX.PT4,dm=new THREE.MeshStandardMaterial({map:tx,roughness:.8}),pm=new THREE.MeshStandardMaterial({color:'#6b4a30',roughness:.85}),dg=new RoundedBoxGeometry(1.02,.08,1.02,1,.02),pg=new THREE.CylinderGeometry(.05,.055,1,8);pg.translate(0,-.5,0);
