@@ -13,9 +13,12 @@ body{margin:0;background:linear-gradient(var(--sky1),var(--sky2) 55%,var(--sky3)
 @keyframes tw{from{opacity:var(--a)}to{opacity:.08}}
 @media (prefers-reduced-motion:reduce){#stars i{animation:none}}
 #sun,#moon{position:fixed;left:-300px;top:0;border-radius:50%;pointer-events:none;opacity:0;transform:translate(-50%,-50%)}
-#sun{width:220px;height:220px;background:radial-gradient(circle closest-side,var(--c,#fffbef) 0 29%,rgba(255,240,205,.9) 32%,rgba(255,232,180,.4) 45%,rgba(255,222,165,.14) 68%,rgba(255,220,160,0) 100%)}
-#moon{width:130px;height:130px;background:radial-gradient(circle closest-side,rgba(226,234,255,.3) 0 30%,rgba(226,234,255,.1) 60%,rgba(226,234,255,0) 100%)}
-#moon::before{content:"";position:absolute;left:50%;top:50%;width:46px;height:46px;margin:-23px 0 0 -23px;background:radial-gradient(circle closest-side,#fbf6e2 0 60%,#ece5c8 94%,rgba(236,229,200,0) 100%);-webkit-mask:radial-gradient(circle at 76% 32%,transparent 0 16px,#000 18px);mask:radial-gradient(circle at 76% 32%,transparent 0 16px,#000 18px)}
+#sun{width:220px;height:220px;background:radial-gradient(circle closest-side,rgba(255,240,205,.55) 18%,rgba(255,232,180,.28) 34%,rgba(255,222,165,.1) 62%,rgba(255,220,160,0) 100%)}
+#sun::before{content:"";position:absolute;left:50%;top:50%;width:62px;height:62px;margin:-31px 0 0 -31px;border-radius:50%;background:radial-gradient(circle at 34% 30%,#fff 0 7%,var(--c,#fffbef) 22%,#ffd36a 58%,#ffad3b 88%,#f59a35 100%);box-shadow:0 0 18px 6px rgba(255,214,120,.55),inset -6px -8px 14px rgba(232,128,30,.35)}
+#sun::after{content:"";position:absolute;left:50%;top:50%;width:16px;height:9px;margin:-22px 0 0 -18px;border-radius:50%;background:rgba(255,255,255,.75);transform:rotate(-28deg);filter:blur(1.5px)}
+#moon{width:130px;height:130px;background:radial-gradient(circle closest-side,rgba(226,234,255,.28) 0 30%,rgba(226,234,255,.08) 60%,rgba(226,234,255,0) 100%)}
+#moon::before{content:"";position:absolute;left:50%;top:50%;width:48px;height:48px;margin:-24px 0 0 -24px;border-radius:50%;background:radial-gradient(circle at 30% 64%,rgba(150,140,110,.5) 0 9%,rgba(150,140,110,0) 13%),radial-gradient(circle at 62% 38%,rgba(150,140,110,.45) 0 7%,rgba(150,140,110,0) 10%),radial-gradient(circle at 58% 72%,rgba(150,140,110,.35) 0 5%,rgba(150,140,110,0) 8%),radial-gradient(circle at 34% 30%,#fffdf2 0 14%,#f4ecd0 46%,#d9cfae 78%,#b9ae8c 100%);box-shadow:0 0 16px 4px rgba(236,229,200,.35),inset -9px -7px 12px rgba(70,72,110,.45)}
+#moon::after{content:"";position:absolute;left:50%;top:50%;width:11px;height:6px;margin:-17px 0 0 -14px;border-radius:50%;background:rgba(255,255,255,.7);transform:rotate(-28deg);filter:blur(1px)}
 .glass{background:var(--glass);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-radius:16px}
 #bar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(12px + env(safe-area-inset-bottom,0px));max-width:calc(100% - 2*max(16px,env(safe-area-inset-left,0px)));display:flex;gap:4px;padding:6px;overflow-x:auto;scrollbar-width:none}
 #bar::-webkit-scrollbar,.row::-webkit-scrollbar{display:none}
@@ -23,7 +26,7 @@ button{font:600 14px var(--font);color:var(--fg);background:transparent;border:0
 button:focus-visible{outline:2px solid var(--acc);outline-offset:-2px}
 button[aria-pressed="true"]{background:var(--on);color:#fff}
 button:disabled{color:var(--mut);cursor:default}
-#pick{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(72px + env(safe-area-inset-bottom,0px));width:min(680px,calc(100% - 2*max(16px,env(safe-area-inset-left,0px))));padding:6px;display:flex;flex-direction:column;gap:2px}
+#pick{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(104px + env(safe-area-inset-bottom,0px));width:min(680px,calc(100% - 2*max(16px,env(safe-area-inset-left,0px))));padding:6px;display:flex;flex-direction:column;gap:2px}
 .row{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
 .row button{font-weight:500;padding:8px 11px}
 #top{position:fixed;top:calc(12px + env(safe-area-inset-top,0px));right:max(16px,env(safe-area-inset-right,0px));display:flex;gap:2px;padding:6px}
@@ -38,7 +41,8 @@ button:disabled{color:var(--mut);cursor:default}
 #tval{flex:1;accent-color:var(--acc);min-width:0}
 #env .er button{flex:1}
 #isl{position:fixed;top:calc(72px + env(safe-area-inset-top,0px));right:max(16px,env(safe-area-inset-right,0px));padding:8px;display:flex;flex-direction:column;gap:4px;width:min(380px,calc(100% - 32px));max-height:calc(100% - 180px);overflow:auto}
-#env,#menu{max-height:calc(100% - 96px);overflow-y:auto}#ctx{position:fixed;z-index:40;padding:6px;display:grid;grid-template-columns:1fr 1fr;gap:2px;min-width:112px;max-height:calc(100% - 16px);overflow-y:auto}#ctx .hd{grid-column:1/-1;font:600 12px var(--font);color:var(--mut);padding:4px 8px 6px;white-space:nowrap;text-align:center}#ctx .wide{grid-column:1/-1}.icb{display:grid;place-items:center;padding:10px 16px}.icb svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}#ctx .icb{padding:10px}.card img.ic[data-wait]{background:rgba(255,255,255,.06)}#pick{max-height:calc(100% - 150px);overflow-y:auto}
+#env,#menu{max-height:calc(100% - 96px);overflow-y:auto}#ctx{position:fixed;z-index:40;padding:6px;display:grid;grid-template-columns:1fr 1fr;gap:2px;min-width:112px;max-height:calc(100% - 16px);overflow-y:auto}#ctx .hd{grid-column:1/-1;font:600 12px var(--font);color:var(--mut);padding:4px 8px 6px;white-space:nowrap;text-align:center}#ctx .wide{grid-column:1/-1}#bar .tcard{width:70px;padding:5px 4px 4px;gap:2px}#bar .tcard .ic{width:44px;height:44px}#bar .tcard span:not(.ic){font-size:12px;font-weight:600}
+.icb{display:grid;place-items:center;padding:10px 16px}.icb svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}#ctx .icb{padding:10px}.card img.ic[data-wait]{background:rgba(255,255,255,.06)}#pick{max-height:calc(100% - 150px);overflow-y:auto}
 #isl .slot{display:flex;align-items:center;gap:10px;padding:6px;border-radius:12px}
 #isl .slot.cur{background:rgba(255,255,255,.06)}
 #isl .th{width:64px;height:40px;border-radius:8px;object-fit:cover;flex:none;background:rgba(255,255,255,.06)}
@@ -64,25 +68,31 @@ button:disabled{color:var(--mut);cursor:default}
 #menu{position:fixed;top:calc(64px + env(safe-area-inset-top,0px));right:max(12px,env(safe-area-inset-right,0px));padding:6px;display:flex;flex-direction:column;gap:2px;min-width:140px}
 #menu button{text-align:left}
 /* phones: every bar spans the width, tools share it evenly, rare actions move into the ⋯ menu */
+#hamb{display:none}
 @media (max-width:600px){
+ #hamb{display:grid;place-items:center;position:fixed;left:max(12px,env(safe-area-inset-left,0px));bottom:calc(10px + env(safe-area-inset-bottom,0px));width:56px;height:62px;padding:0;color:#dfe7ef}#hamb svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round}
+ body:not(.hopen) #top{display:none}
+ body.hopen #top{display:flex;flex-direction:column;align-items:stretch;top:auto;right:auto;left:max(12px,env(safe-area-inset-left,0px));bottom:calc(80px + env(safe-area-inset-bottom,0px));padding:6px;gap:0}
+ body.hopen #top button{display:flex;align-items:center;gap:12px;justify-content:flex-start;padding:11px 14px}body.hopen #top .tl{display:inline;font-weight:500}
+ #menu{top:auto;right:auto;left:max(12px,env(safe-area-inset-left,0px));bottom:calc(80px + env(safe-area-inset-bottom,0px))}
  #top{right:max(12px,env(safe-area-inset-right,0px));top:calc(10px + env(safe-area-inset-top,0px));padding:4px}
  #top button{padding:9px;min-width:40px}
- #bar{left:max(12px,env(safe-area-inset-left,0px));right:max(12px,env(safe-area-inset-right,0px));transform:none;max-width:none;padding:4px;gap:2px;bottom:calc(10px + env(safe-area-inset-bottom,0px))}
+ #bar{left:calc(max(12px,env(safe-area-inset-left,0px)) + 62px);right:max(12px,env(safe-area-inset-right,0px));transform:none;max-width:none;padding:4px;gap:2px;bottom:calc(10px + env(safe-area-inset-bottom,0px))}
  #bar button{flex:1 1 0;min-width:0;padding:12px 0;font-size:13px}
- #pick{left:max(12px,env(safe-area-inset-left,0px));right:max(12px,env(safe-area-inset-right,0px));transform:none;width:auto;bottom:calc(66px + env(safe-area-inset-bottom,0px));padding:4px}
+ #pick{left:max(12px,env(safe-area-inset-left,0px));right:max(12px,env(safe-area-inset-right,0px));transform:none;width:auto;bottom:calc(96px + env(safe-area-inset-bottom,0px));padding:4px}
  #cats{flex-wrap:wrap;row-gap:2px}
  #cats .sep{flex-basis:100%;width:auto;height:0;margin:0}
  .row .dir{min-width:40px;padding:8px 8px}
- .card{width:66px}.card .ic{width:50px;height:50px}
- #env,#isl{top:calc(62px + env(safe-area-inset-top,0px));left:max(12px,env(safe-area-inset-left,0px));right:max(12px,env(safe-area-inset-right,0px));width:auto}
+ .card{width:66px}.card .ic{width:50px;height:50px}.card span:not(.ic){max-width:60px}
+ #env,#isl{top:calc(12px + env(safe-area-inset-top,0px));left:max(12px,env(safe-area-inset-left,0px));right:max(12px,env(safe-area-inset-right,0px));width:auto}
  #isl{max-height:calc(100% - 200px)}
- #msg{top:calc(62px + env(safe-area-inset-top,0px));max-width:calc(100% - 24px);overflow:hidden;text-overflow:ellipsis;font-size:13px}
+ #msg{top:calc(14px + env(safe-area-inset-top,0px));max-width:calc(100% - 24px);overflow:hidden;text-overflow:ellipsis;font-size:13px}
 }
 @media (prefers-reduced-motion:reduce){#msg{transition:none}}
 </style>
 <div id="stars" aria-hidden="true"></div><div id="sun" aria-hidden="true"></div><div id="moon" aria-hidden="true"></div><canvas id="cv" tabindex="0" aria-label="도시"></canvas><div id="haze" aria-hidden="true"></div>
 <div id="msg" class="glass" role="status">불러오는 중</div>
-<div id="top" class="glass"><button id="undo" disabled aria-label="되돌리기" title="되돌리기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg><span class="tl">되돌리기</span></button><button id="redo" disabled aria-label="다시하기" title="다시하기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 14 5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"/></svg><span class="tl">다시하기</span></button><button id="rotv" aria-label="시점 회전" title="시점 회전 (Q)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg><span class="tl">시점 회전</span></button><button id="islb" aria-pressed="false" aria-label="섬" title="섬"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 3 8l9 5 9-5z"/><path d="m3 13 9 5 9-5"/></svg><span class="tl">섬</span></button><button id="envb" aria-pressed="false" aria-label="시간·날씨·움직임" title="시간·날씨·움직임"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8a4 4 0 1 0 0 8 4 4 0 1 0 0-8z"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.9 4.9 1.4 1.4"/><path d="m17.7 17.7 1.4 1.4"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.3 17.7-1.4 1.4"/><path d="m19.1 4.9-1.4 1.4"/></svg><span class="tl">시간·날씨</span></button><button id="more" aria-expanded="false" aria-label="더 보기" title="더 보기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h.01"/><path d="M12 12h.01"/><path d="M19 12h.01"/></svg><span class="tl">더 보기</span></button></div><div id="menu" class="glass" hidden><button id="photo" aria-label="사진" title="사진"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3z"/><path d="M12 10a3 3 0 1 0 0 6 3 3 0 1 0 0-6z"/></svg><span class="tl">사진</span></button></div>
+<button id="hamb" class="glass" aria-label="메뉴" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><div id="top" class="glass"><button id="undo" disabled aria-label="되돌리기" title="되돌리기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg><span class="tl">되돌리기</span></button><button id="redo" disabled aria-label="다시하기" title="다시하기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 14 5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"/></svg><span class="tl">다시하기</span></button><button id="rotv" aria-label="시점 회전" title="시점 회전 (Q)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg><span class="tl">시점 회전</span></button><button id="islb" aria-pressed="false" aria-label="섬" title="섬"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 3 8l9 5 9-5z"/><path d="m3 13 9 5 9-5"/></svg><span class="tl">섬</span></button><button id="envb" aria-pressed="false" aria-label="시간·날씨·움직임" title="시간·날씨·움직임"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8a4 4 0 1 0 0 8 4 4 0 1 0 0-8z"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.9 4.9 1.4 1.4"/><path d="m17.7 17.7 1.4 1.4"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.3 17.7-1.4 1.4"/><path d="m19.1 4.9-1.4 1.4"/></svg><span class="tl">시간·날씨</span></button><button id="more" aria-expanded="false" aria-label="더 보기" title="더 보기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h.01"/><path d="M12 12h.01"/><path d="M19 12h.01"/></svg><span class="tl">더 보기</span></button></div><div id="menu" class="glass" hidden><button id="photo" aria-label="사진" title="사진"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3z"/><path d="M12 10a3 3 0 1 0 0 6 3 3 0 1 0 0-6z"/></svg><span class="tl">사진</span></button></div>
 <div id="isl" class="glass" hidden></div>
 <div id="env" class="glass" hidden><div class="er"><span id="tlab">13:00</span><input id="tval" type="range" min="0" max="24" step=".25" aria-label="시간"><button id="tauto" aria-pressed="false">흐르기</button></div><div class="er"><button data-wx="clear">맑음</button><button data-wx="rain">비</button><button data-wx="snow">눈</button></div><div class="er"><button data-sea="0">봄</button><button data-sea="1">여름</button><button data-sea="2">가을</button><button data-sea="3">겨울</button></div><div class="er"><button id="mo" aria-pressed="true">움직임</button></div></div>
 <div id="shot" hidden><canvas id="shotc"></canvas><div class="glass sbar"><button id="stilt" aria-pressed="true">미니어처</button><button id="ssave">저장</button><button id="sclose">닫기</button></div></div>

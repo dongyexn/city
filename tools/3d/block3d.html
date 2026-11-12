@@ -708,7 +708,7 @@ const DT2=ptex(512,(g,n,R)=>{dirtPaint(g,n,R,0,n,false);for(let k=0;k<45;k++){co
   const topAt=(x,y)=>{if(!land(x,y))return -99;if(riv(x,y))return hW(x,y)-.7;const t2=top(x,y);return Math.min(...t2);};
   const SL_T=new Map();for(const [x,y,T,B,TP2] of CUBES)if(SLP&&SLP[y*N+x]&&TP2!==1&&TP2!==2&&isLawn(x,y))SL_T.set(y*N+x,[T,SLP[y*N+x],TP2]);
   for(const [x,y,T,B,TP2] of CUBES){const D8=[[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]],nb=D8.map(([dx,dy])=>topAt(x+dx,y+dy)),lo=Math.min(...nb),hiB=Math.max(...D8.map(([dx,dy])=>land(x+dx,y+dy)?bot(x+dx,y+dy):-99));
-   if(!SL_T.has(y*N+x))list.push([x,y,T-LH/2,0,TP2]);for(let k=1;;k++){const tp=T-LH*k;if(tp<=B+.01)break;if(k===1||tp>lo+.001||tp-LH<hiB-.001)list.push([x,y,tp-LH/2,k,TP2]);}
+   if(!SL_T.has(y*N+x))list.push([x,y,T-LH/2,0,TP2]);for(let k=1;;k++){const tp=T-LH*k;if(tp<=B+.01)break;if(k===1||tp>lo+.001||tp-LH<hiB-.001)list.push([x,y,tp-LH/2-(k===1&&SL_T.has(y*N+x)?.045:0),k,TP2]);}
    if(lo<-50){const hv=new Set();for(let q=list.length-1;q>=0&&list[q][0]===x&&list[q][1]===y;q--)hv.add(list[q][3]);for(let k=2;;k++){const tp=T-LH*k;if(tp<=B)break;if(!hv.has(k))list.push([x,y,tp-LH/2,k,TP2]);}}}
   const im=new THREE.InstancedMesh(GEO,mat,list.length);const kind=new Float32Array(list.length),ktop=new Float32Array(list.length),aoA=new Float32Array(list.length*4),varA=new Float32Array(list.length),tHi=(x,y)=>{if(!land(x,y)||(riv(x,y)&&!isR(x,y)))return -99;return Math.max(...top(x,y));},m4=new THREE.Matrix4(),cc=new THREE.Color();
   list.forEach(([x,y,cy,k,tp],i)=>{m4.makeTranslation(x+.5,cy,y+.5);im.setMatrixAt(i,m4);if(k===0){const T=cy+LH/2+.2;aoA[i*4]=tHi(x+1,y)>T?1:0;aoA[i*4+1]=tHi(x-1,y)>T?1:0;aoA[i*4+2]=tHi(x,y+1)>T?1:0;aoA[i*4+3]=tHi(x,y-1)>T?1:0;}if(k>0){const r=hsh(x*7.3+k*13.1,y*3.7+k*5.9),zone=hsh(Math.floor(x/3)+k*.37,Math.floor(y/3)*1.7+Math.floor(k/2));varA[i]=k===1?(r<.72?0:1):k<4?(zone<.3?2:r<.45?0:r<.7?1:3):(zone<.62?2:r<.4?3:r<.75?0:1);}kind[i]=k===0&&!tp?0:1;ktop[i]=k===0?(tp===1?1:tp===3?2:tp===4?3:tp===5?4:tp===6?5:tp===7?6:0):0;if(k===0&&tp===3)varA[i]=PAVE[y*N+x]-1;if(((tp===1||tp===3)&&k===1)||(tp===2&&k<=1))varA[i]=4+Math.floor(fract_(Math.sin(Math.floor(x/4)*5.3+Math.floor(y/4)*9.1)*71.7)*3);const sh2=hsh(x,y)*.08;cc.setRGB(1,1,1).multiplyScalar(k===0?(tp?1:.94+sh2):Math.max(.55,1-k*.05));im.setColorAt(i,cc);});
@@ -730,22 +730,29 @@ const DT2=ptex(512,(g,n,R)=>{dirtPaint(g,n,R,0,n,false);for(let k=0;k<45;k++){co
     const a=sAt(x+d[0],y+d[1],T),b=sAt(x-d[0],y-d[1],T);
     if(a&&dot(DV[a],d)===0&&sAt(x-DV[a][0],y-DV[a][1],T)!==dd){const d1=DV[a];hs=C4.map(c=>dot(c,d)>0&&dot(c,d1)>0?1:0);}
     else if(b&&dot(DV[b],d)===0&&sAt(x+DV[b][0],y+DV[b][1],T)!==dd){const d2=DV[b];hs=C4.map(c=>dot(c,d)<0&&dot(c,d2)<0?0:1);}
-    const key=hs.join('');if(!G.has(key))G.set(key,{hs,L:[]});G.get(key).L.push([x,y,T,tp]);}
+    /* a straight ramp whose low side meets lower ground (sand, road, paving) runs on down to it instead of ending in a step;
+       edges shared with another ramp at the same height get no side wall (it only showed as a seam line) */
+    let dr=0;if(hs.reduce((p,q)=>p+q,0)===2){const lt=top(x-d[0],y-d[1]);if(lt){const g=(T-LH)-Math.min(...lt);if(g>.01&&g<.2)dr=Math.round(g*100)/100;}}
+    let cov=0;for(let k=0;k<4;k++){const A=C4[k],B=C4[(k+1)%4],ex=Math.round(A[0]+B[0]),ez=Math.round(A[1]+B[1]);if(sAt(x+ex,y+ez,T))cov|=1<<k;}
+    const key=hs.join('')+':'+dr+':'+cov;if(!G.has(key))G.set(key,{hs,L:[],dr,cov});G.get(key).L.push([x,y,T,tp]);}
    const pv=new THREE.Vector3();let nS=0;
-   for(const {hs,L} of G.values()){const P=[],Nn=[],TY=[],RH=LH-.022,Y=k=>-h+hs[k]*RH,V=k=>[C4[k][0],Y(k),C4[k][1]];
+   for(const {hs,L,dr,cov} of G.values()){const P=[],Nn=[],TY=[],RH=LH-.022,Y=k=>-h+hs[k]*RH,V=k=>[C4[k][0],Y(k),C4[k][1]];
     const tri=(a,b,c,ty,n)=>{const u=[b[0]-a[0],b[1]-a[1],b[2]-a[2]],v=[c[0]-a[0],c[1]-a[1],c[2]-a[2]];let cr=[u[1]*v[2]-u[2]*v[1],u[2]*v[0]-u[0]*v[2],u[0]*v[1]-u[1]*v[0]];if(!n){const l=Math.hypot(...cr);n=cr.map(q=>q/l);if(n[1]<0)n=n.map(q=>-q);}if(cr[0]*n[0]+cr[1]*n[1]+cr[2]*n[2]<0){[b,c]=[c,b];ty=[ty[0],ty[2],ty[1]];}P.push(...a,...b,...c);TY.push(...ty);for(let k=0;k<3;k++)Nn.push(...n);};
     const nh=hs.reduce((p,q)=>p+q,0),odd=nh===1?hs.indexOf(1):nh===3?hs.indexOf(0):0,o2=(odd+2)%4,o1=(odd+1)%4,o3=(odd+3)%4;
     /* top: mostly the bilinear patch (a touch of the hip/valley crease kept), then eased so the ramp rounds into the ground at both ends;
        edges use the same profile so neighbouring ramps still meet, and the low edge dips a little to hide the seam below */
     const cx=C4[odd][0]>0,cz=C4[odd][1]>0,F=(u,v)=>{const B=hs[0]*(1-u)*(1-v)+hs[1]*u*(1-v)+hs[2]*u*v+hs[3]*(1-u)*v;if(nh===2)return B;const a=cx?u:1-u,b=cz?v:1-v,Pc=nh===1?Math.min(a,b):1-Math.min(a,b);return Pc*.15+B*.85;},
-      Ez=f=>f+(f*f*(3-2*f)-f)*.5,Hh=(u,v)=>{const f=Ez(F(u,v));return -h-.025*(1-f)+f*RH;},GN=8,e=1e-3,
+      Ez=f=>f+(f*f*(3-2*f)-f)*.35,Hh=(u,v)=>{const f=Ez(F(u,v));return -h-.025*(1-f)+f*RH;},GN=8,e=1e-3,
       nrm=(u,v)=>{const dx=(Hh(Math.min(1,u+e),v)-Hh(Math.max(0,u-e),v))/(Math.min(1,u+e)-Math.max(0,u-e)),dz=(Hh(u,Math.min(1,v+e))-Hh(u,Math.max(0,v-e)))/(Math.min(1,v+e)-Math.max(0,v-e)),l=Math.hypot(dx,1,dz);return [-dx/l,1/l,-dz/l];};
     for(let j=0;j<GN;j++)for(let i=0;i<GN;i++){const q=[[i,j],[i+1,j],[i+1,j+1],[i,j+1]].map(([a,b])=>{const u=a/GN,v=b/GN,y=Hh(u,v);return {p:[u-.5,y,v-.5],n:nrm(u,v),t:y+1};});
      for(const [A,B,C] of [[q[0],q[2],q[1]],[q[0],q[3],q[2]]]){P.push(...A.p,...B.p,...C.p);Nn.push(...A.n,...B.n,...C.n);TY.push(A.t,B.t,C.t);}}
     /* sides follow the eased top edge */
-    for(let k=0;k<4;k++){const k2=(k+1)%4;if(!hs[k]&&!hs[k2])continue;const A=C4[k],B=C4[k2],n=[(A[0]+B[0]),0,(A[1]+B[1])],yb=-h-.06;
+    for(let k=0;k<4;k++){const k2=(k+1)%4;if((!hs[k]&&!hs[k2])||(cov>>k&1))continue;const A=C4[k],B=C4[k2],n=[(A[0]+B[0]),0,(A[1]+B[1])],yb=-h-.06;
      for(let g=0;g<GN;g++){const pt=w=>{const x=A[0]+(B[0]-A[0])*w,z=A[1]+(B[1]-A[1])*w;return [x,z,Hh(x+.5,z+.5)];},[x0,z0,t0]=pt(g/GN),[x1,z1,t1]=pt((g+1)/GN);
       tri([x0,yb,z0],[x1,yb,z1],[x1,t1,z1],[t0+1,t1+1,t1+1],n);tri([x0,yb,z0],[x1,t1,z1],[x0,t0,z0],[t0+1,t1+1,t0+1],n);}}
+    /* foot apron: a short grass lip from the ramp's low edge down onto lower ground, so no dirt band shows under the foot */
+    if(dr){for(let k=0;k<4;k++){const k2=(k+1)%4;if(hs[k]||hs[k2])continue;const A=C4[k],B=C4[k2],n=[A[0]+B[0],A[1]+B[1]],L2=.3,y0=-h+.004,y1=-h-dr+.006,a0=[A[0],y0,A[1]],b0=[B[0],y0,B[1]],a1=[A[0]+n[0]*L2,y1,A[1]+n[1]*L2],b1=[B[0]+n[0]*L2,y1,B[1]+n[1]*L2];
+      tri(a0,b0,b1,[y0+1,y0+1,y1+1]);tri(a0,b1,a1,[y0+1,y1+1,y1+1]);const ab=[A[0],y1-.02,A[1]],bb=[B[0],y1-.02,B[1]];tri(a0,a1,ab,[y0+1,y1+1,y1+1],[-(B[0]-A[0]),0,-(B[1]-A[1])]);tri(b0,bb,b1,[y0+1,y1+1,y1+1],[B[0]-A[0],0,B[1]-A[1]]);}}
     const wg=new THREE.BufferGeometry();wg.setAttribute('position',new THREE.Float32BufferAttribute(P,3));wg.setAttribute('normal',new THREE.Float32BufferAttribute(Nn,3));wg.setAttribute('aTY',new THREE.Float32BufferAttribute(TY,1));
     const n=L.length,wk=new Float32Array(n),wt=new Float32Array(n),wv=new Float32Array(n),wa=new Float32Array(n*4),wm=new THREE.InstancedMesh(wg,mat,n);
     L.forEach(([x,y,T,tp],i)=>{m4.makeTranslation(x+.5,T-h,y+.5);wm.setMatrixAt(i,m4);wk[i]=tp?11:10;wt[i]=tp===3?2:tp===4?3:tp===5?4:tp===6?5:tp===7?6:0;wv[i]=tp===3?PAVE[y*N+x]-1:0;cc.setRGB(1,1,1).multiplyScalar(tp?1:.94+hsh(x,y)*.08);wm.setColorAt(i,cc);});
