@@ -186,7 +186,7 @@ const pick=(cx,cy)=>{const b=cv.getBoundingClientRect();org.set((cx-b.left)/b.wi
  for(let k=0;k<600;k++){const tout=Math.min(tx,tz);if(ok(x,z)){const h=H(x,z),yi=org.y+ray.y*tin,yo=org.y+ray.y*tout;if(yo<=h){if(yi>h||!prev)return [x,z];const [qx,qz]=prev,hq=W.hT(qx,qz);return W.hT(qx+1,qz)>hq+.01&&W.hT(qx,qz+1)>hq+.01?prev:[x,z];}prev=[x,z];}else prev=null;
   tin=tout;if(tx<tz){x+=sx;tx+=dX;}else{z+=sz;tz+=dZ;}if(org.y+ray.y*tin<-2)break;}return null;};
 /* ---- tools ---- */
-const CATS=[['res','주거',K.RES],['com','상업',K.COM],['off','업무',K.COM],['pub','공공',K.POWER]];let tool='move',selCat=0,selItem=0,dragRot=false,selBig=0,selTer=0,selRoad=0,selH=0,bs=1,flatL=1,rot=0,pendRand=0;const ROADS=[['차도','T:road'],['보도 A','T:p1'],['보도 B','T:p2'],['보도 C','T:p3']],HGT=['올리기','내리기','평탄화','경사'];const DIRN=[null,'z+','x+','z-','x-'],TERS=[['잔디',0,'T:grass'],['흙',5,'T:dirt'],['물',-1,'T:water']];
+const CATS=[['res','주거',K.RES],['com','상업',K.COM],['off','업무',K.COM],['pub','공공',K.POWER]];let tool='move',selCat=0,selItem=0,dragRot=false,selBig=0,selTer=0,selRoad=0,selH=0,bs=1,flatL=1,rot=0,pendRand=0;const ROADS=[['차도','T:road'],['보도 A','T:p1'],['보도 B','T:p2'],['보도 C','T:p3']],HGT=['올리기','내리기','평탄화','경사'];const DIRN=[null,'z+','x+','z-','x-'],TERS=[['잔디',7,'T:grass'],['흙',5,'T:dirt'],['모래',6,'T:sand'],['물',-1,'T:water']];
 const rollRand=()=>{const L=window.__O.CAT[CATS[selCat][0]];pendRand=(Math.random()*L.length)|0;};
 const bigAt=i=>ED.big.findIndex(([,x0,y0,w,d])=>{const x=i%N,y=(i/N)|0;return x>=x0&&x<x0+w&&y>=y0&&y<y0+d;});
 const free=(x,z)=>{const i=z*N+x;return W.land(x,z)&&!W.riv(x,z)&&GS.lmkA[i]<0&&bigAt(i)<0;};
@@ -230,7 +230,7 @@ const fit=()=>{let sx=0,sz=0,n=0;for(let i=0;i<N*N;i++)if(GS.kind[i]===K.ROAD){s
 const GH=new THREE.Group();GH.userData.keep=1;const clrH=()=>{hi.clear();GH.clear();};let O2=null,R2=null;const PRO=new Map(),GHO=new Map(),GMAT=new Map(),TH=new Map();
 const o2=()=>{if(!O2){const k=window.__KEEPTX;window.__KEEPTX=true;R2=new THREE.Group();const ob=window.OBC;window.OBC=undefined;try{O2=OBJ(THREE,RoundedBoxGeometry,R2);}finally{window.OBC=ob;}window.__KEEPTX=k;}return O2;};
 const blockProto=k=>{const X=window.__BTX,tx=t=>{const c=t.clone();c.repeat.set(.5,.5);c.needsUpdate=true;return c;},M=(t,col)=>new THREE.MeshStandardMaterial({map:t?tx(t):null,color:col||'#ffffff',roughness:.85}),g=new THREE.Group();
- const top={grass:M(X.TT,'#c4e2a0'),dirt:M(X.DT2,'#f5ccA8'),water:M(X.DT2,'#c49a78'),road:M(X.AT),p1:M(X.PT1),p2:M(X.PT2),p3:M(X.PT3)}[k],side={grass:M(X.ST),dirt:M(X.DT2,'#e2b48e'),water:M(X.ST)}[k]||M(X.CT);
+ const top={grass:M(X.TT,'#c4e2a0'),dirt:M(X.DT2,'#f5ccA8'),sand:M(X.SANDX),water:M(X.DT2,'#c49a78'),road:M(X.AT),p1:M(X.PT1),p2:M(X.PT2),p3:M(X.PT3)}[k],side={grass:M(X.ST),dirt:M(X.DT2,'#e2b48e'),sand:M(X.SANDX,'#e6d3ad'),water:M(X.ST)}[k]||M(X.CT);
  const b=new THREE.Mesh(new THREE.BoxGeometry(1,.6,1),[side,side,top,side,side,side]);g.add(b);
  if(k==='water'){const w=new THREE.Mesh(new THREE.BoxGeometry(.98,.44,.98),new THREE.MeshStandardMaterial({color:'#36b2ee',roughness:.15,transparent:true,opacity:.9}));w.position.y=.1;g.add(w);b.scale.y=.5;b.position.y=-.15;}return g;};
 const proto=key=>{let g=PRO.get(key);if(g)return g;if(key.startsWith('T:')){g=blockProto(key.slice(2));PRO.set(key,g);return g;}const o=o2(),[t,a,dir]=key.split(':'),k0=window.__KEEPTX;window.__KEEPTX=true;o.lift(0);
