@@ -118,7 +118,7 @@ const applyEnv=()=>{if(!W||!LT||!LT.sun)return;const t=ENV.t,e=Math.sin((t-6)/12
  /* sun and moon ride an arc across the sky behind the island */
  {const arc=f=>[6+88*f,24-17*Math.sin(Math.PI*Math.min(1,Math.max(0,f)))],vis=f=>ss(0,.05,f)*(1-ss(.95,1,f)),wv=wx==='rain'?.15:wx==='snow'?.35:1,fs=(t-5.5)/13,fm=((t-18.5+24)%24)/11;
   SKYB={sun:[...arc(fs),vis(fs)*wv,`#${lerpC(C3('#fffbef'),C3('#ffc77e'),gold).getHexString()}`],moon:[...arc(fm),vis(fm)*wv*ss(.1,.6,nt)]};
-  const su=$('sun'),mo=$('moon');if(su){su.style.left=SKYB.sun[0]+'%';su.style.top=SKYB.sun[1]+'%';su.style.opacity=SKYB.sun[2];su.style.background=SKYB.sun[3];}if(mo){mo.style.left=SKYB.moon[0]+'%';mo.style.top=SKYB.moon[1]+'%';mo.style.opacity=SKYB.moon[2];}}
+  const su=$('sun'),mo=$('moon');if(su){su.style.left=SKYB.sun[0]+'%';su.style.top=SKYB.sun[1]+'%';su.style.opacity=SKYB.sun[2];su.style.setProperty('--c',SKYB.sun[3]);}if(mo){mo.style.left=SKYB.moon[0]+'%';mo.style.top=SKYB.moon[1]+'%';mo.style.opacity=SKYB.moon[2];}}
  {const st=$('stars');if(st){const o=ss(.25,.85,nt)*(wx==='clear'?1:wx==='snow'?.2:0);st.style.opacity=o;st.style.display=o>.01?'':'none';SKYB.stars=o;}}
  {const sv=$('envb').querySelector('svg'),mn=nt>.5?'1':'0';if(sv&&sv.dataset.m!==mn){sv.dataset.m=mn;sv.innerHTML=mn==='1'?'<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>':'<path d="M12 8a4 4 0 1 0 0 8 4 4 0 1 0 0-8z"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.9 4.9 1.4 1.4"/><path d="m17.7 17.7 1.4 1.4"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.3 17.7-1.4 1.4"/><path d="m19.1 4.9-1.4 1.4"/>';}}
  /* fewer people and cars out at night */
