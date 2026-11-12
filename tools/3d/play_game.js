@@ -6,7 +6,8 @@ const SLOTK=i=>i===1?'isle3d-v1':'isle3d-s'+i,META=(()=>{let m=null;try{m=JSON.p
 const POOL=(()=>{try{return JSON.parse($('pool').textContent);}catch(e){return {};}})();
 /* random islands: one of the pre-generated terrain+city maps, turned and mirrored by one of the 8 square symmetries ('r123:5') */
 const symM=(M,s)=>{const T=(u8,n,w)=>{const o=new Uint8Array(u8.length);for(let y=0;y<n;y++)for(let x=0;x<n;x++){let u=x,v=y;if(s&4){const t=u;u=v;v=t;}if(s&1)u=n-1-u;if(s&2)v=n-1-v;const a=(v*n+u)*w,b=(y*n+x)*w;for(let k=0;k<w;k++)o[b+k]=u8[a+k];}return o;};const O=Object.assign({},M);
- for(const k of ['terr','kind','lvl','deco','ocean','LVL'])O[k]=b64e(T(b64d(M[k]),M.N,1));O.H=b64e(T(b64d(M.H),M.HN,1));O.lmkA=b64e(T(b64d(M.lmkA),M.N,4));return O;};
+ for(const k of ['terr','kind','lvl','deco','ocean','LVL'])O[k]=b64e(T(b64d(M[k]),M.N,1));O.H=b64e(T(b64d(M.H),M.HN,1));{const n=M.N,la=T(b64d(M.lmkA),n,4),L=new Int32Array(la.buffer);for(let i=0;i<L.length;i++){const v=L[i];if(v<0)continue;const u=v%n,w=(v/n)|0,a=s&1?n-1-u:u,b=s&2?n-1-w:w;L[i]=s&4?a*n+b:b*n+a;}O.lmkA=b64e(la);}return O;};
+/* lmkA holds each complex's anchor tile index, so those indices are moved with the tiles */
 const rollSeed=()=>{const ks=Object.keys(POOL);if(!ks.length)return '22';let sd;do{sd=ks[(Math.random()*ks.length)|0]+':'+((Math.random()*8)|0);}while(ks.length>1&&META.slots[META.cur]&&META.slots[META.cur].seed===sd);return sd;};
 const getMap=async sd=>{sd=String(sd);if(MAPC[sd])return MAPC[sd];const [bk,sy]=sd.split(':'),src=POOL[bk]||MAPS[bk];if(!src)return MAPC['11'];const r=new Response(new Blob([b64d(src)]).stream().pipeThrough(new DecompressionStream('deflate-raw')));let M=JSON.parse(await r.text());if(sy&&+sy)M=symM(M,+sy);return MAPC[sd]=M;};
 const fresh=(M=MAP,blank=false)=>{const g={N:M.N,HN:M.HN,K:M.K,TWA:M.TWA,H:b64d(M.H),terr:b64d(M.terr),kind:b64d(M.kind),lvl:b64d(M.lvl),deco:b64d(M.deco),ocean:b64d(M.ocean),LVL:b64d(M.LVL),lmkA:new Int32Array(b64d(M.lmkA).buffer),man:new Uint8Array(M.N*M.N),pv:new Uint8Array(M.N*M.N),sl:new Uint8Array(M.N*M.N)};if(blank){g.kind.fill(0);g.lmkA.fill(-1);}return g;};
@@ -237,7 +238,9 @@ const why=(x,z)=>{const i=z*N+x;if(x<1||z<1||x>=N-1||z>=N-1||!W.land(x,z))return
  if((tool==='tree'||tool==='bld')&&GS.kind[i]===K.ROAD)return '도로 위';return '';};
 const apply=tiles=>{let n=0,bad='';for(const [x,z] of tiles){const i=z*N+x,w=why(x,z);if(w){bad=w;continue;}
   if(tool==='road'){clearT(i);if(selRoad===0){GS.kind[i]=K.ROAD;GS.pv[i]=0;}else{GS.kind[i]=K.EMPTY;if(W.riv(x,z)&&selRoad!==4)GS.terr[i]=0;GS.pv[i]=selRoad;}}
-  else if(tool==='del'){const b=bigAt(i),a=GS.lmkA[i];if(b>=0)ED.big.splice(b,1);else if(a>=0){for(let j=0;j<N*N;j++)if(GS.lmkA[j]===a){GS.lmkA[j]=-1;GS.kind[j]=K.EMPTY;}}else{clearT(i);if(W.riv(x,z)&&GS.pv[i]===4)GS.pv[i]=0;else if(GS.kind[i]===K.EMPTY&&window.__PAVE&&window.__PAVE[i])GS.pv[i]=9;GS.kind[i]=K.EMPTY;}}
+  else if(tool==='del'){const b=bigAt(i),a=GS.lmkA[i];if(b>=0)ED.big.splice(b,1);else if(a>=0){for(let j=0;j<N*N;j++)if(GS.lmkA[j]===a){GS.lmkA[j]=-1;GS.kind[j]=K.EMPTY;}}else if(ED.fb.has(i)||GS.deco[i]||(GS.kind[i]>=K.RES&&GS.kind[i]!==K.PARK)||(W.riv(x,z)&&GS.pv[i]===4)){clearT(i);if(W.riv(x,z)&&GS.pv[i]===4)GS.pv[i]=0;if(GS.kind[i]!==K.ROAD)GS.kind[i]=K.EMPTY;}
+   /* bare ground: the block itself goes — the column drops one level, keeping its surface */
+   else{if(GS.LVL[i]<=1){bad='더 내릴 수 없음';continue;}GS.LVL[i]--;GS.man[i]=1;GS.sl[i]=0;}}
   else if(tool==='hgt'){GS.LVL[i]=hgtL(i);GS.man[i]=1;if(hgtF)GS.sl[i]=0;}
   else if(tool==='ter'&&slMode()){const st=slMode()===2,b4=st?4:0,cur=GS.sl[i];if(cur&&(cur>4)===st&&tiles.length===1&&!rot)GS.sl[i]=(cur-b4)%4+1+b4;else{const r=rot||slAuto(x,z);if(!cur&&slLift(x,z,r)){GS.LVL[i]++;GS.man[i]=1;}GS.sl[i]=r+b4;}n++;continue;}
   else if(tool==='ter'){const t=TERS[selTer][1];clearT(i);GS.kind[i]=K.EMPTY;GS.terr[i]=t<0?GS.TWA:t;GS.pv[i]=t<0?0:9;}
@@ -298,7 +301,7 @@ const brushOn=()=>tool==='ter'||tool==='hgt'||tool==='del'||(tool==='road'&&selR
 const strokeTo=t=>{if(!t||!stroke)return;if(stroke.mode==='aim'){const s0=stroke.start,dx=t[0]-s0[0],dz=t[1]-s0[1];stroke.tiles=[s0];if(dx||dz){rot=Math.abs(dx)>=Math.abs(dz)?(dx>0?2:4):(dz>0?1:3);dragRot=true;}else{rot=stroke.rot0;}}else if(stroke.mode==='one'){stroke.tiles=[t];}else if(stroke.mode==='line'){stroke.tiles=line(stroke.start,t);}else for(const u of brush(t))if(!stroke.set.has(u[1]*N+u[0])){stroke.set.add(u[1]*N+u[0]);stroke.tiles.push(u);}show(stroke.tiles);};
 cv.addEventListener('pointerdown',e=>{cv.focus();cv.setPointerCapture(e.pointerId);P.set(e.pointerId,[e.clientX,e.clientY]);
  if(P.size===2){stroke=null;clrH();pan=null;const [a,b]=[...P.values()];pinch={d:Math.hypot(a[0]-b[0],a[1]-b[1]),mx:(a[0]+b[0])/2,my:(a[1]+b[1])/2};return;}
- if(tool==='move'||e.button!==0||space){pan={x:e.clientX,y:e.clientY,sx:e.clientX,sy:e.clientY,tap:tool==='move'&&e.button===0,rt:e.button===2&&tool!=='move'};return;}
+ if(tool==='move'||e.button!==0||space){pan={x:e.clientX,y:e.clientY,sx:e.clientX,sy:e.clientY,tap:tool==='move'&&e.button===0,rt:e.button===2};return;}
  const t=pick(e.clientX,e.clientY);if(!t)return;flatL=GS.LVL[t[1]*N+t[0]];if((tool==='bld'||tool==='big')&&dragRot){rot=tool==='bld'?0:rot;dragRot=false;}if(tool==='hgt'){hgtD=0;hgtF=false;stroke={start:t,tiles:[t],set:new Set([t[1]*N+t[0]]),mode:'hgt',sx:e.clientX,sy:e.clientY,dir:0};show([t]);return;}
  stroke={start:t,tiles:[],set:new Set(),mode:tool==='road'&&selRoad===0?'line':(tool==='bld'||tool==='big')?'aim':tool==='tree'?'one':'brush',rot0:rot};strokeTo(t);});
 cv.addEventListener('pointermove',e=>{
@@ -311,13 +314,13 @@ cv.addEventListener('pointermove',e=>{
   else if(stroke.dir===2){hgtF=true;const t=pick(e.clientX,e.clientY);if(t&&!stroke.set.has(t[1]*N+t[0])){stroke.set.add(t[1]*N+t[0]);stroke.tiles.push(t);}show(stroke.tiles);msg('높이 '+flatL+'로 맞추기',0);}return;}
  if(stroke)strokeTo(pick(e.clientX,e.clientY));});
 const up=e=>{if(!P.has(e.pointerId))return;P.delete(e.pointerId);if(P.size<2)pinch=null;
- if(pan){const tp=Math.hypot(e.clientX-pan.sx,e.clientY-pan.sy)<6;if(pan.tap&&tp){const t=pick(e.clientX,e.clientY);if(t)msg(info(t[0],t[1]));}else if(pan.rt&&tp)setTool('move');pan=null;}
+ if(pan){const tp=Math.hypot(e.clientX-pan.sx,e.clientY-pan.sy)<6;if(pan.tap&&tp){const t=pick(e.clientX,e.clientY);if(t)msg(info(t[0],t[1]));}else if(pan.rt&&tp){const t=pick(e.clientX,e.clientY);if(t){const pt=tool;tool='del';commit([t]);tool=pt;}}pan=null;}
  if(stroke){const t=stroke.tiles,hm=stroke.mode==='hgt';stroke=null;hov=null;if(hm&&!hgtD&&!hgtF){clrH();need=true;msg('위아래로 끌면 높이, 옆으로 끌면 평탄화',2200);return;}commit(t);}};
 cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',e=>{P.delete(e.pointerId);pinch=null;pan=null;if(stroke){stroke=null;clrH();need=true;}});
 cv.addEventListener('pointerleave',()=>{if(!stroke&&hov!==null){hov=null;clrH();need=true;}});cv.addEventListener('contextmenu',e=>e.preventDefault());
 cv.addEventListener('wheel',e=>{e.preventDefault();zoomAt(Math.exp(e.deltaY*.0012),e.clientX,e.clientY);},{passive:false});
 /* ---- UI ---- */
-const TOOLS=[['move','','탭하면 정보'],['road','길','차도는 직선 · 물 위엔 다리'],['bld','건물','끌어서 방향'],['big','시설','끌어서 방향'],['ter','지형','드래그로 칠하기'],['hgt','높이','위아래로 끌기 · 옆으로 끌면 평탄화'],['tree','나무','탭'],['del','철거','드래그']];
+const TOOLS=[['move','','탭하면 정보'],['road','길','차도는 직선 · 물 위엔 다리'],['bld','건물','끌어서 방향'],['big','시설','끌어서 방향'],['ter','지형','드래그로 칠하기'],['hgt','높이','위아래로 끌기 · 옆으로 끌면 평탄화'],['tree','나무','탭'],['del','철거','드래그 · 우클릭으로도 철거']];
 const mkb=(t,on,fn,lab)=>{const b=document.createElement('button');b.textContent=t;if(on!==null)b.setAttribute('aria-pressed',on?'true':'false');if(lab)b.setAttribute('aria-label',lab);b.onclick=fn;return b;};
 const setTool=id=>{if(id==='bld'&&tool!=='bld')rollRand();tool=id;stroke=null;hov=null;clrH();need=true;drawUI();const t=TOOLS.find(t=>t[0]===id);msg(id==='move'?'':t[1]+' · '+t[2],id==='move'?1:undefined);};
 const drawUI=()=>{const bar=$('bar');bs=1;bar.replaceChildren(...TOOLS.filter(t=>t[1]).map(([id,t])=>mkb(t,tool===id,()=>setTool(tool===id?'move':id))));const on=bar.querySelector('[aria-pressed="true"]');if(on&&on.scrollIntoView)on.scrollIntoView({block:'nearest',inline:'nearest'});
@@ -347,8 +350,8 @@ const syncEnvUI=()=>{const p=$('env');if(!p)return;$('tval').value=ENV.t;$('tlab
  more.onclick=()=>{menu.hidden=!menu.hidden;more.setAttribute('aria-expanded',menu.hidden?'false':'true');if(!menu.hidden)for(const [p,b] of [['env','envb'],['isl','islb']])if(!$(p).hidden){$(p).hidden=true;$(b).setAttribute('aria-pressed','false');}};for(const b of ['envb','islb'])$(b).addEventListener('click',()=>{menu.hidden=true;more.setAttribute('aria-expanded','false');});menu.addEventListener('click',()=>{menu.hidden=true;more.setAttribute('aria-expanded','false');});
  cv.addEventListener('pointerdown',()=>{if(!mq.matches)return;menu.hidden=true;more.setAttribute('aria-expanded','false');for(const [p,b] of [['env','envb'],['isl','islb']])if(!$(p).hidden){$(p).hidden=true;$(b).setAttribute('aria-pressed','false');}});
  (mq.addEventListener?mq.addEventListener('change',place):mq.addListener(place));place();}
-/* PC: wheel over a picker row scrolls it sideways; mouse drag also scrolls */
-{const pk=$('pick');pk.addEventListener('wheel',e=>{const r=e.target.closest('.row');if(r&&r.scrollWidth>r.clientWidth+2){r.scrollLeft+=Math.abs(e.deltaX)>Math.abs(e.deltaY)?e.deltaX:e.deltaY;e.preventDefault();}},{passive:false});
+/* PC: wheel over any sideways row (pickers, island presets) scrolls it; mouse drag also scrolls */
+{const pk=document;pk.addEventListener('wheel',e=>{const r=e.target.closest('.row');if(r&&r.scrollWidth>r.clientWidth+2){r.scrollLeft+=Math.abs(e.deltaX)>Math.abs(e.deltaY)?e.deltaX:e.deltaY;e.preventDefault();}},{passive:false});
  let dr=null;pk.addEventListener('pointerdown',e=>{if(e.pointerType!=='mouse')return;const r=e.target.closest('.row');if(r&&r.scrollWidth>r.clientWidth+2)dr={r,x:e.clientX,s:r.scrollLeft,m:false};});
  addEventListener('pointermove',e=>{if(!dr)return;const d=e.clientX-dr.x;if(Math.abs(d)>5)dr.m=true;if(dr.m)dr.r.scrollLeft=dr.s-d;});addEventListener('pointerup',()=>{if(dr&&dr.m){const r=dr.r;r.addEventListener('click',ev=>{ev.stopPropagation();ev.preventDefault();},{capture:true,once:true});}dr=null;});}
 $('envb').onclick=()=>{const p=$('env');p.hidden=!p.hidden;if(!p.hidden){$('isl').hidden=true;$('islb').setAttribute('aria-pressed','false');}$('envb').setAttribute('aria-pressed',p.hidden?'false':'true');syncEnvUI();};
