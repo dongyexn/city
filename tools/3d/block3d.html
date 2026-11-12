@@ -755,7 +755,7 @@ const DT2=ptex(512,(g,n,R)=>{dirtPaint(g,n,R,0,n,false);for(let k=0;k<45;k++){co
    /* cartoon falls: flat blue, hard-edged light and white ribbons with round ends, a few darker grooves */
    const n=512,cv=document.createElement('canvas');cv.width=cv.height=n;const g=cv.getContext('2d');g.fillStyle='#2bb2ea';g.fillRect(0,0,n,n);let sd=3;const Rr=()=>{sd=(sd*16807)%2147483647;return sd/2147483647;};
    const rib=(col,cnt,w0,w1,l0,l1)=>{for(let k=0;k<cnt;k++){const x=Rr()*n,y=Rr()*n,w=w0+Rr()*(w1-w0),l=n*(l0+Rr()*(l1-l0));g.fillStyle=col;for(const ox of [0,-n,n])for(const oy of [0,-n,n]){g.beginPath();g.roundRect(x+ox,y+oy,w,l,w/2);g.fill();}}};
-   rib('#4cc4f2',3,60,110,.6,1.);rib('#bfefff',2,5,8,.15,.3);
+   rib('#3dbcf0',3,60,110,.6,1.);
    const t=new THREE.CanvasTexture(cv);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=8;fw.map=t;fw.color.set('#ffffff');fw.needsUpdate=true;
    /* foam crest along the lip + a few detached spray blobs just below */
    const ftx=(draw)=>{const c=document.createElement('canvas');c.width=256;c.height=128;const g=c.getContext('2d');let sd=13;const Rr=()=>{sd=(sd*16807)%2147483647;return sd/2147483647;};g.fillStyle='#fff';draw(g,Rr);const t=new THREE.CanvasTexture(c);t.wrapS=THREE.RepeatWrapping;t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=8;return new THREE.MeshBasicMaterial({map:t,color:'#f6fcff',transparent:true,depthWrite:false,side:THREE.DoubleSide});};
@@ -768,10 +768,10 @@ const DT2=ptex(512,(g,n,R)=>{dirtPaint(g,n,R,0,n,false);for(let k=0;k<45;k++){co
     const R2=.312,pr=[];for(let k=0;k<=6;k++){const f=k/6*Math.PI/2;pr.push([R2*Math.sin(f),fw_-.3+R2*Math.cos(f)]);}pr.push([R2,fw_-1.25]);let len=0;const L=[0];for(let k=1;k<pr.length;k++){len+=Math.hypot(pr[k][0]-pr[k-1][0],pr[k][1]-pr[k-1][1]);L.push(len);}
     for(let k=0;k+1<pr.length;k++)q2(PF,UF,at(A,pr[k][0],pr[k][1]),at(A,pr[k+1][0],pr[k+1][1]),at(B2,pr[k][0],pr[k][1]),at(B2,pr[k+1][0],pr[k+1][1]),ua,ub,L[k]/len,L[k+1]/len);}
    {const BU=[];FLIP.forEach(([cx_,cz_,dx,dy,fw_,m0,m1],k)=>{const ex=dx?0:.5,ez=dx?.5:0,A=[cx_-ex,cz_-ez],B2=[cx_+ex,cz_+ez],Lx=dx?0:1,Ly=dx?1:0,at=(P,o,h)=>{const sg=P===A?-m0:m1;return [P[0]+dx*o+Lx*sg*o,h,P[1]+dy*o+Ly*sg*o];},on=(u,o,h)=>{const a=at(A,o,h),b=at(B2,o,h);return [a[0]+(b[0]-a[0])*u,h,a[2]+(b[2]-a[2])*u];};
-     for(let j=0;j<6;j++){const u=(j+.5)/6+(hsh(k,j)-.5)*.08;BU.push([...on(u,.12+hsh(k,j+9)*.08,fw_-.02-hsh(k,j+3)*.06),.13+hsh(k,j+5)*.06]);}
-     for(let j=0;j<5;j++){const u=(j+.2+hsh(k,j+20)*.6)/5;BU.push([...on(u,.3,fw_-.2-hsh(k,j+23)*.12),.09+hsh(k,j+25)*.05]);}
-     for(let j=0;j<3;j++){const u=hsh(k,j+30);BU.push([...on(u,.33,fw_-.48-hsh(k,j+33)*.25),.05+hsh(k,j+35)*.03]);}});
-    if(BU.length){const bm=new THREE.MeshToonMaterial({color:'#ffffff',gradientMap:window.__TGR,emissive:'#d8f2ff',emissiveIntensity:.35}),bi=new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1,2),bm,BU.length),M=new THREE.Matrix4(),Q=new THREE.Quaternion(),V3=new THREE.Vector3(),S3=new THREE.Vector3();
+     for(let j=0;j<9;j++){const u=(j+.5)/9+(hsh(k,j)-.5)*.05;BU.push([...on(u,-.06+hsh(k,j+9)*.1,fw_+.01-hsh(k,j+3)*.04),.085+hsh(k,j+5)*.04]);}
+     for(let j=0;j<7;j++){const u=(j+.5)/7+(hsh(k,j+40)-.5)*.08;BU.push([...on(u,.14+hsh(k,j+41)*.06,fw_-.08-hsh(k,j+43)*.06),.075+hsh(k,j+45)*.035]);}
+     for(let j=0;j<4;j++){const u=(j+.2+hsh(k,j+20)*.6)/4;BU.push([...on(u,.3,fw_-.26-hsh(k,j+23)*.12),.055+hsh(k,j+25)*.03]);}});
+    if(BU.length){const bm=new THREE.MeshToonMaterial({color:'#dfeaf0',gradientMap:window.__TGR,emissive:'#bcd6e2',emissiveIntensity:.45}),bi=new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1,2),bm,BU.length),M=new THREE.Matrix4(),Q=new THREE.Quaternion(),V3=new THREE.Vector3(),S3=new THREE.Vector3();
      BU.forEach(([x,y,z,r],k)=>{M.compose(V3.set(x,y,z),Q,S3.set(r,r*.85,r));bi.setMatrixAt(k,M);});bi.renderOrder=5;sc.add(bi);window.__BUB=bi;}}
    for(const [P,U,m] of [[PT,UTp,mT]]){const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(P,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(U,2));const e=new THREE.Mesh(g,m);e.renderOrder=5;sc.add(e);}}window.NFALL=FALL.length/18;
 
