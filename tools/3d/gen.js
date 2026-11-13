@@ -52,7 +52,7 @@ const genIsland=(type,shape,num,NS=128)=>{
   const lane=(a,b)=>{let x=a[0],y=a[1],g=0;while((x!==b[0]||y!==b[1])&&g++<400){const i=id(x,y);if(land(i))kind[i]=K.ROAD;const dx=Math.sign(b[0]-x),dy=Math.sign(b[1]-y);if(dx&&(!dy||R()<.5))x+=dx;else y+=dy;}};
   const vils=[...centres];for(let k=0;k<3;k++){for(let t=0;t<200;t++){const i=(R()*NN)|0;if(land(i)&&cd[i]>6&&!water(i)){vils.push([i%N,(i/N)|0]);break;}}}
   for(let k=1;k<vils.length;k++)lane(vils[k-1],vils[k]);for(const [a,b] of vils){lane([a-4,b-3],[a+4,b-3]);lane([a+4,b-3],[a+4,b+3]);lane([a+4,b+3],[a-4,b+3]);lane([a-4,b+3],[a-4,b-3]);}
- }else{const S={metro:6,city:7,ind:8,farm:11}[type],ox=(R()*S)|0,oy=(R()*S)|0;
+ }else{const S={metro:7,city:8,ind:9,farm:11}[type],ox=(R()*S)|0,oy=(R()*S)|0;
   for(let y=2;y<N-2;y++)for(let x=2;x<N-2;x++){const i=id(x,y);if(!land(i))continue;if(((x-ox)%S===0||(y-oy)%S===0)&&dev(x,y))kind[i]=K.ROAD;}
   /* trunk roads from each centre to the others */for(let k=1;k<centres.length;k++){let [x,y]=centres[k-1];const [tx,ty]=centres[k];let g=0;while((x!==tx||y!==ty)&&g++<400){const i=id(x,y);if(land(i))kind[i]=K.ROAD;if(x!==tx)x+=Math.sign(tx-x);else y+=Math.sign(ty-y);}}}
  /* roads never climb more than one level between neighbours: flatten along them */
@@ -89,8 +89,8 @@ const genIsland=(type,shape,num,NS=128)=>{
   const d=cdist(mx,my)/RAD,front=c.filter(nearR),devd=dev(Math.round(mx),Math.round(my));if(!front.length||!devd)continue;
   /* zone for the block */
   const r=R();let z='res',L=1;
-  if(type==='metro'){if(d<.35){z='com';L=r<.5?4:3;}else if(d<.7){z=r<.45?'com':'res';L=z==='com'?2+((R()*2)|0):2;}else{z=r<.2?'park':'res';L=2;}}
-  else if(type==='city'){if(d<.3){z='com';L=r<.4?3:2;}else if(d<.65){z=r<.12?'park':r<.22?'pub':r<.4?'com':'res';L=z==='com'?(R()<.5?1:2):(R()<.6?2:1);}else{z=r<.15?'park':'res';L=1;}}
+  if(type==='metro'){if(d<.35){z=r<.08?'park':'com';L=r<.5?4:3;}else if(d<.7){z=r<.1?'park':r<.5?'com':'res';L=z==='com'?2+((R()*2)|0):2;}else{z=r<.28?'park':'res';L=2;}}
+  else if(type==='city'){if(d<.3){z=r<.1?'park':'com';L=r<.4?3:2;}else if(d<.65){z=r<.18?'park':r<.28?'pub':r<.45?'com':'res';L=z==='com'?(R()<.5?1:2):(R()<.6?2:1);}else{z=r<.24?'park':'res';L=1;}}
   else if(type==='ind'){const side=(mx-cx)*ca+(my-cy)*sa;if(side>0&&d>.15){z='ind';}else if(d<.3){z='com';L=r<.5?2:1;}else{z=r<.1?'park':'res';L=r<.5?2:1;}}
   else if(type==='farm'){if(d<.22){z=r<.3?'com':'res';L=1;}else if(r<.12){z='res';L=1;}else{z='field';}}
   else{z=d<.55?'res':'wild';L=1;}
@@ -104,11 +104,14 @@ const genIsland=(type,shape,num,NS=128)=>{
   if(z==='wild'){for(const i of c)if(!bigm[i]&&R()<.55)tree(i);continue;}
   /* frontage: a building on most road-facing tiles, every few a walkway through to the middle */
   const kd=z==='com'?K.COM:z==='ind'?K.IND:z==='pub'?[K.POLICE,K.FIRE,K.POWER][(R()*3)|0]:K.RES;
-  let fi=0;for(const i of c){if(!nearR(i)||bigm[i])continue;const x=i%N,y=(i/N)|0;const gap=type==='forest'?R()<.45:((x+y*3)%(z==='res'&&L===1?3:4)===0);if(gap){pave(i);continue;}kind[i]=z==='pub'&&fi>0?K.RES:kd;lvl[i]=z==='pub'&&fi>0?2:L;fi++;}
+  let fi=0;for(const i of c){if(!nearR(i)||bigm[i])continue;const x=i%N,y=(i/N)|0;const gap=type==='forest'?R()<.45:((x+y*3)%(z==='res'&&L===1?3:4)===0);if(gap){pave(i);continue;}
+   /* 빈 필지: 앞줄을 다 채우지 않는다 — 바깥으로 갈수록 잔디·나무·쉼터가 늘어난다 */
+   {const pE=({metro:z==='com'?.14:.26,city:z==='com'?.16:.3,ind:.16}[type]||0)*(1+Math.max(0,d-.4)*1.5);if(R()<pE){const q=R();if(q<.2)pave(i);else if(q<.82)tree(i);else prop[i]=[1,2,3][(R()*3)|0];continue;}}
+   kind[i]=z==='pub'&&fi>0?K.RES:kd;lvl[i]=z==='pub'&&fi>0?2:L;fi++;}
   /* metro: apartment complexes as 2×2 groups inside large residential blocks */
-  if(type==='metro'&&z!=='com'){for(const i of c){const x=i%N,y=(i/N)|0;if(nearR(i)||kind[i]||bigm[i])continue;const q=[i,i+1,i+N,i+N+1];if(q.every(k=>blk[k]===blk[i]&&!nearR(k)&&!kind[k]&&!bigm[k]&&LVL[k]===LVL[i])&&R()<.5){for(const k of q){kind[k]=K.COM;lmkA[k]=i;lvl[k]=2;}}}}
+  if(type==='metro'&&z!=='com'){for(const i of c){const x=i%N,y=(i/N)|0;if(nearR(i)||kind[i]||bigm[i])continue;const q=[i,i+1,i+N,i+N+1];if(q.every(k=>blk[k]===blk[i]&&!nearR(k)&&!kind[k]&&!bigm[k]&&LVL[k]===LVL[i])&&R()<.35){for(const k of q){kind[k]=K.COM;lmkA[k]=i;lvl[k]=2;}}}}
   /* the middle: paved path ring + lawn with a tree or a bench */
-  for(const i of c){if(kind[i]||pv[i]||bigm[i])continue;const x=i%N,y=(i/N)|0;let nb=0;for(const [dx,dy] of D4){const k=id(x+dx,y+dy);if(kind[k]&&kind[k]!==K.ROAD)nb++;}if(type==='forest'){if(R()<.35)tree(i);continue;}if(nb||z==='com'||z==='ind')pave(i);else if(R()<.3)tree(i);else if(R()<.12)prop[i]=[1,2,3][(R()*3)|0];}}
+  for(const i of c){if(kind[i]||pv[i]||bigm[i])continue;const x=i%N,y=(i/N)|0;let nb=0;for(const [dx,dy] of D4){const k=id(x+dx,y+dy);if(kind[k]&&kind[k]!==K.ROAD)nb++;}if(type==='forest'){if(R()<.35)tree(i);continue;}if((nb&&R()<.55)||z==='ind'||(z==='com'&&R()<.6))pave(i);else if(R()<.4)tree(i);else if(R()<.12)prop[i]=[1,2,3][(R()*3)|0];}}
  /* 7. terrace edges in town: a ramp (lawn) or stairs (paved) here and there so people can climb */
  const walk=i=>land(i)&&!water(i)&&!isR(i)&&(kind[i]===0||kind[i]===K.PARK)&&lmkA[i]<0&&!bigm[i];
  for(let y=2;y<N-2;y++)for(let x=2;x<N-2;x++){const b=id(x,y);if(!walk(b)||sl[b]||deco[b]||prop[b]||cdist(x,y)>RAD*1.2)continue;D4.forEach(([dx,dy],di)=>{if(sl[b])return;const a=id(x-dx,y-dy),c2=id(x+dx,y+dy);if(!walk(a)||!walk(c2))return;if(LVL[a]===LVL[b]-1&&LVL[c2]===LVL[b]){let near=false;for(let r=-3;r<=3&&!near;r++)for(let s=-3;s<=3;s++){const k=id(x+r,y+s);if(In(x+r,y+s)&&sl[k]){near=true;break;}}if(near||R()>.5)return;const dir=dx===1?2:dx===-1?4:dy===1?1:3;sl[b]=dir+(pv[b]?4:0);}});}

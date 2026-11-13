@@ -28,5 +28,7 @@ for _p in sorted(_g.glob(D+'/maps/map_*.json')):
     _l,_b,_r,_w,_h=_st(_p)
     if _l>=1800 and _b>=150:POOL['r'+_p.split('_')[-1][:-5]]=_packp(_p)
 if _g.glob(D+'/maps/map_*.json'):_j.dump(POOL,open(D+'/pool.json','w'))
-out=open(D+'/play_ui.html').read()+'<script type="application/json" id="map">'+open(D+'/map_%s.json'%(sys.argv[1] if len(sys.argv)>1 else '11')).read()+'</script>\n<script type="application/json" id="maps">'+_j.dumps(MAPS)+'</script>\n<script type="application/json" id="pool">'+_j.dumps(POOL)+'</script>\n<script type="application/json" id="ppl">'+open(D+'/ppl.json').read()+'</script>\n<script type="importmap">{"imports":{"three":"'+cdn+'build/three.module.js","three/addons/":"'+cdn+'examples/jsm/"}}</script>\n<script type="module">'+s+open(D+'/gen.js').read()+open(D+'/play_game.js').read()+'</script>\n'
+import hashlib as _hl
+BV=_hl.md5(open(D+'/block3d.html','rb').read()).hexdigest()[:10]
+out=open(D+'/play_ui.html').read()+'<script type="application/json" id="map">'+open(D+'/map_%s.json'%(sys.argv[1] if len(sys.argv)>1 else '11')).read()+'</script>\n<script type="application/json" id="maps">'+_j.dumps(MAPS)+'</script>\n<script type="application/json" id="pool">'+_j.dumps(POOL)+'</script>\n<script type="application/json" id="ppl">'+open(D+'/ppl.json').read()+'</script>\n<script type="importmap">{"imports":{"three":"'+cdn+'build/three.module.js","three/addons/":"'+cdn+'examples/jsm/"}}</script>\n<script type="module">window.__BV="'+BV+'";'+s+open(D+'/gen.js').read()+open(D+'/play_game.js').read()+'</script>\n'
 open(D+'/play.html','w').write(out);print(len(out))
