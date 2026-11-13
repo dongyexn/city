@@ -137,7 +137,7 @@ const applyEnv=()=>{if(!W||!LT||!LT.sun)return;const t=ENV.t,e=Math.sin((t-6)/12
  const nt2=nt;for(const m of litMats)m.emissiveIntensity=(nt2*1.6+gold*.3)*m.userData.lit;if(window.__LAMPM){window.__LAMPM.emissiveIntensity=.3+nt2*4.5;window.__LAMPM.emissive.set(nt2>.3?'#ffcf86':'#ffffff');}if(glow)glow.material.opacity=nt2;
  for(const c of clouds.children){c.material.color.copy(lerpC(lerpC(wx==='rain'?C3('#d2d8e0'):C3('#ffffff'),C3('#ffd6c0'),gold),C3('#8d9ac4'),nt));c.material.emissiveIntensity=.35*(1-nt*.6);}
  /* sun and moon ride an arc across the sky behind the island */
- {const arc=f=>[6+88*f,24-17*Math.sin(Math.PI*Math.min(1,Math.max(0,f)))],vis=f=>ss(0,.05,f)*(1-ss(.95,1,f)),wv=wx==='rain'?.15:wx==='snow'?.35:1,fs=(t-5.5)/13,fm=((t-18.5+24)%24)/11;
+ {const arc=f=>[6+88*f,16-11*Math.sin(Math.PI*Math.min(1,Math.max(0,f)))],vis=f=>ss(0,.05,f)*(1-ss(.95,1,f)),wv=wx==='rain'?.15:wx==='snow'?.35:1,fs=(t-5.5)/13,fm=((t-18.5+24)%24)/11;
   SKYB={sun:[...arc(fs),vis(fs)*wv,`#${lerpC(C3('#fffbef'),C3('#ffc77e'),gold).getHexString()}`],moon:[...arc(fm),vis(fm)*wv*ss(.1,.6,nt)]};
   const su=$('sun'),mo=$('moon');if(su){su.style.left=SKYB.sun[0]+'%';su.style.top=SKYB.sun[1]+'%';su.style.opacity=SKYB.sun[2];su.style.setProperty('--c',SKYB.sun[3]);}if(mo){mo.style.left=SKYB.moon[0]+'%';mo.style.top=SKYB.moon[1]+'%';mo.style.opacity=SKYB.moon[2];}
   /* 달의 모양: 계절마다 첫날 밤은 보름달(1계절=2일). 일 년에 한 번 — 여름 둘째 날 정오 무렵 일식, 가을 보름밤 자정 무렵 월식 */
