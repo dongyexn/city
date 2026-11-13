@@ -491,8 +491,13 @@ const rays=(g,n,make,r0,m)=>{for(let k=0;k<n;k++){const a=k/n*Math.PI*2,e=puff(m
 const dent=(g,x,y,Rr,m,PR,PH,rc=MOONC)=>{const z=surfZ(x,y,PR,PH);const b=new THREE.Mesh(new THREE.CircleGeometry(Rr,32),m);b.position.set(x,y,z+.004);g.add(b);const t=new THREE.Mesh(new THREE.TorusGeometry(Rr,Rr*.2,16,40),mat(rc,.55));t.scale.z=.45;t.position.set(x,y,z);g.add(t);};
 
  const shot=obj=>{const sc=new THREE.Scene();sc.environment=env;sc.add(new THREE.HemisphereLight('#ffffff','#c4b28e',1.15));const d=new THREE.DirectionalLight('#ffffff',1.5);d.position.set(-3,4,6);sc.add(d);obj.rotation.x=-.18;obj.rotation.y=.12;sc.add(obj);r.render(sc,cam);return r.domElement.toDataURL();};
- const sun=new THREE.Group();sun.add(pillow(.95,.22,mat(SUNY)));const sray=new THREE.Group();rays(sray,8,()=>capsule(.24,.105),1.3,mat(SUNR));
+ /* 해: 구름과 같은 재료(무광 + 하늘빛 자체발광)·같은 등각 시점의 둥근 핵 + 바깥을 향한 둥근 막대 햇살 8 */
+ const ic=new THREE.OrthographicCamera(-3.6,3.6,3.6,-3.6,.1,500);ic.position.set(120,125,120);ic.lookAt(0,0,0);ic.updateMatrixWorld();
+ const cm=(c,e)=>new THREE.MeshStandardMaterial({color:c,roughness:1,emissive:e,emissiveIntensity:.42});
+ const sun=new THREE.Group();sun.add(new THREE.Mesh(new RoundedBoxGeometry(2,2,2,4,.9),cm('#ffd24a','#ffb52e')));
+ const sray=new THREE.Group();{const rt=new THREE.Vector3(),up=new THREE.Vector3();ic.matrixWorld.extractBasis(rt,up,new THREE.Vector3());const m=cm('#ffc13a','#ffa21e');for(let k=0;k<8;k++){const a=k/8*Math.PI*2,dir=rt.clone().multiplyScalar(Math.cos(a)).add(up.clone().multiplyScalar(Math.sin(a))).normalize(),e=new THREE.Mesh(new RoundedBoxGeometry(.5,.8,.5,4,.22),m);e.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),dir);e.position.copy(dir.multiplyScalar(2.6));sray.add(e);}}
+ const ishot=obj=>{const sc=new THREE.Scene();sc.add(new THREE.HemisphereLight('#d8ecff','#7d8a6a',1.1));const d=new THREE.DirectionalLight('#fff4e4',2.2);d.position.set(-40,60,30);sc.add(d);sc.add(obj);r.render(sc,ic);return r.domElement.toDataURL();};
  const moon=new THREE.Group();moon.add(pcres(.82,.42,Math.PI*1.25,mat(MOONC)));
  const fm=new THREE.Group();fm.add(pillow(.9,.2,mat(MOONC)));{const dm=mat(DENT,.7);dent(fm,-.3,-.18,.19,dm,.9,.2);dent(fm,.32,.28,.14,dm,.9,.2);dent(fm,.28,-.4,.1,dm,.9,.2);}
- const su=shot(sun),sr=shot(sray),mo=shot(moon),fu=shot(fm);r.dispose();r.forceContextLoss();window.__SKYI={cres:mo,full:fu};
+ const su=ishot(sun),sr=ishot(sray),mo=shot(moon),fu=shot(fm);r.dispose();r.forceContextLoss();window.__SKYI={cres:mo,full:fu};
  {const S=$('sun');S.style.setProperty('--img','url('+su+')');let y=S.querySelector('.ry');if(!y){y=document.createElement('i');y.className='ry';S.prepend(y);}y.style.backgroundImage='url('+sr+')';}try{applyEnv();}catch(e){}}catch(e){console.warn('sky bake',e);}})();

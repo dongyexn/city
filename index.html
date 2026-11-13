@@ -30,11 +30,11 @@ body{margin:0;background:linear-gradient(var(--sky1),var(--sky2) 55%,var(--sky3)
 #sun,#moon{position:fixed;left:-300px;top:0;border-radius:50%;pointer-events:none;opacity:0;transform:translate(-50%,-50%)}
 #sun{width:150px;height:150px;background:radial-gradient(circle closest-side,rgba(255,236,190,calc(.36*var(--gl,1))) 20%,rgba(255,228,170,calc(.14*var(--gl,1))) 46%,rgba(255,222,165,0) 100%)}
 #moon::after{display:none}
-#sun::before{display:none;content:"";position:absolute;left:50%;top:50%;width:31px;height:31px;margin:-17px 0 0 -16px;border-radius:50%;background:radial-gradient(circle at 40% 36%,#4a5372,#2a3048);box-shadow:0 0 6px 2px rgba(255,236,190,.55);transform:translateX(var(--ex,0));z-index:2}
+#sun::before{display:none;content:"";position:absolute;left:50%;top:50%;width:30px;height:30px;margin:-15px 0 0 -15px;border-radius:50%;background:radial-gradient(circle at 40% 36%,#4a5372,#2a3048);box-shadow:0 0 6px 2px rgba(255,236,190,.55);transform:translateX(var(--ex,0));z-index:2}
 #sun.ecl::before{display:block}
 #sun::after,#moon::before{content:"";position:absolute;left:50%;top:50%;background:var(--img) center/contain no-repeat}
-#sun::after{width:66px;height:66px;margin:-33px 0 0 -33px;z-index:1}
-#sun .ry{position:absolute;left:50%;top:50%;width:66px;height:66px;margin:-33px 0 0 -33px;background:center/contain no-repeat;opacity:var(--ra,1)}
+#sun::after{width:84px;height:84px;margin:-42px 0 0 -42px;z-index:1}
+#sun .ry{position:absolute;left:50%;top:50%;width:84px;height:84px;margin:-42px 0 0 -42px;background:center/contain no-repeat;opacity:var(--ra,1)}
 #moon::before{width:80px;height:80px;margin:-40px 0 0 -40px}
 /* 판 */
 .glass{background:var(--fill);-webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--edge),var(--hi),var(--drop)}
@@ -2335,10 +2335,15 @@ const rays=(g,n,make,r0,m)=>{for(let k=0;k<n;k++){const a=k/n*Math.PI*2,e=puff(m
 const dent=(g,x,y,Rr,m,PR,PH,rc=MOONC)=>{const z=surfZ(x,y,PR,PH);const b=new THREE.Mesh(new THREE.CircleGeometry(Rr,32),m);b.position.set(x,y,z+.004);g.add(b);const t=new THREE.Mesh(new THREE.TorusGeometry(Rr,Rr*.2,16,40),mat(rc,.55));t.scale.z=.45;t.position.set(x,y,z);g.add(t);};
 
  const shot=obj=>{const sc=new THREE.Scene();sc.environment=env;sc.add(new THREE.HemisphereLight('#ffffff','#c4b28e',1.15));const d=new THREE.DirectionalLight('#ffffff',1.5);d.position.set(-3,4,6);sc.add(d);obj.rotation.x=-.18;obj.rotation.y=.12;sc.add(obj);r.render(sc,cam);return r.domElement.toDataURL();};
- const sun=new THREE.Group();sun.add(pillow(.95,.22,mat(SUNY)));const sray=new THREE.Group();rays(sray,8,()=>capsule(.24,.105),1.3,mat(SUNR));
+ /* 해: 구름과 같은 재료(무광 + 하늘빛 자체발광)·같은 등각 시점의 둥근 핵 + 바깥을 향한 둥근 막대 햇살 8 */
+ const ic=new THREE.OrthographicCamera(-3.6,3.6,3.6,-3.6,.1,500);ic.position.set(120,125,120);ic.lookAt(0,0,0);ic.updateMatrixWorld();
+ const cm=(c,e)=>new THREE.MeshStandardMaterial({color:c,roughness:1,emissive:e,emissiveIntensity:.42});
+ const sun=new THREE.Group();sun.add(new THREE.Mesh(new RoundedBoxGeometry(2,2,2,4,.9),cm('#ffd24a','#ffb52e')));
+ const sray=new THREE.Group();{const rt=new THREE.Vector3(),up=new THREE.Vector3();ic.matrixWorld.extractBasis(rt,up,new THREE.Vector3());const m=cm('#ffc13a','#ffa21e');for(let k=0;k<8;k++){const a=k/8*Math.PI*2,dir=rt.clone().multiplyScalar(Math.cos(a)).add(up.clone().multiplyScalar(Math.sin(a))).normalize(),e=new THREE.Mesh(new RoundedBoxGeometry(.5,.8,.5,4,.22),m);e.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),dir);e.position.copy(dir.multiplyScalar(2.6));sray.add(e);}}
+ const ishot=obj=>{const sc=new THREE.Scene();sc.add(new THREE.HemisphereLight('#d8ecff','#7d8a6a',1.1));const d=new THREE.DirectionalLight('#fff4e4',2.2);d.position.set(-40,60,30);sc.add(d);sc.add(obj);r.render(sc,ic);return r.domElement.toDataURL();};
  const moon=new THREE.Group();moon.add(pcres(.82,.42,Math.PI*1.25,mat(MOONC)));
  const fm=new THREE.Group();fm.add(pillow(.9,.2,mat(MOONC)));{const dm=mat(DENT,.7);dent(fm,-.3,-.18,.19,dm,.9,.2);dent(fm,.32,.28,.14,dm,.9,.2);dent(fm,.28,-.4,.1,dm,.9,.2);}
- const su=shot(sun),sr=shot(sray),mo=shot(moon),fu=shot(fm);r.dispose();r.forceContextLoss();window.__SKYI={cres:mo,full:fu};
+ const su=ishot(sun),sr=ishot(sray),mo=shot(moon),fu=shot(fm);r.dispose();r.forceContextLoss();window.__SKYI={cres:mo,full:fu};
  {const S=$('sun');S.style.setProperty('--img','url('+su+')');let y=S.querySelector('.ry');if(!y){y=document.createElement('i');y.className='ry';S.prepend(y);}y.style.backgroundImage='url('+sr+')';}try{applyEnv();}catch(e){}}catch(e){console.warn('sky bake',e);}})();
 </script>
 <script>if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));</script>

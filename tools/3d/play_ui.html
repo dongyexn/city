@@ -21,11 +21,11 @@ body{margin:0;background:linear-gradient(var(--sky1),var(--sky2) 55%,var(--sky3)
 #sun,#moon{position:fixed;left:-300px;top:0;border-radius:50%;pointer-events:none;opacity:0;transform:translate(-50%,-50%)}
 #sun{width:150px;height:150px;background:radial-gradient(circle closest-side,rgba(255,236,190,calc(.36*var(--gl,1))) 20%,rgba(255,228,170,calc(.14*var(--gl,1))) 46%,rgba(255,222,165,0) 100%)}
 #moon::after{display:none}
-#sun::before{display:none;content:"";position:absolute;left:50%;top:50%;width:31px;height:31px;margin:-17px 0 0 -16px;border-radius:50%;background:radial-gradient(circle at 40% 36%,#4a5372,#2a3048);box-shadow:0 0 6px 2px rgba(255,236,190,.55);transform:translateX(var(--ex,0));z-index:2}
+#sun::before{display:none;content:"";position:absolute;left:50%;top:50%;width:30px;height:30px;margin:-15px 0 0 -15px;border-radius:50%;background:radial-gradient(circle at 40% 36%,#4a5372,#2a3048);box-shadow:0 0 6px 2px rgba(255,236,190,.55);transform:translateX(var(--ex,0));z-index:2}
 #sun.ecl::before{display:block}
 #sun::after,#moon::before{content:"";position:absolute;left:50%;top:50%;background:var(--img) center/contain no-repeat}
-#sun::after{width:66px;height:66px;margin:-33px 0 0 -33px;z-index:1}
-#sun .ry{position:absolute;left:50%;top:50%;width:66px;height:66px;margin:-33px 0 0 -33px;background:center/contain no-repeat;opacity:var(--ra,1)}
+#sun::after{width:84px;height:84px;margin:-42px 0 0 -42px;z-index:1}
+#sun .ry{position:absolute;left:50%;top:50%;width:84px;height:84px;margin:-42px 0 0 -42px;background:center/contain no-repeat;opacity:var(--ra,1)}
 #moon::before{width:80px;height:80px;margin:-40px 0 0 -40px}
 /* 판 */
 .glass{background:var(--fill);-webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--edge),var(--hi),var(--drop)}
