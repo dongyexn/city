@@ -67,8 +67,27 @@ const genIsland=(type,shape,num,NS=128)=>{
  const dev=(x,y)=>{const i=id(x,y);if(!land(i)||cd[i]<2)return false;return cdist(x,y)/RAD+(fbm(x/14+40,y/14)-.5)*.6<1;};
  /* 4. river (not on the small archipelago pieces) */
  const terr=new Uint8Array(NN),kind=new Uint8Array(NN),lvl=new Uint8Array(NN),deco=new Uint8Array(NN),pv=new Uint8Array(NN),sl=new Uint8Array(NN),prop=new Uint8Array(NN),lmkA=new Int32Array(NN).fill(-1);
- if(shape!=='archi'&&R()<(type==='metro'?.9:.75)){let s=-1,bs=-1;for(let k=0;k<400;k++){const i=(R()*NN)|0;if(land(i)&&cd[i]>bs&&cd[i]>8){bs=cd[i];s=i;}}
-  if(s>=0){const seen=new Uint8Array(NN);let i=s,L=LVL[s],steps=0,dir=D4[(R()*4)|0];while(i>=0&&steps++<300){terr[i]=TWA;seen[i]=1;LVL[i]=L=Math.min(L,LVL[i]);const x=i%N,y=(i/N)|0;let nx=-1,best=1e9;for(const d of D4){const xx=x+d[0],yy=y+d[1];if(!In(xx,yy))continue;const k=id(xx,yy);if(seen[k])continue;if(ocean[k]){nx=-2;break;}const sc=LVL[k]*3+cd[k]*.25+(d===dir?-1.2:0)+R()*1.4;if(sc<best){best=sc;nx=k;dir=d;}}if(nx===-2||nx<0)break;i=nx;}}}
+ /* 물: 호수(산속 분지) → 그 출구에서 시작해 바다로 굽이쳐 흐르는 강(하류로 갈수록 넓어짐) + 강으로 합류하는 실개천 + 작은 연못 */
+ const carve=(i,L)=>{if(ocean[i])return;terr[i]=TWA;LVL[i]=Math.min(LVL[i],L);};
+ const blob=(x0,y0,r,amp=.35,seed=0)=>{const T=[];let L=9;for(let y=Math.floor(y0-r-2);y<=y0+r+2;y++)for(let x=Math.floor(x0-r-2);x<=x0+r+2;x++){if(!In(x,y))continue;const i=id(x,y);if(ocean[i]||cd[i]<3)continue;const a=Math.atan2(y-y0,x-x0),rr=r*(1+amp*(fbm(Math.cos(a)*1.3+seed,Math.sin(a)*1.3+seed*.7,3)-.5)*2);if(Math.hypot(x-x0,y-y0)<rr){T.push(i);L=Math.min(L,LVL[i]);}}for(const i of T)carve(i,L);return T;};
+ const downA=(x,y)=>{let best=0,bv=1e9;for(let k=0;k<16;k++){const a=k/16*Math.PI*2,xx=Math.round(x+Math.cos(a)*4),yy=Math.round(y+Math.sin(a)*4);if(!In(xx,yy))continue;const i=id(xx,yy),v=ocean[i]?-99:cd[i]+LVL[i]*2.5;if(v<bv){bv=v;best=a;}}return best;};
+ /* 강: 목표 지점(반대편 바다)을 향하되 굽이치며 흐른다. 하류로 갈수록 넓어지고, 폭은 원형 단면으로 깎는다 */
+ const flow=(sx,sy,tx,ty,w0,w1,join,steps=900)=>{let x=sx,y=sy,a=Math.atan2(ty-y,tx-x),L=LVL[id(Math.round(sx),Math.round(sy))]||1,n=0;const seed=R()*50;
+  for(let st=0;st<steps;st++){const at=Math.atan2(ty-y,tx-x);let d=at-a;d=Math.atan2(Math.sin(d),Math.cos(d));a+=d*.06+(fbm(st*.022+seed,seed,2)-.5)*.34;x+=Math.cos(a)*.5;y+=Math.sin(a)*.5;const cxr=Math.round(x),cyr=Math.round(y);if(!In(cxr,cyr))break;const ci=id(cxr,cyr);if(ocean[ci])break;
+   if(join&&st>8&&terr[ci]===TWA)break;L=Math.min(L,LVL[ci]);const w=(w0+(w1-w0)*Math.min(1,st/160))*(1+.22*(fbm(st*.04,seed+9,2)-.5))*Sc,r=w/2;
+   for(let yy=Math.floor(y-r-1);yy<=y+r+1;yy++)for(let xx=Math.floor(x-r-1);xx<=x+r+1;xx++){if(!In(xx,yy))continue;if(Math.hypot(xx+.5-x,yy+.5-y)<=Math.max(.6,r))carve(id(xx,yy),L);}n++;}return [n,x,y];};
+ const pickIn=(minCd,tries=500)=>{let s=-1,bs=-1;for(let k=0;k<tries;k++){const i=(R()*NN)|0;if(land(i)&&cd[i]>minCd&&LVL[i]>=bs){bs=LVL[i];s=i;}}return s;};
+ if(!MULTI.has(shape)){
+  let mcd=0;for(let i=0;i<NN;i++)if(cd[i]<999&&cd[i]>mcd)mcd=cd[i];
+  /* 수원: 섬 안쪽(바다에서 먼 곳)의 한쪽, 하구: 그 반대편 바다 */
+  const th=R()*Math.PI*2,ux=Math.cos(th),uy=Math.sin(th);let s0=-1;for(let f=.55;f>=0&&s0<0;f-=.1){const px=Math.round(cx+ux*mcd*f),py=Math.round(cy+uy*mcd*f);if(In(px,py)&&land(id(px,py))&&cd[id(px,py)]>4*Sc)s0=id(px,py);}
+  const rv={forest:.85,farm:.95,city:.85,ind:.6,metro:.9}[type]||.8;
+  if(s0>=0&&R()<rv){let sx=s0%N,sy=(s0/N)|0;const lk={forest:.8,farm:.65,city:.45,ind:.25,metro:.3}[type]||.4;
+   if(R()<lk){const r=(5+R()*4)*Sc;blob(sx,sy,r,.38,R()*30);sx-=ux*r*.7;sy-=uy*r*.7;}
+   const tx=cx-ux*N,ty=cy-uy*N,[n,ex,ey]=flow(sx,sy,tx,ty,2.2,type==="metro"?5.5:4.6,false);
+   /* 지류: 옆 고지대에서 본류로 */const nt=type==='forest'||type==='farm'?2:R()<.6?1:0;
+   for(let k=0;k<nt;k++){const t=.3+R()*.4,mx=sx+(ex-sx)*t,my=sy+(ey-sy)*t,sd=(k%2?1:-1),px=Math.round(mx-uy*sd*mcd*.6),py=Math.round(my+ux*sd*mcd*.6);if(In(px,py)&&land(id(px,py))&&terr[id(px,py)]!==TWA)flow(px,py,mx,my,1.3,1.8,true,400);}}
+  /* 작은 연못·둠벙 */const np={forest:4,farm:4,city:2,ind:1,metro:1}[type]||1;for(let k=0;k<np;k++){const s=pickIn(6*Sc,200);if(s>=0)blob(s%N,(s/N)|0,(2.6+R()*2.2)*Sc,.5,R()*30);}}
  /* river banks keep within one level of the water so they read as banks, not canyons */
  for(let i=0;i<NN;i++)if(terr[i]===TWA){const x=i%N,y=(i/N)|0;for(const [dx,dy] of D4){const k=id(x+dx,y+dy);if(land(k)&&terr[k]!==TWA&&LVL[k]>LVL[i]+1)LVL[k]=LVL[i]+1;}}relax();
  /* 5. roads */
@@ -93,7 +112,7 @@ const genIsland=(type,shape,num,NS=128)=>{
  /* 물(강·둠벙)까지 거리 */
  const WD=new Int16Array(NN),wDist=()=>{WD.fill(999);const q=[];for(let i=0;i<NN;i++)if(water(i)){WD[i]=0;q.push(i);}for(let h=0;h<q.length;h++){const i=q[h],x=i%N,y=(i/N)|0;for(const [dx,dy] of D4){if(!In(x+dx,y+dy))continue;const k=id(x+dx,y+dy);if(WD[k]>WD[i]+1){WD[k]=WD[i]+1;q.push(k);}}}};wDist();
  /* 소품 번호(PN 순서): 짚뭉치 28, 경운기 29, 원두막 30 — 하위 4비트 + 방향 + 5번째 비트 */
- const pEnc=(n,r)=>(n&15)|((1+((r*4)|0))<<4)|((n>>4)<<7),hayP=r=>pEnc(28,r),hutP=r=>pEnc(30,r);
+ const pEnc=(n,r)=>(n&15)|((1+((r*4)|0))<<4)|((n>>4)<<7),hayP=r=>pEnc(28,r),hutP=r=>pEnc(30,r),stopP=r=>pEnc(31,r);
  /* 큰 건물: 블록 앞줄에 규모대로(2×2 타워, 3×2 마트 …) 길을 바라보게 놓고 둘레 한 칸은 비워 보행로로 남긴다 */
  const GB={res:'terraceApt 2 2|mixedTower 2 2|hanok 1 1|peanut 1 1|cornerShop 1 1|container 1 1|country 1 1|cityHome 1 1|penthouse 1 1',
   mres:'terraceApt 2 2|mixedTower 2 2|cityHome 1 1|penthouse 1 1|cornerShop 1 1',
@@ -103,7 +122,7 @@ const genIsland=(type,shape,num,NS=128)=>{
   pub:'church 1 1|chapel 1 1|kinder 1 1|policeBox 1 1|fireStation 1 1|observatory 1 1|lectureHall 2 1|natatorium 2 1|temple 2 2',
   fac:'tennis 2 1|basketball 2 1|miniGolf 2 2|festival 2 2|iceRink 2 2|nightMarket 2 2|bigWheel 2 2|viewTower 2 2|lakePark 3 3|botanic 3 2|market 3 2|zoo 3 3|aquarium 3 3|arena 3 3|waterpark 3 3|driveIn 3 3|golfRange 3 2',
   tow:'tw2 2 2|tw3 2 2|tw5 2 2|tw8 2 2|tw17 2 2|twinTower 2 2|roundTower 2 2|mixedTower 2 2',
-  farm:'barn 2 1|farmhouse 1 1|riceMill 1 1|flourMill 1 1|greenhouseFarm 3 2|silo 1 1|wind 1 1|dairy 2 1|equestrian 3 2|waterTower 1 1',vil:'hanok 1 1|cabin 1 1|country 1 1|peanut 1 1',wild:'campsite 3 2|observatory 1 1|lighthouse 1 1'};
+  farm:'barn 2 1|farmhouse 1 1|riceMill 1 1|flourMill 1 1|greenhouseFarm 4 3|silo 1 1|wind 1 1|dairy 2 1|equestrian 4 3|waterTower 1 1',vil:'hanok 1 1|cabin 1 1|country 1 1|peanut 1 1|farmhouse 1 1',wild:'campsite 3 2|observatory 1 1|lighthouse 1 1'};
  const BIGS=[],bigm=new Uint8Array(NN),used={};
  const poolOf=(z,L)=>{const t=type,q=R();if(t==='metro')return z==='com'?(L>=4?'tow':q<.65?'off':'com'):z==='res'?'mres':z==='park'?'fac':null;if(t==='city')return z==='com'?(q<.3?'off':'com'):z==='res'?'res':z==='pub'?'pub':z==='park'?'fac':null;
   if(t==='ind')return z==='ind'?'ind':z==='com'?'com':z==='res'?'res':null;if(t==='farm')return z==='field'?'farm':z==='res'?(R()<.5?'farm':'vil'):z==='com'?'vil':null;return z==='res'?'vil':z==='wild'?'wild':null;};
@@ -132,7 +151,7 @@ const genIsland=(type,shape,num,NS=128)=>{
   if(z==='field'){
    /* 농경지: 물에서 가까우면 논, 멀면 밭·풀밭(짚뭉치)·과수. 물이 멀고 블록이 크면 둠벙(작은 저수지)을 판다 */
    let wmin=1e9;for(const i of c)wmin=Math.min(wmin,WD[i]);
-   if(wmin>9&&c.length>=20&&R()<.7){for(let t=0;t<40;t++){const i=c[(R()*c.length)|0],x=i%N,y=(i/N)|0,s=R()<.5?2:3,q=[];let ok=true;for(let yy=y;yy<y+s&&ok;yy++)for(let xx=x;xx<x+s;xx++){const j=id(xx,yy);if(!In(xx,yy)||blk[j]!==blk[i]||bigm[j]||nearR(j)||LVL[j]!==LVL[i]){ok=false;break;}q.push(j);}if(!ok)continue;for(const j of q){terr[j]=TWA;}wDist();wmin=0;break;}}
+   if(wmin>9&&c.length>=20&&R()<.7){for(let t=0;t<40;t++){const i=c[(R()*c.length)|0],x=i%N,y=(i/N)|0,r=1.3+R()*1.1,q=[];let ok=true;for(let yy=Math.floor(y-r-1);yy<=y+r+1&&ok;yy++)for(let xx=Math.floor(x-r-1);xx<=x+r+1;xx++){const a=Math.atan2(yy-y,xx-x),rr=r*(1+.35*(fbm(Math.cos(a)+i,Math.sin(a),2)-.5)*2);if(Math.hypot(xx-x,yy-y)>=rr)continue;const j=id(xx,yy);if(!In(xx,yy)||blk[j]!==blk[i]||bigm[j]||nearR(j)||LVL[j]!==LVL[i]){ok=false;break;}q.push(j);}if(!ok||q.length<3)continue;for(const j of q){terr[j]=TWA;}wDist();wmin=0;break;}}
    const q0=R(),kindF=wmin<=10&&q0<.36?'paddy':q0<.74?'field':q0<.9?'pasture':'orchard';
    for(const i of c){if(bigm[i]||water(i))continue;if(nearR(i)&&R()<.06){kind[i]=K.RES;lvl[i]=1;continue;}
     const k=kindF==='paddy'&&WD[i]>12?'field':kindF;
@@ -150,6 +169,10 @@ const genIsland=(type,shape,num,NS=128)=>{
   if(type==='metro'&&z!=='com'){for(const i of c){const x=i%N,y=(i/N)|0;if(nearR(i)||kind[i]||bigm[i])continue;const q=[i,i+1,i+N,i+N+1];if(q.every(k=>blk[k]===blk[i]&&!nearR(k)&&!kind[k]&&!bigm[k]&&LVL[k]===LVL[i])&&R()<.35){for(const k of q){kind[k]=K.COM;lmkA[k]=i;lvl[k]=2;}}}}
   /* the middle: paved path ring + lawn with a tree or a bench */
   for(const i of c){if(kind[i]||pv[i]||bigm[i])continue;const x=i%N,y=(i/N)|0;let nb=0;for(const [dx,dy] of D4){const k=id(x+dx,y+dy);if(kind[k]&&kind[k]!==K.ROAD)nb++;}if(type==='forest'){if(R()<.35)tree(i);continue;}if((nb&&R()<.55)||z==='ind'||(z==='com'&&R()<.6))pave(i);else if(R()<.4)tree(i);else if(R()<.12)prop[i]=[1,2,3][(R()*3)|0];}}
+ /* 농촌: 마을 중심 가까이 버스터미널 1곳, 길가 곳곳에 버스정류장 */
+ if(type==='farm'){const cs=[];for(const [bi,b] of BL.entries()){if(!b.length)continue;let mx=0,my=0;for(const i of b){mx+=i%N;my+=(i/N)|0;}mx/=b.length;my/=b.length;cs.push([cdist(mx,my),b,bi]);}cs.sort((a,b)=>a[0]-b[0]);
+  const sv=GB.farm;GB.farm='busTerminal 2 1';for(const [,b,bi] of cs.slice(0,8))if(placeBig(b,'farm',bi))break;GB.farm=sv;
+  let last=[];for(let i=0;i<NN;i++){if(!land(i)||water(i)||kind[i]||bigm[i]||prop[i]||terr[i]===10||terr[i]===12||!nearR(i))continue;const x=i%N,y=(i/N)|0;if(last.some(([a,b])=>Math.abs(a-x)+Math.abs(b-y)<26))continue;if(R()<.6)continue;let dr=0;D4.forEach(([dx,dy],k)=>{const j=id(x+dx,y+dy);if(isR(j))dr=k;});prop[i]=stopP([.75,.25,0,.5][dr]);last.push([x,y]);}}
  /* 7. terrace edges in town: a ramp (lawn) or stairs (paved) here and there so people can climb */
  const walk=i=>land(i)&&!water(i)&&!isR(i)&&(kind[i]===0||kind[i]===K.PARK)&&lmkA[i]<0&&!bigm[i];
  for(let y=2;y<N-2;y++)for(let x=2;x<N-2;x++){const b=id(x,y);if(!walk(b)||sl[b]||deco[b]||prop[b]||cdist(x,y)>RAD*1.2)continue;D4.forEach(([dx,dy],di)=>{if(sl[b])return;const a=id(x-dx,y-dy),c2=id(x+dx,y+dy);if(!walk(a)||!walk(c2))return;if(LVL[a]===LVL[b]-1&&LVL[c2]===LVL[b]){let near=false;for(let r=-3;r<=3&&!near;r++)for(let s=-3;s<=3;s++){const k=id(x+r,y+s);if(In(x+r,y+s)&&sl[k]){near=true;break;}}if(near||R()>.5)return;const dir=dx===1?2:dx===-1?4:dy===1?1:3;sl[b]=dir+(pv[b]?4:0);}});}
