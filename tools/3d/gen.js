@@ -65,6 +65,10 @@ const genIsland=(type,shape,num,NS=128)=>{
  const pave=i=>{pv[i]=1+((fbm((i%N)/5,((i/N)|0)/5)*3)|0)%3;};
  const tree=i=>{deco[i]=1+((R()*20)|0);};
  let nPlaza=0;
+ /* 물(강·둠벙)까지 거리 */
+ const WD=new Int16Array(NN),wDist=()=>{WD.fill(999);const q=[];for(let i=0;i<NN;i++)if(water(i)){WD[i]=0;q.push(i);}for(let h=0;h<q.length;h++){const i=q[h],x=i%N,y=(i/N)|0;for(const [dx,dy] of D4){if(!In(x+dx,y+dy))continue;const k=id(x+dx,y+dy);if(WD[k]>WD[i]+1){WD[k]=WD[i]+1;q.push(k);}}}};wDist();
+ /* 소품 번호(PN 순서): 짚뭉치 28, 경운기 29, 원두막 30 — 하위 4비트 + 방향 + 5번째 비트 */
+ const pEnc=(n,r)=>(n&15)|((1+((r*4)|0))<<4)|((n>>4)<<7),hayP=r=>pEnc(28,r),hutP=r=>pEnc(30,r);
  /* 큰 건물: 블록 앞줄에 규모대로(2×2 타워, 3×2 마트 …) 길을 바라보게 놓고 둘레 한 칸은 비워 보행로로 남긴다 */
  const GB={res:'terraceApt 2 2|mixedTower 2 2|hanok 1 1|peanut 1 1|cornerShop 1 1|container 1 1|country 1 1|cityHome 1 1|penthouse 1 1',
   mres:'terraceApt 2 2|mixedTower 2 2|cityHome 1 1|penthouse 1 1|cornerShop 1 1',
@@ -74,10 +78,10 @@ const genIsland=(type,shape,num,NS=128)=>{
   pub:'church 1 1|chapel 1 1|kinder 1 1|policeBox 1 1|fireStation 1 1|observatory 1 1|lectureHall 2 1|natatorium 2 1|temple 2 2',
   fac:'tennis 2 1|basketball 2 1|miniGolf 2 2|festival 2 2|iceRink 2 2|nightMarket 2 2|bigWheel 2 2|viewTower 2 2|lakePark 3 3|botanic 3 2|market 3 2|zoo 3 3|aquarium 3 3|arena 3 3|waterpark 3 3|driveIn 3 3|golfRange 3 2',
   tow:'tw2 2 2|tw3 2 2|tw5 2 2|tw8 2 2|tw17 2 2|twinTower 2 2|roundTower 2 2|mixedTower 2 2',
-  farm:'greenhouseFarm 2 2|flourMill 1 1|dairy 2 1|equestrian 3 2|silo 1 1|wind 1 1|waterTower 1 1',vil:'hanok 1 1|cabin 1 1|country 1 1|peanut 1 1',wild:'campsite 3 2|observatory 1 1|lighthouse 1 1'};
+  farm:'barn 2 1|farmhouse 1 1|riceMill 1 1|flourMill 1 1|greenhouseFarm 2 2|silo 1 1|wind 1 1|dairy 2 1|equestrian 3 2|waterTower 1 1',vil:'hanok 1 1|cabin 1 1|country 1 1|peanut 1 1',wild:'campsite 3 2|observatory 1 1|lighthouse 1 1'};
  const BIGS=[],bigm=new Uint8Array(NN),used={};
  const poolOf=(z,L)=>{const t=type,q=R();if(t==='metro')return z==='com'?(L>=4?'tow':q<.65?'off':'com'):z==='res'?'mres':z==='park'?'fac':null;if(t==='city')return z==='com'?(q<.3?'off':'com'):z==='res'?'res':z==='pub'?'pub':z==='park'?'fac':null;
-  if(t==='ind')return z==='ind'?'ind':z==='com'?'com':z==='res'?'res':null;if(t==='farm')return z==='field'?'farm':z==='res'||z==='com'?'vil':null;return z==='res'?'vil':z==='wild'?'wild':null;};
+  if(t==='ind')return z==='ind'?'ind':z==='com'?'com':z==='res'?'res':null;if(t==='farm')return z==='field'?'farm':z==='res'?(R()<.5?'farm':'vil'):z==='com'?'vil':null;return z==='res'?'vil':z==='wild'?'wild':null;};
  const placeBig=(c,pk,b)=>{const L=GB[pk].split('|').map(e=>e.split(' ')).sort((a,b2)=>(used[a[0]]||0)-(used[b2[0]]||0)+(R()-.5)*1.5);
   for(const [f,ws,ds] of L.slice(0,4)){const w=+ws,d=+ds;for(let t=0;t<30;t++){const i=c[(R()*c.length)|0],x=i%N,y=(i/N)|0,Lv=LVL[i];
    for(const [dx,dy,dir] of [[0,1,'z+'],[0,-1,'z-'],[1,0,'x+'],[-1,0,'x-']]){const k=id(x+dx,y+dy);if(!In(x+dx,y+dy)||!isR(k)||LVL[k]!==Lv)continue;const W=dx?d:w,Dd=dx?w:d;
@@ -98,9 +102,18 @@ const genIsland=(type,shape,num,NS=128)=>{
   const w=x1-x0+1,h=y1-y0+1;
   if((type==='city'||type==='metro')&&w>=5&&h>=5&&c.length>=w*h-2&&R()<(nPlaza<3?.22:.06)){nPlaza++;const s=w>=7&&h>=7?6:4,ax=x0+((w-s)>>1),ay=y0+((h-s)>>1),a=id(ax,ay),L0=LVL[a];
    for(const i of c){pave(i);}for(let yy=ay;yy<ay+s;yy++)for(let xx=ax;xx<ax+s;xx++){const i=id(xx,yy);kind[i]=K.LMK;lmkA[i]=a;LVL[i]=L0;pv[i]=0;}continue;}
-  {const b=blk[c[0]],pk=poolOf(z,L);if(pk){const n=z==='ind'?(R()<.6?2:1):pk==='fac'?(R()<.55?1:0):pk==='farm'||pk==='wild'?(R()<.35?1:0):pk==='vil'?(R()<.3?1:0):pk==='tow'?2+(c.length>30?1:0):type==='metro'?(R()<.5?1:0)+(c.length>40&&R()<.25?1:0):(R()<.45?1:0);for(let k=0;k<n;k++)placeBig(c,pk,b);}}
+  {const b=blk[c[0]],pk=poolOf(z,L);if(pk){const n=z==='ind'?(R()<.6?2:1):pk==='fac'?(R()<.55?1:0):pk==='farm'?(R()<.75?1:0)+(c.length>36&&R()<.4?1:0):pk==='wild'?(R()<.35?1:0):pk==='vil'?(R()<.3?1:0):pk==='tow'?2+(c.length>30?1:0):type==='metro'?(R()<.5?1:0)+(c.length>40&&R()<.25?1:0):(R()<.45?1:0);for(let k=0;k<n;k++)placeBig(c,pk,b);}}
   if(z==='park'){for(const i of c){if(bigm[i]){pave(i);continue;}kind[i]=K.PARK;if(R()<.3)tree(i);}const m=c[(c.length/2)|0];if(!bigm[m])prop[m]=1;continue;}
-  if(z==='field'){for(const i of c){if(bigm[i])continue;if(nearR(i)&&R()<.06){kind[i]=K.RES;lvl[i]=1;}else terr[i]=10;}continue;}
+  if(z==='field'){
+   /* 농경지: 물에서 가까우면 논, 멀면 밭·풀밭(짚뭉치)·과수. 물이 멀고 블록이 크면 둠벙(작은 저수지)을 판다 */
+   let wmin=1e9;for(const i of c)wmin=Math.min(wmin,WD[i]);
+   if(wmin>9&&c.length>=20&&R()<.7){for(let t=0;t<40;t++){const i=c[(R()*c.length)|0],x=i%N,y=(i/N)|0,s=R()<.5?2:3,q=[];let ok=true;for(let yy=y;yy<y+s&&ok;yy++)for(let xx=x;xx<x+s;xx++){const j=id(xx,yy);if(!In(xx,yy)||blk[j]!==blk[i]||bigm[j]||nearR(j)||LVL[j]!==LVL[i]){ok=false;break;}q.push(j);}if(!ok)continue;for(const j of q){terr[j]=TWA;}wDist();wmin=0;break;}}
+   const q0=R(),kindF=wmin<=10&&q0<.55?'paddy':q0<.78?'field':q0<.92?'pasture':'orchard';
+   for(const i of c){if(bigm[i]||water(i))continue;if(nearR(i)&&R()<.06){kind[i]=K.RES;lvl[i]=1;continue;}
+    const k=kindF==='paddy'&&WD[i]>12?'field':kindF;
+    if(k==='paddy')terr[i]=12;else if(k==='field')terr[i]=10;else if(k==='pasture'){if(R()<.07)prop[i]=hayP(R());else if(R()<.04)tree(i);}else{if((i%N+((i/N)|0))%2===0)tree(i);}}
+   {const ed=c.filter(i=>!bigm[i]&&!water(i)&&!kind[i]&&nearR(i)&&!prop[i]);if(ed.length&&R()<.5){const i=ed[(R()*ed.length)|0];terr[i]=0;prop[i]=hutP(R());}}
+   continue;}
   if(z==='wild'){for(const i of c)if(!bigm[i]&&R()<.55)tree(i);continue;}
   /* frontage: a building on most road-facing tiles, every few a walkway through to the middle */
   const kd=z==='com'?K.COM:z==='ind'?K.IND:z==='pub'?[K.POLICE,K.FIRE,K.POWER][(R()*3)|0]:K.RES;
@@ -117,6 +130,6 @@ const genIsland=(type,shape,num,NS=128)=>{
  for(let y=2;y<N-2;y++)for(let x=2;x<N-2;x++){const b=id(x,y);if(!walk(b)||sl[b]||deco[b]||prop[b]||cdist(x,y)>RAD*1.2)continue;D4.forEach(([dx,dy],di)=>{if(sl[b])return;const a=id(x-dx,y-dy),c2=id(x+dx,y+dy);if(!walk(a)||!walk(c2))return;if(LVL[a]===LVL[b]-1&&LVL[c2]===LVL[b]){let near=false;for(let r=-3;r<=3&&!near;r++)for(let s=-3;s<=3;s++){const k=id(x+r,y+s);if(In(x+r,y+s)&&sl[k]){near=true;break;}}if(near||R()>.5)return;const dir=dx===1?2:dx===-1?4:dy===1?1:3;sl[b]=dir+(pv[b]?4:0);}});}
  /* 8. nature: forests, beaches, rocky tops */
  const fth={forest:.42,farm:.56,ind:.56,city:.52,metro:.6}[type];
- for(let i=0;i<NN;i++){if(!land(i)||water(i)||kind[i]||pv[i]||deco[i]||prop[i]||terr[i]===10||bigm[i])continue;const x=i%N,y=(i/N)|0;const f=fbm(x/11+90,y/11);if(blk[i]<0||!dev(x,y)){if(f>fth)tree(i);else if(cd[i]===1&&fbm(x/9,y/9+50)>.55)terr[i]=6;else if(LVL[i]>=4&&fbm(x/7+20,y/7)>.7)terr[i]=9;else if(f<.3&&R()<.05)terr[i]=11;}}
+ for(let i=0;i<NN;i++){if(!land(i)||water(i)||kind[i]||pv[i]||deco[i]||prop[i]||terr[i]===10||terr[i]===12||bigm[i])continue;const x=i%N,y=(i/N)|0;const f=fbm(x/11+90,y/11);if(blk[i]<0||!dev(x,y)){if(f>fth)tree(i);else if(cd[i]===1&&fbm(x/9,y/9+50)>.55)terr[i]=6;else if(LVL[i]>=4&&fbm(x/7+20,y/7)>.7)terr[i]=9;else if(f<.3&&R()<.05)terr[i]=11;}}
  const H=new Uint8Array(HN*HN);for(let y=0;y<HN;y++)for(let x=0;x<HN;x++)H[y*HN+x]=Math.max(0,(LVL[id(Math.min(x,N-1),Math.min(y,N-1))]||1)-1);
  return {N,HN,K,TWA,H:b64e(H),terr:b64e(terr),kind:b64e(kind),lvl:b64e(lvl),deco:b64e(deco),ocean:b64e(ocean),LVL:b64e(LVL),lmkA:b64e(new Uint8Array(lmkA.buffer)),pv:b64e(pv),sl:b64e(sl),prop:b64e(prop),big:BIGS,auto:type!=='farm'&&type!=='forest',hmin:0,hmax:maxL};};

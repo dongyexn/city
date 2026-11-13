@@ -515,5 +515,27 @@ Object.assign(P,{
  gardenPond(){const s=new THREE.Shape();s.absellipse(0,0,.3,.2,0,6.283);add(new THREE.ExtrudeGeometry(s,{depth:.01,bevelEnabled:false}).rotateX(-Math.PI/2),MT(T.water(),{roughness:.08}),0,B+.004,0,false);for(let k=0;k<14;k++){const a=k/14*6.283;sph(.035,Math.cos(a)*.31,B+.01,Math.sin(a)*.21,MT(T.stone()),1.2,.6,1);}for(const [x,z] of [[-.1,.05],[.08,-.06]]){add(new THREE.CircleGeometry(.035,12),M('#4f9e45',{side:THREE.DoubleSide}),x,B+.016,z,false).rotation.x=-Math.PI/2;sph(.012,x,B+.022,z,M('#ff8fb1'));}for(const [x,z] of [[.2,.06],[-.18,-.08]])grp(x,B+.012,z,1,()=>{sph(.02,0,.0,0,M('#ff8a3d'),1.6,.5,.7);add(new THREE.ConeGeometry(.012,.02,6),M('#ff8a3d'),-.035,0,0).rotation.z=Math.PI/2;});},
 });
 
+
+/* ============ 농촌 추가 ============ */
+const cowM=(x,z,ry)=>grp(x,B,z,ry,()=>{const wb=M('#ffffff',{roughness:.6}),bk=M('#22252b');sph(.045,0,.065,0,wb,1.6,1,1);sph(.018,.03,.075,.035,bk);sph(.022,-.03,.085,-.025,bk);sph(.027,.085,.09,0,wb,1.2,1,1);sph(.013,.108,.08,0,M('#f6b8c0'));for(const [a,b] of [[-.045,-.022],[.045,-.022],[-.045,.022],[.045,.022]])cyl(.008,.008,.045,a,0,b,wb,6);});
+Object.assign(B3,{
+ barn(){/* 축사 2×1: 긴 개방형 우사, 함석 지붕, 사료통, 소 */const W2=.85;bx(-W2,W2,B,B+.012,-.38,.3,CON,.004,false);for(let k=0;k<6;k++){const x=-.8+k*.32;cyl(.012,.012,.3,x,B,.28,M('#8a929c',{metalness:.4}),6);cyl(.012,.012,.36,x,B,-.36,M('#8a929c',{metalness:.4}),6);}
+  bx(-W2,W2,B,B+.2,-.38,-.34,corr('#c9cfd6',8,1),.004);bx(-W2,W2,B,B+.06,.26,.3,M('#d9d4cb'),.004);T.corrug('#2f6b9a');const rf=corr('#2f6b9a',10,1);const e=add(new THREE.BoxGeometry(W2*2+.08,.02,.78),rf,0,B+.34,-.04);e.rotation.x=-.12;
+  for(let k=0;k<5;k++)bx(-.75+k*.32,-.6+k*.32,B,B+.05,-.3,-.24,M('#c9a86a',{roughness:.9}),.006);for(let k=0;k<4;k++)cowM(-.62+k*.4,-.05+(k%2)*.08,(k%2)*Math.PI+.2);
+  T.corrug('#e3e6ea');cyl(.11,.11,.5,.7,B,.4,corr('#e3e6ea',4,2),16);add(new THREE.ConeGeometry(.12,.08,16),M('#c9cfd6',{metalness:.4}),.7,B+.54,.4);},
+ farmhouse(){/* 농가: 슬레이트 박공집 + 마당 + 평상 + 장독 */const wt=wallM('#f2ece0','#9cc6e8','win','#6b5a44',2,1);gable(-.3,.18,-.3,.0,.22,wt,MT(T.shingle('#5f7a8a'),{roughness:.6}),.13);bx(-.08,.02,B,B+.15,0,.006,M('#6b4428'),.003,false);
+  bx(-.38,.38,B,B+.006,.0,.38,M('#d9c39a',{roughness:.95}),.002,false);grp(.18,B,.2,0,()=>{bx(-.1,.1,.05,.065,-.07,.07,MT(T.plank('#b98a5a')),.004);for(const [a,b] of [[-.09,-.06],[.09,-.06],[-.09,.06],[.09,.06]])bx(a-.006,a+.006,0,.05,b-.006,b+.006,M('#8a5a32'),.002);});
+  for(let k=0;k<3;k++){const x=-.28+k*.07;cyl(.026,.03,.06,x,B,.25,M('#6b3a24',{roughness:.4}),10);cyl(.02,.026,.012,x,B+.06,.25,M('#4a2818',{roughness:.4}),10);}
+  fenceR(-.4,.4,-.36,.4,.04,'#a8875a','x1');tree(.3,-.25,.7,'#4f9e45');},
+ riceMill(){/* 방앗간(정미소): 함석 창고 + 높은 승강기 탑 + 쌀 포대 */T.corrug('#d9d4cb');shedC(-.32,.1,-.3,.2,.3,'#d9d4cb','#9aa3ad','#6b7480');tower(.12,.26,B,B+.62,-.24,-.1,'#e8e2d6','#9cc6e8','blank','#ffffff',.62,1);add(new THREE.ConeGeometry(.11,.08,4),M('#9aa3ad'),.19,B+.66,-.17).rotation.y=Math.PI/4;
+  pipe([.19,B+.55,-.1],[-.1,B+.33,0],.015,'#c9cfd6');for(let k=0;k<6;k++)bx(.14+(k%3)*.07,.2+(k%3)*.07,B+((k/3)|0)*.04,B+.04+((k/3)|0)*.04,.1,.2,M('#f2ead8',{roughness:.9}),.012);signZ(-.24,.02,B+.2,B+.26,.201,'방앗간','#f4f1ea','#8a3a24','bold 30px sans-serif');},
+});
+Object.assign(P,{
+ hay(){/* 짚뭉치: 흰 비닐로 싼 곤포 사일리지(마시멜로) 몇 개 + 짚 더미 */const wm=M('#f4f4f0',{roughness:.45});for(const [x,z,r] of [[-.14,-.05,0],[.06,-.1,.3],[.2,.08,1.2]]){const g=new THREE.CylinderGeometry(.075,.075,.11,20);g.rotateZ(Math.PI/2);const e=add(g,wm,x,B+.075,z);e.rotation.y=r;}cyl(.075,.075,.11,-.05,B+.15,-.07,wm,20);
+  sph(.08,-.05,B+.02,.15,MT(T.straw()),1.4,.6,1);},
+ tiller(){/* 경운기 */grp(0,B,0,.5,()=>{const rd=M('#e0444a',{roughness:.45});bx(-.05,.07,.06,.13,-.05,.05,rd,.012);bx(-.04,.06,.13,.16,-.04,.04,M('#3e434c'),.006);for(const s of [-1,1]){const w=add(new THREE.CylinderGeometry(.05,.05,.025,14),DK,.0,.05,s*.065);w.rotation.x=Math.PI/2;}for(const s of [-1,1])pipe([-.04,.12,s*.03],[-.22,.18,s*.06],.006,'#8a929c');bx(-.4,-.18,.05,.1,-.08,.08,M('#5f7a8a',{roughness:.6}),.008);for(const s of [-1,1]){const w=add(new THREE.CylinderGeometry(.035,.035,.02,12),DK,-.3,.035,s*.09);w.rotation.x=Math.PI/2;}});},
+ hut(){/* 원두막: 기둥 넷 위 마루 + 짚 지붕 */const wd=M('#8a5a32',{roughness:.8});for(const [a,b] of [[-.14,-.14],[.14,-.14],[-.14,.14],[.14,.14]])cyl(.012,.012,.42,a,B,b,wd,6);bx(-.17,.17,B+.18,B+.21,-.17,.17,MT(T.plank('#b98a5a')),.004);add(new THREE.ConeGeometry(.27,.16,4),MT(T.straw(),{roughness:.9}),0,B+.5,0).rotation.y=Math.PI/4;
+  for(let k=0;k<4;k++)bx(-.03+k*.0,.03,B+.03+k*.04,B+.04+k*.04,.17+k*.02,.2+k*.02,wd,.002);},
+});
 /*}MORE*/
 return {B1,B2,B3,P,setCur:g=>{cur=g;}};};

@@ -12,7 +12,9 @@ const SNCAT={res:'hanok 한옥 1 1|cabin 통나무오두막 1 1|peanut 땅콩주
   off:'setback 셋백타워 1 1|broadcast 방송국 1 1|cowork 코워킹 1 1|datacenter 데이터센터 2 1|hotel 호텔 2 1|bankHQ 은행본점 2 1|twinTower 트윈타워 2 2|roundTower 원통타워 2 2|lab 연구소 2 2|convention 컨벤션 3 2',
   ind:'silo 사일로 1 1|wind 풍력발전 1 1|kiln 벽돌가마 1 1|waterTower 급수탑 1 1|pylon 송전탑 1 1|printShop 인쇄소 1 1|flourMill 제분소 1 1|coldStore 냉동창고 2 1|brewery 양조장 2 1|recycle 재활용센터 2 1|sawmill 목재소 2 1|truckDepot 트럭차고지 2 1|dairy 우유공장 2 1|bakery 제빵공장 2 1|foundry 주물공장 2 1|paperMill 제지공장 2 2|chemTanks 화학탱크 2 2|solarFarm 태양광 2 2|containerYard 컨테이너야적장 2 2|oilTanks 정유탱크 2 2|cementPlant 시멘트공장 2 2|greenhouseFarm 비닐하우스 2 2|carPlant 자동차공장 3 2|fab 반도체공장 3 2',
   pub:'church 성당 1 1|lighthouse 등대 1 1|chapel 교회 1 1|kinder 유치원 1 1|policeBox 파출소 1 1|fireStation 119안전센터 1 1|observatory 천문대 1 1|lectureHall 강의동 2 1|natatorium 실내수영장 2 1|temple 사찰 2 2',
-  fac:'tennis 테니스장 2 1|basketball 농구장 2 1|bigWheel 대관람차 2 2|nightMarket 야시장 2 2|viewTower 전망타워 2 2|miniGolf 미니골프 2 2|festival 축제광장 2 2|iceRink 스케이트장 2 2|ferry 여객선터미널 3 2|botanic 식물원 3 2|golfRange 골프연습장 3 2|campsite 캠핑장 3 2|market 전통시장 3 2|equestrian 승마장 3 2|aquarium 수족관 3 3|zoo 동물원 3 3|arena 아레나 3 3|waterpark 워터파크 3 3|driveIn 자동차극장 3 3|lakePark 호수공원 3 3|palace 고궁 4 3|ballpark 야구장 4 4|airport 소형공항 5 3'},SNF=['','','','','','',...Object.values(SNCAT).flatMap(L=>L.split('|').map(s=>s.split(' ')[0]))];SNF.push('tw2','tw3','tw5','tw8','tw17');window.__SNF=SNF;
+  fac:'tennis 테니스장 2 1|basketball 농구장 2 1|bigWheel 대관람차 2 2|nightMarket 야시장 2 2|viewTower 전망타워 2 2|miniGolf 미니골프 2 2|festival 축제광장 2 2|iceRink 스케이트장 2 2|ferry 여객선터미널 3 2|botanic 식물원 3 2|golfRange 골프연습장 3 2|campsite 캠핑장 3 2|market 전통시장 3 2|equestrian 승마장 3 2|aquarium 수족관 3 3|zoo 동물원 3 3|arena 아레나 3 3|waterpark 워터파크 3 3|driveIn 자동차극장 3 3|lakePark 호수공원 3 3|palace 고궁 4 3|ballpark 야구장 4 4|airport 소형공항 5 3'},SNF=['','','','','','',...Object.values(SNCAT).flatMap(L=>L.split('|').map(s=>s.split(' ')[0]))];SNF.push('tw2','tw3','tw5','tw8','tw17');
+/* 농촌 추가(번호는 맨 뒤로 — 저장된 섬의 번호가 밀리지 않게) */
+const SNCAT2='barn 축사 2 1 ind|farmhouse 농가 1 1 res|riceMill 방앗간 1 1 ind';SNF.push(...SNCAT2.split('|').map(s=>s.split(' ')[0]));window.__SNF=SNF;
 /*NEWOBJ{*/
 /* ===== 신규 건물·소품 시안: 게임 OBJ 라이브러리와 같은 도구(add·bx·M·RB)로 만든다 =====
    좌표: 한 칸 = 1, 바닥 높이 B. 1칸 건물은 ±.34 안, 시설은 넘겨받은 크기 안. */
@@ -532,6 +534,28 @@ Object.assign(P,{
  gardenPond(){const s=new THREE.Shape();s.absellipse(0,0,.3,.2,0,6.283);add(new THREE.ExtrudeGeometry(s,{depth:.01,bevelEnabled:false}).rotateX(-Math.PI/2),MT(T.water(),{roughness:.08}),0,B+.004,0,false);for(let k=0;k<14;k++){const a=k/14*6.283;sph(.035,Math.cos(a)*.31,B+.01,Math.sin(a)*.21,MT(T.stone()),1.2,.6,1);}for(const [x,z] of [[-.1,.05],[.08,-.06]]){add(new THREE.CircleGeometry(.035,12),M('#4f9e45',{side:THREE.DoubleSide}),x,B+.016,z,false).rotation.x=-Math.PI/2;sph(.012,x,B+.022,z,M('#ff8fb1'));}for(const [x,z] of [[.2,.06],[-.18,-.08]])grp(x,B+.012,z,1,()=>{sph(.02,0,.0,0,M('#ff8a3d'),1.6,.5,.7);add(new THREE.ConeGeometry(.012,.02,6),M('#ff8a3d'),-.035,0,0).rotation.z=Math.PI/2;});},
 });
 
+
+/* ============ 농촌 추가 ============ */
+const cowM=(x,z,ry)=>grp(x,B,z,ry,()=>{const wb=M('#ffffff',{roughness:.6}),bk=M('#22252b');sph(.045,0,.065,0,wb,1.6,1,1);sph(.018,.03,.075,.035,bk);sph(.022,-.03,.085,-.025,bk);sph(.027,.085,.09,0,wb,1.2,1,1);sph(.013,.108,.08,0,M('#f6b8c0'));for(const [a,b] of [[-.045,-.022],[.045,-.022],[-.045,.022],[.045,.022]])cyl(.008,.008,.045,a,0,b,wb,6);});
+Object.assign(B3,{
+ barn(){/* 축사 2×1: 긴 개방형 우사, 함석 지붕, 사료통, 소 */const W2=.85;bx(-W2,W2,B,B+.012,-.38,.3,CON,.004,false);for(let k=0;k<6;k++){const x=-.8+k*.32;cyl(.012,.012,.3,x,B,.28,M('#8a929c',{metalness:.4}),6);cyl(.012,.012,.36,x,B,-.36,M('#8a929c',{metalness:.4}),6);}
+  bx(-W2,W2,B,B+.2,-.38,-.34,corr('#c9cfd6',8,1),.004);bx(-W2,W2,B,B+.06,.26,.3,M('#d9d4cb'),.004);T.corrug('#2f6b9a');const rf=corr('#2f6b9a',10,1);const e=add(new THREE.BoxGeometry(W2*2+.08,.02,.78),rf,0,B+.34,-.04);e.rotation.x=-.12;
+  for(let k=0;k<5;k++)bx(-.75+k*.32,-.6+k*.32,B,B+.05,-.3,-.24,M('#c9a86a',{roughness:.9}),.006);for(let k=0;k<4;k++)cowM(-.62+k*.4,-.05+(k%2)*.08,(k%2)*Math.PI+.2);
+  T.corrug('#e3e6ea');cyl(.11,.11,.5,.7,B,.4,corr('#e3e6ea',4,2),16);add(new THREE.ConeGeometry(.12,.08,16),M('#c9cfd6',{metalness:.4}),.7,B+.54,.4);},
+ farmhouse(){/* 농가: 슬레이트 박공집 + 마당 + 평상 + 장독 */const wt=wallM('#f2ece0','#9cc6e8','win','#6b5a44',2,1);gable(-.3,.18,-.3,.0,.22,wt,MT(T.shingle('#5f7a8a'),{roughness:.6}),.13);bx(-.08,.02,B,B+.15,0,.006,M('#6b4428'),.003,false);
+  bx(-.38,.38,B,B+.006,.0,.38,M('#d9c39a',{roughness:.95}),.002,false);grp(.18,B,.2,0,()=>{bx(-.1,.1,.05,.065,-.07,.07,MT(T.plank('#b98a5a')),.004);for(const [a,b] of [[-.09,-.06],[.09,-.06],[-.09,.06],[.09,.06]])bx(a-.006,a+.006,0,.05,b-.006,b+.006,M('#8a5a32'),.002);});
+  for(let k=0;k<3;k++){const x=-.28+k*.07;cyl(.026,.03,.06,x,B,.25,M('#6b3a24',{roughness:.4}),10);cyl(.02,.026,.012,x,B+.06,.25,M('#4a2818',{roughness:.4}),10);}
+  fenceR(-.4,.4,-.36,.4,.04,'#a8875a','x1');tree(.3,-.25,.7,'#4f9e45');},
+ riceMill(){/* 방앗간(정미소): 함석 창고 + 높은 승강기 탑 + 쌀 포대 */T.corrug('#d9d4cb');shedC(-.32,.1,-.3,.2,.3,'#d9d4cb','#9aa3ad','#6b7480');tower(.12,.26,B,B+.62,-.24,-.1,'#e8e2d6','#9cc6e8','blank','#ffffff',.62,1);add(new THREE.ConeGeometry(.11,.08,4),M('#9aa3ad'),.19,B+.66,-.17).rotation.y=Math.PI/4;
+  pipe([.19,B+.55,-.1],[-.1,B+.33,0],.015,'#c9cfd6');for(let k=0;k<6;k++)bx(.14+(k%3)*.07,.2+(k%3)*.07,B+((k/3)|0)*.04,B+.04+((k/3)|0)*.04,.1,.2,M('#f2ead8',{roughness:.9}),.012);signZ(-.24,.02,B+.2,B+.26,.201,'방앗간','#f4f1ea','#8a3a24','bold 30px sans-serif');},
+});
+Object.assign(P,{
+ hay(){/* 짚뭉치: 흰 비닐로 싼 곤포 사일리지(마시멜로) 몇 개 + 짚 더미 */const wm=M('#f4f4f0',{roughness:.45});for(const [x,z,r] of [[-.14,-.05,0],[.06,-.1,.3],[.2,.08,1.2]]){const g=new THREE.CylinderGeometry(.075,.075,.11,20);g.rotateZ(Math.PI/2);const e=add(g,wm,x,B+.075,z);e.rotation.y=r;}cyl(.075,.075,.11,-.05,B+.15,-.07,wm,20);
+  sph(.08,-.05,B+.02,.15,MT(T.straw()),1.4,.6,1);},
+ tiller(){/* 경운기 */grp(0,B,0,.5,()=>{const rd=M('#e0444a',{roughness:.45});bx(-.05,.07,.06,.13,-.05,.05,rd,.012);bx(-.04,.06,.13,.16,-.04,.04,M('#3e434c'),.006);for(const s of [-1,1]){const w=add(new THREE.CylinderGeometry(.05,.05,.025,14),DK,.0,.05,s*.065);w.rotation.x=Math.PI/2;}for(const s of [-1,1])pipe([-.04,.12,s*.03],[-.22,.18,s*.06],.006,'#8a929c');bx(-.4,-.18,.05,.1,-.08,.08,M('#5f7a8a',{roughness:.6}),.008);for(const s of [-1,1]){const w=add(new THREE.CylinderGeometry(.035,.035,.02,12),DK,-.3,.035,s*.09);w.rotation.x=Math.PI/2;}});},
+ hut(){/* 원두막: 기둥 넷 위 마루 + 짚 지붕 */const wd=M('#8a5a32',{roughness:.8});for(const [a,b] of [[-.14,-.14],[.14,-.14],[-.14,.14],[.14,.14]])cyl(.012,.012,.42,a,B,b,wd,6);bx(-.17,.17,B+.18,B+.21,-.17,.17,MT(T.plank('#b98a5a')),.004);add(new THREE.ConeGeometry(.27,.16,4),MT(T.straw(),{roughness:.9}),0,B+.5,0).rotation.y=Math.PI/4;
+  for(let k=0;k<4;k++)bx(-.03+k*.0,.03,B+.03+k*.04,B+.04+k*.04,.17+k*.02,.2+k*.02,wd,.002);},
+});
 /*}MORE*/
 return {B1,B2,B3,P,setCur:g=>{cur=g;}};};
 
@@ -858,7 +882,7 @@ bx(-.85,.85,.03,.16,cz0-.4,cz0+.4,M('#e9e4da'),.03);bx(-.5,.5,.16,.2,cz0-.25,cz0
  const SN=SIAN(THREE,RoundedBoxGeometry,null,cur),SNL=Object.assign({},SN.B1,SN.B2,SN.B3,SN.P),snw=(f,s=1)=>(cx,cz)=>{const g=new THREE.Group();g.position.set(cx,.13*(1-s),cz);g.scale.setScalar(s);cur.add(g);SN.setCur(g);f();};
  for(const [c,L] of Object.entries(SNCAT))
   for(const it of L.split('|')){const [f,n,w,d]=it.split(' ');BIG.push([n.replace('119안전센터','119 안전센터'),snw(SNL[f],+w*+d===1?1.25:1),+w,+d,c,f]);}
- const PN=[['자판기','vending'],['우체통','postbox'],['소화전','hydrant'],['공중전화','phone'],['자전거','bikes'],['파라솔','parasol'],['그네','swing'],['미끄럼틀','slide'],['시소','seesaw'],['정자','pavilion'],['장독대','jars'],['허수아비','scarecrow'],['캠핑 세트','camp'],['돌담','stoneWall'],['나무 울타리','woodFence'],['장승','jangseung'],['동상','statue'],['시계탑','clockPost'],['소형 분수','miniFountain'],['성탄 트리','xmasTree'],['정원 연못','gardenPond']];
+ const PN=[['자판기','vending'],['우체통','postbox'],['소화전','hydrant'],['공중전화','phone'],['자전거','bikes'],['파라솔','parasol'],['그네','swing'],['미끄럼틀','slide'],['시소','seesaw'],['정자','pavilion'],['장독대','jars'],['허수아비','scarecrow'],['캠핑 세트','camp'],['돌담','stoneWall'],['나무 울타리','woodFence'],['장승','jangseung'],['동상','statue'],['시계탑','clockPost'],['소형 분수','miniFountain'],['성탄 트리','xmasTree'],['정원 연못','gardenPond'],['짚뭉치','hay'],['경운기','tiller'],['원두막','hut']];
  const PROP=(k,x,z,a=0)=>{const g=new THREE.Group();g.position.set(x,0,z);g.rotation.y=a;cur.add(g);SN.setCur(g);SNL[PN[k][1]]();};
 const rotd=(cx,cz,dir,fn)=>{const g=new THREE.Group();g.position.set(cx,0,cz);g.rotation.y={'z+':0,'x+':Math.PI/2,'z-':Math.PI,'x-':-Math.PI/2}[dir];const pc=cur;pc.add(g);cur=g;fn();cur=pc;};
 /* clay person (~2 heads tall): matte hand-modelled look — every part is slightly lumpy. forward is +x. pose {rot,swing,sit,wave}; limbs hang from pivots so they can be animated */
@@ -996,6 +1020,7 @@ const X=(b,o)=>Object.assign({},b,o),CAT={
   ['버스터미널',1,{wall:'#f4f5f7',shop:'#3d7de0',awn:'#3e434c',roof:'#dfe3ea',rsign:'#3d7de0',noroof:1}],['체육관',2,{wall:'#eef2f6',frame:'#3d7de0',ww:.44,pitch:'#3d7de0'}]]};
 /* 10층 이상 오피스 타워는 2×2 (1칸에 세우면 너무 가늘다) */
 CAT.off.forEach((e,k)=>{if(e[1]>=10)BIG.push([e[0],(cx,cz)=>bld(cx-.84,cx+.84,cz-.84,cz+.84,e[1],e[2]),2,2,'off','tw'+k]);});
+for(const it of SNCAT2.split('|')){const [f,n,w,d,c]=it.split(' ');BIG.push([n,snw(SNL[f],+w*+d===1?1.25:1),+w,+d,c,f]);}
 const API={heroine,person,JET,CAT,BIG,PROP,PN,rotd,lift,bld,house,car,gas,towerA,roundB,fountain,roofCafe,shopHouse,restaurant,greenhouse,STY:{APT,OFF,SHOP,VIL,CVS,STONE,BAND,BRICK,GBRICK,WOOD,TOWN,NEIGH,BAKE,PHAR},crown,PAL,TRK,PIT,LEAF,FH};
 /* play build: calls are recorded per lift() and only executed for placements not already cached */
 if(window.OBC){const C=window.OBC;let rec={h:0,calls:[]},exec=false;const wrap=(n,f)=>(...a)=>{if(exec)return f(...a);rec.calls.push([n,f,a]);};
@@ -1014,7 +1039,7 @@ const UT=window.__UT||(window.__UT={value:0});
 const SEA=window.__SEA||(window.__SEA={gt:{value:new THREE.Color(1,1,1)},snow:{value:0},aut:{value:0},blos:{value:1}}),leafSea=(m,d,b)=>window.__seaLeaf(m,d,b);
 const wind=(m,amp,y0)=>{m.onBeforeCompile=sh=>{sh.uniforms.uT=UT;sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nuniform float uT;').replace('#include <begin_vertex>',`#include <begin_vertex>\n#ifdef USE_INSTANCING\n{float ph=instanceMatrix[3].x*1.3+instanceMatrix[3].z*.9;float wk=max(0.,position.y-${y0.toFixed(3)})*${amp.toFixed(3)};transformed.x+=(sin(uT*1.7+ph)+.35*sin(uT*4.1+ph*2.3))*wk;transformed.z+=cos(uT*1.3+ph*1.3)*wk*.7;}\n#endif`);};m.customProgramCacheKey=()=>'wind'+amp+'_'+y0;return m;};
 const idx=(x,y)=>y*N+x,In=(x,y)=>x>=0&&y>=0&&x<N&&y<N;
-const land=(x,y)=>In(x,y)&&!ocean[idx(x,y)],riv=(x,y)=>land(x,y)&&terr[idx(x,y)]===TWA,isR=(x,y)=>In(x,y)&&kind[idx(x,y)]===K.ROAD,sand=(x,y)=>land(x,y)&&terr[idx(x,y)]===2;const dirt=(x,y)=>land(x,y)&&terr[idx(x,y)]===5,stone=(x,y)=>land(x,y)&&terr[idx(x,y)]===9,farm=(x,y)=>land(x,y)&&terr[idx(x,y)]===10;
+const land=(x,y)=>In(x,y)&&!ocean[idx(x,y)],riv=(x,y)=>land(x,y)&&terr[idx(x,y)]===TWA,isR=(x,y)=>In(x,y)&&kind[idx(x,y)]===K.ROAD,sand=(x,y)=>land(x,y)&&terr[idx(x,y)]===2;const dirt=(x,y)=>land(x,y)&&terr[idx(x,y)]===5,stone=(x,y)=>land(x,y)&&terr[idx(x,y)]===9,farm=(x,y)=>land(x,y)&&(terr[idx(x,y)]===10||terr[idx(x,y)]===12),paddy=(x,y)=>land(x,y)&&terr[idx(x,y)]===12;
 const r=new THREE.WebGLRenderer({antialias:true,alpha:true,preserveDrawingBuffer:true});r.setSize(VW,VH);r.setPixelRatio(1);r.shadowMap.enabled=true;r.shadowMap.type=THREE.PCFSoftShadowMap;r.toneMapping=THREE.ACESFilmicToneMapping;r.toneMappingExposure=1.08;r.outputColorSpace=THREE.SRGBColorSpace;
 const sc=new THREE.Scene();sc.environment=new THREE.PMREMGenerator(r).fromScene(new RoomEnvironment(),.04).texture;
 const C=h=>new THREE.Color(h),M=(c,o={})=>new THREE.MeshStandardMaterial(Object.assign({color:c,roughness:.6,metalness:0,envMapIntensity:.12},o));
@@ -1476,8 +1501,8 @@ if(DS.length)sc.add(new THREE.Mesh(mergeGeometries(DS),paint));
    S.set(sc2,sc2,sc2);m4.compose(V.set(x,h+(TT[t].h-.36)*sc2,z),q,S);iC[t].setMatrixAt(iC[t].count++,m4);if(t!==2)DECI.push([x,h+(TT[t].h-.36)*sc2+.3*sc2,z,sc2]);if(t===2)XM.push([x,h+(TT[t].h-.36)*sc2,z,sc2,i]);});
   /* grass tufts + flowers + shrubs on open lawn */
   const blades=[];for(let k=0;k<6;k++){const c=new THREE.ConeGeometry(.024,.12+(k%3)*.035,3,1,true);c.scale(1,1,.45);c.translate(0,.06,0);const a=k/6*Math.PI*2+k*.3;c.rotateY(a);c.rotateZ(.4*Math.cos(a));c.rotateX(.4*Math.sin(a));c.translate(Math.cos(a)*.025,0,Math.sin(a)*.025);blades.push(c);}
-  const tg=grad(mergeGeometries(blades),'#3d8a28','#c4ee72',0,.15);const TG=[],FL=[],SH=[],CR=[],SMN=[];
-  for(let y=0;y<N;y++)for(let x=0;x<N;x++){const i=y*N+x;if(!built[i]&&farm(x,y)&&!PAVE[i]&&lmkA[i]<0&&!(SLP&&SLP[i])){const h=hT(x,y)+B0;for(let a=0;a<4;a++)for(let b=0;b<4;b++)CR.push([x+.14+b*.24,y+.125+a*.25,h,i*16+a*4+b]);}if(built[i]||!isLawn(x,y)||PAVE[i]||dirt(x,y)||stone(x,y)||farm(x,y)||window.__SAND[i]||(lmkA[i]>=0?!FA.has(lmkA[i]):done[i]===1))continue;const h=hT(x,y)+B0,fp=lmkA[i]>=0;
+  const tg=grad(mergeGeometries(blades),'#3d8a28','#c4ee72',0,.15);const TG=[],FL=[],SH=[],CR=[],SMN=[],RG=[],PD=[];
+  for(let y=0;y<N;y++)for(let x=0;x<N;x++){const i=y*N+x;if(!built[i]&&farm(x,y)&&!PAVE[i]&&lmkA[i]<0&&!(SLP&&SLP[i])){const h=hT(x,y)+B0;if(paddy(x,y))PD.push([x,y,h]);else{for(let a=0;a<4;a++)RG.push([x+.5,y+.125+a*.25,h]);if(window.__PLANT&&window.__PLANT[i])for(let a=0;a<4;a++)for(let b=0;b<4;b++)CR.push([x+.14+b*.24,y+.125+a*.25,h,i*16+a*4+b]);}}if(built[i]||!isLawn(x,y)||PAVE[i]||dirt(x,y)||stone(x,y)||farm(x,y)||window.__SAND[i]||(lmkA[i]>=0?!FA.has(lmkA[i]):done[i]===1))continue;const h=hT(x,y)+B0,fp=lmkA[i]>=0;
    const nt=(hs(i,33)*5)|0;for(let k=0;k<nt;k++)TG.push([x+.08+hs(i,60+k)*.84,y+.08+hs(i,70+k)*.84,h,i+k]);
    if(terr[i]===11){const fc=(hs(i,39)*6)|0;for(let a=0;a<3;a++)for(let b=0;b<3;b++)for(let k=0;k<2;k++)FL.push([x+.17+b*.33+(hs(i,80+a*6+b*2+k)-.5)*.2,y+.17+a*.33+(hs(i,90+a*6+b*2+k)-.5)*.2,h,i*7+a*6+b*2+k,fc]);continue;}
    if(hs(i,31)<(fp?.6:.3)){const n=2+((hs(i,32)*4)|0),cx=x+.25+hs(i,34)*.5,cz=y+.25+hs(i,35)*.5;for(let k=0;k<n;k++)FL.push([cx+(hs(i,40+k)-.5)*.4,cz+(hs(i,50+k)-.5)*.4,h,i*7+k]);}
@@ -1497,6 +1522,10 @@ if(DS.length)sc.add(new THREE.Mesh(mergeGeometries(DS),paint));
     cm.onBeforeCompile=sh=>{sh.uniforms.uGrow=U.grow;sh.uniforms.uRipe=U.ripe;sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nuniform float uGrow;varying float vCy;').replace('#include <begin_vertex>','#include <begin_vertex>\nvCy=position.y;transformed*=vec3(.45+.55*uGrow,uGrow,.45+.55*uGrow);');
      sh.fragmentShader=sh.fragmentShader.replace('#include <common>','#include <common>\nuniform float uRipe;varying float vCy;').replace('#include <color_fragment>','#include <color_fragment>\ndiffuseColor.rgb=mix(diffuseColor.rgb,mix(vec3(.86,.68,.25),vec3(1.,.86,.42),smoothstep(.05,.2,vCy)),uRipe);');};cm.customProgramCacheKey=()=>'crop';
     const iCr=im(cg,cm,CR.length);CR.forEach(([x,z,h,k])=>{const s2=.85+hs(k,5)*.3;q.setFromAxisAngle(Y,hs(k,6)*6.3);m4.compose(V.set(x,h,z),q,S.set(s2,s2,s2));iCr.setMatrixAt(iCr.count++,m4);});window.__DET.push(iCr);}}
+  /* 밭: 비어 있는 이랑(흙 두둑) — 작물은 나중에 심는다. 논: 두렁(가장자리 흙) 안에 얕은 물 */
+  if(RG.length){const g=new RoundedBoxGeometry(.92,.06,.17,2,.028),m=new THREE.MeshStandardMaterial({map:window.__BTX.SOIL,color:'#a5826a',roughness:.95}),iR=im(g,m,RG.length);RG.forEach(([x,z,h])=>{m4.compose(V.set(x,h+.02,z),q.identity(),S.set(1,1,1));iR.setMatrixAt(iR.count++,m4);});iR.receiveShadow=true;window.__DET.push(iR);}
+  if(PD.length){const g=new THREE.BoxGeometry(1,.03,1),m=new THREE.MeshStandardMaterial({color:'#4f93a6',roughness:.06,metalness:.1,transparent:true,opacity:.6,envMapIntensity:1,depthWrite:false}),iP=im(g,m,PD.length);
+   PD.forEach(([x,z,h])=>{const nb=(dx,dy)=>paddy(x+dx,z+dy)&&Math.abs(hT(x+dx,z+dy)-hT(x,z))<.01,l=nb(-1,0)?.03:.08,r2=nb(1,0)?.03:.08,t2=nb(0,-1)?.03:.08,b2=nb(0,1)?.03:.08;m4.compose(V.set(x+.5+(l-r2)/2,h+.012,z+.5+(t2-b2)/2),q.identity(),S.set(1-l-r2,1,1-t2-b2));iP.setMatrixAt(iP.count++,m4);});iP.receiveShadow=true;}
   /* winter extras (shown by the game only in winter): snowmen on open lawn, ornaments + star on conifers */
   {const WT=window.__WINT=[],cg=(g,c)=>{const C=new THREE.Color(c),a=[];for(let k=0;k<g.attributes.position.count;k++)a.push(C.r,C.g,C.b);g.setAttribute('color',new THREE.Float32BufferAttribute(a,3));return g;},sp=(r,x,y,z,c,sy=1)=>{const g=new THREE.SphereGeometry(r,14,10);g.scale(1,sy,1);g.translate(x,y,z);g.deleteAttribute('uv');return cg(g,c);};
    if(SMN.length){const P=[sp(.15,0,.13,0,'#f6f9ff',.9),sp(.11,0,.33,0,'#f6f9ff',.95),sp(.08,0,.49,0,'#f6f9ff')];{const n=new THREE.ConeGeometry(.018,.09,8);n.rotateX(Math.PI/2);n.translate(0,.49,.11);n.deleteAttribute('uv');P.push(cg(n,'#ff8a2a'));}
