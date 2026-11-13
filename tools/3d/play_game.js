@@ -119,14 +119,17 @@ const scanEnv=()=>{if(!W)return;LT={sun:null,fill:null,hemi:null};W.sc.traverse(
 /* stars: random dots, each twinkling on its own clock; shown at night */
 const STARS=[];{const box=document.getElementById('stars');if(box)for(let k=0;k<150;k++){const e=document.createElement('i'),x=Math.random()*100,y=Math.pow(Math.random(),1.6)*70,s=Math.random()<.12?2.6:Math.random()<.4?1.8:1.2,a=.55+Math.random()*.45;e.style.cssText=`left:${x}%;top:${y}%;width:${s}px;height:${s}px;--a:${a};--d:${(1.2+Math.random()*3.5).toFixed(2)}s;--l:-${(Math.random()*5).toFixed(2)}s`;box.appendChild(e);STARS.push([x,y,s,a]);}}
 let SKYB=null,ACT=1,CVF='saturate(1.3) contrast(1.06)';
+/* 일식: 여름 둘째 날 11:00~13:24. se=진행(0~1), ecv=가린 정도(0~1) */
+function eclS(t){const dy=ENV.day||0;return ENV.sea===1&&dy%2===1&&t>11&&t<13.4?(t-11)/2.4:-1;}
+function eclV(se){return se<0?0:Math.max(0,Math.min(1,1-Math.abs(se-.5)*2.3*34/31));}
 const applyEnv=()=>{if(!W||!LT||!LT.sun)return;const t=ENV.t,e=Math.sin((t-6)/12*Math.PI),day=ss(-.08,.42,e),tw=Math.exp(-(((e-.04)/.24)**2)),nt=1-ss(-.36,.04,e),wx=ENV.wx,wd=wx==='rain'?.72:wx==='snow'?.85:1,gold=tw*(1-day*.75);
  const cx=N/2,cz=N/2,ph=(t-6)/12*Math.PI;if(e>-.06){LT.sun.position.set(cx-80*Math.cos(ph),40+70*Math.max(.2,e),cz+30+30*Math.sin(ph));}else LT.sun.position.set(cx+40,90,cz-30);
  /* the light turns with the view, so every quarter shows the same lit faces */{const ra=V.a-Math.PI/4,c=Math.cos(ra),sn=Math.sin(ra),dx=LT.sun.position.x-cx,dz=LT.sun.position.z-cz;LT.sun.position.x=cx+dx*c-dz*sn;LT.sun.position.z=cz+dx*sn+dz*c;}
- LT.sun.color.copy(lerpC(lerpC(C3('#fff4e4'),C3('#ffb877'),gold),C3('#b3c4ff'),nt));LT.sun.intensity=(3.4*day*(1-.2*tw)+1.3*gold*(1-day)+.55*nt)*wd;
+ LT.sun.color.copy(lerpC(lerpC(C3('#fff4e4'),C3('#ffb877'),gold),C3('#b3c4ff'),nt));const ecv=eclV(eclS(t));LT.sun.intensity=(3.4*day*(1-.2*tw)+1.3*gold*(1-day)+.55*nt)*wd*(1-.8*ecv);
  if(LT.fill)LT.fill.intensity=(.8*day+.4)*(wx==='clear'?1:.9);
- if(LT.hemi){LT.hemi.color.copy(lerpC(lerpC(C3('#d8ecff'),C3('#ffdcc4'),gold),C3('#7b8ccc'),nt));LT.hemi.groundColor.copy(lerpC(lerpC(C3('#7d8a6a'),C3('#8a7468'),gold),C3('#46507a'),nt));LT.hemi.intensity=.8+.3*day+.08*nt+(wx!=='clear'?.2:0);}
+ if(LT.hemi){LT.hemi.color.copy(lerpC(lerpC(C3('#d8ecff'),C3('#ffdcc4'),gold),C3('#7b8ccc'),nt));LT.hemi.groundColor.copy(lerpC(lerpC(C3('#7d8a6a'),C3('#8a7468'),gold),C3('#46507a'),nt));LT.hemi.intensity=(.8+.3*day+.08*nt+(wx!=='clear'?.2:0))*(1-.45*ecv);}
  r.toneMappingExposure=1+.08*day;
- const pick=k=>SKY[k].map(C3);let sky=wx!=='clear'&&day>.3?pick(wx):pick('day');const dk=pick('dusk'),ng=pick('night');sky=sky.map((c,i)=>c.clone().lerp(dk[i],gold*.9).lerp(ng[i],nt*.95));
+ const pick=k=>SKY[k].map(C3);let sky=wx!=='clear'&&day>.3?pick(wx):pick('day');const dk=pick('dusk'),ng=pick('night');sky=sky.map((c,i)=>c.clone().lerp(dk[i],gold*.9).lerp(ng[i],Math.max(nt*.95,ecv*.8)));
  document.body.style.background=`linear-gradient(#${sky[0].getHexString()},#${sky[1].getHexString()} 55%,#${sky[2].getHexString()})`;
  /* soft "shader pack" look off-noon: less saturation/contrast on the canvas, a warm or cool screen-blend haze lifting the shadows */
  CVF=`saturate(${(1.3-.32*nt-.14*gold-(wx!=='clear'?.12:0)).toFixed(3)}) contrast(${(1.06-.12*nt-.06*gold).toFixed(3)})`;cv.style.filter=CVF;
@@ -140,7 +143,7 @@ const applyEnv=()=>{if(!W||!LT||!LT.sun)return;const t=ENV.t,e=Math.sin((t-6)/12
   /* 달의 모양: 계절마다 첫날 밤은 보름달(1계절=2일). 일 년에 한 번 — 여름 둘째 날 정오 무렵 일식, 가을 보름밤 자정 무렵 월식 */
   const I=window.__SKYI,dy=ENV.day||0,nd=t<12?dy-1:dy,full=((nd%2)+2)%2===0;if(mo&&I){const k=full?'full':'cres';if(mo.dataset.k!==k){mo.dataset.k=k;mo.style.setProperty('--img','url('+I[k]+')');}
    const tt=t<12?t+24:t,le=full&&ENV.sea===2?Math.max(0,1-Math.abs(tt-24.5)/1.6):0;mo.style.filter=le>0?`brightness(${(1-.3*le).toFixed(3)}) sepia(${(.8*le).toFixed(3)}) saturate(${(1+2.5*le).toFixed(3)}) hue-rotate(${(-28*le).toFixed(1)}deg)`:'';}
-  if(su){const se=ENV.sea===1&&dy%2===1&&t>11&&t<13.4?(t-11)/2.4:-1;su.classList.toggle('ecl',se>=0);if(se>=0){su.style.setProperty('--ex',((se-.5)*2.3*34).toFixed(1)+'px');su.style.setProperty('--gl',(1-Math.max(0,1-Math.abs(se-.5)*4)*.85).toFixed(3));}else su.style.removeProperty('--gl');}}
+  if(su){const se=eclS(t),ev=eclV(se);su.classList.toggle('ecl',se>=0);if(se>=0){su.style.setProperty('--ex',((se-.5)*2.3*34).toFixed(1)+'px');su.style.setProperty('--gl',(1-ev*.9).toFixed(3));su.style.setProperty('--ra',(1-ev).toFixed(3));}else{su.style.removeProperty('--gl');su.style.removeProperty('--ra');}}}
  {const st=$('stars');if(st){const o=ss(.25,.85,nt)*(wx==='clear'?1:wx==='snow'?.2:0);st.style.opacity=o;st.style.display=o>.01?'':'none';SKYB.stars=o;}}
  {const sv=$('envb').querySelector('svg'),mn=nt>.5?'1':'0';if(sv&&sv.dataset.m!==mn){sv.dataset.m=mn;sv.innerHTML=mn==='1'?'<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>':'<path d="M12 8a4 4 0 1 0 0 8 4 4 0 1 0 0-8z"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.9 4.9 1.4 1.4"/><path d="m17.7 17.7 1.4 1.4"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.3 17.7-1.4 1.4"/><path d="m19.1 4.9-1.4 1.4"/>';}}
  if(window.__XMAT)window.__XMAT.emissiveIntensity=.35+nt*1.6;if(window.__FW){window.__FW.emissive.set('#1b8fd6');window.__FW.emissiveIntensity=.1+.5*(1-day)+(wx!=='clear'?.15:0);}
@@ -488,8 +491,8 @@ const rays=(g,n,make,r0,m)=>{for(let k=0;k<n;k++){const a=k/n*Math.PI*2,e=puff(m
 const dent=(g,x,y,Rr,m,PR,PH,rc=MOONC)=>{const z=surfZ(x,y,PR,PH);const b=new THREE.Mesh(new THREE.CircleGeometry(Rr,32),m);b.position.set(x,y,z+.004);g.add(b);const t=new THREE.Mesh(new THREE.TorusGeometry(Rr,Rr*.2,16,40),mat(rc,.55));t.scale.z=.45;t.position.set(x,y,z);g.add(t);};
 
  const shot=obj=>{const sc=new THREE.Scene();sc.environment=env;sc.add(new THREE.HemisphereLight('#ffffff','#c4b28e',1.15));const d=new THREE.DirectionalLight('#ffffff',1.5);d.position.set(-3,4,6);sc.add(d);obj.rotation.x=-.18;obj.rotation.y=.12;sc.add(obj);r.render(sc,cam);return r.domElement.toDataURL();};
- const sun=new THREE.Group();sun.add(pillow(.95,.22,mat(SUNY)));rays(sun,8,()=>capsule(.32,.13),1.42,mat(SUNR));
+ const sun=new THREE.Group();sun.add(pillow(.95,.22,mat(SUNY)));const sray=new THREE.Group();rays(sray,8,()=>capsule(.24,.105),1.3,mat(SUNR));
  const moon=new THREE.Group();moon.add(pcres(.82,.42,Math.PI*1.25,mat(MOONC)));
  const fm=new THREE.Group();fm.add(pillow(.9,.2,mat(MOONC)));{const dm=mat(DENT,.7);dent(fm,-.3,-.18,.19,dm,.9,.2);dent(fm,.32,.28,.14,dm,.9,.2);dent(fm,.28,-.4,.1,dm,.9,.2);}
- const su=shot(sun),mo=shot(moon),fu=shot(fm);r.dispose();r.forceContextLoss();window.__SKYI={cres:mo,full:fu};
- $('sun').style.setProperty('--img','url('+su+')');try{applyEnv();}catch(e){}}catch(e){console.warn('sky bake',e);}})();
+ const su=shot(sun),sr=shot(sray),mo=shot(moon),fu=shot(fm);r.dispose();r.forceContextLoss();window.__SKYI={cres:mo,full:fu};
+ {const S=$('sun');S.style.setProperty('--img','url('+su+')');let y=S.querySelector('.ry');if(!y){y=document.createElement('i');y.className='ry';S.prepend(y);}y.style.backgroundImage='url('+sr+')';}try{applyEnv();}catch(e){}}catch(e){console.warn('sky bake',e);}})();
