@@ -419,9 +419,9 @@ Object.assign(B3,{
    for(let k=0;k<60;k++){const x=R()*w;g.strokeStyle=`rgba(${R()<.55?'255,255,255':'150,168,180'},${.18+R()*.28})`;g.lineWidth=.8+R()*2.4;g.beginPath();g.moveTo(x,0);g.bezierCurveTo(x+(R()-.5)*30,h*.3,x+(R()-.5)*30,h*.7,x+(R()-.5)*14,h);g.stroke();}
    for(let x=0;x<w;x+=64){const gr=g.createLinearGradient(x,0,x+64,0);gr.addColorStop(0,'rgba(120,140,155,.28)');gr.addColorStop(.12,'rgba(255,255,255,0)');gr.addColorStop(.5,'rgba(255,255,255,.18)');gr.addColorStop(.88,'rgba(255,255,255,0)');gr.addColorStop(1,'rgba(120,140,155,.28)');g.fillStyle=gr;g.fillRect(x,0,64,h);}
    for(let k=0;k<160;k++){g.fillStyle=`rgba(200,215,225,${.15+R()*.25})`;g.beginPath();g.ellipse(R()*w,R()*h*.8,1+R()*2.5,1+R()*3.5,0,0,7);g.fill();}g.fillStyle='rgba(150,120,80,.25)';g.fillRect(0,h*.9,w,h*.1);},6,1);
-  const pv=new THREE.MeshPhysicalMaterial({map:film,transparent:true,opacity:.8,roughness:.32,clearcoat:.5,clearcoatRoughness:.25,sheen:.4,sheenColor:new THREE.Color('#ffffff'),side:THREE.DoubleSide,depthWrite:false,envMapIntensity:.7}),rib=M('#b9c0c8',{metalness:.55,roughness:.35});
+  const pv=new THREE.MeshPhysicalMaterial({map:film,color:'#f3f5f4',roughness:.5,clearcoat:.35,clearcoatRoughness:.35,sheen:.3,sheenColor:new THREE.Color('#ffffff'),side:THREE.DoubleSide,envMapIntensity:.6}),rib=M('#b9c0c8',{metalness:.55,roughness:.35});
   for(let k=0;k<4;k++){const z=-1.05+k*.7,r=.3,wall=.12;
-   for(let j=0;j<3;j++){bx(-L/2+.1,L/2-.1,B,B+.035,z-.18+j*.18-.045,z-.18+j*.18+.045,M('#8a6a4a',{roughness:.95}),.01);for(let t=0;t<20;t++)sph(.03,-L/2+.18+t*.165,B+.065,z-.18+j*.18,M(t%3?'#4f9e45':'#5fae48',{roughness:.8}),1,.8,1);}
+   /* 우윳빛 비닐이라 멀리선 속이 보이지 않는다 — 내부 작물은 그리지 않음 */
    const g=new THREE.CylinderGeometry(r,r,L,28,1,true,-Math.PI/2,Math.PI);g.rotateZ(Math.PI/2);add(g,pv,0,B+wall,z,false);for(const s2 of [-1,1])add(new THREE.PlaneGeometry(L,wall),pv,0,B+wall/2,z+s2*r,false);
    for(let t=0;t<15;t++){const x=-L/2+t*L/14,tg=new THREE.TorusGeometry(r+.004,.006,4,18,Math.PI);tg.rotateY(Math.PI/2);add(tg,rib,x,B+wall,z,false);for(const s2 of [-1,1])cyl(.006,.006,wall,x,B,z+s2*(r+.004),rib,4);}
    bx(-L/2,L/2,B+wall+r-.004,B+wall+r+.008,z-.006,z+.006,rib,.002,false);
