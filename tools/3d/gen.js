@@ -3,7 +3,8 @@
    Builds the same fields the saved maps carry (kind, terr, LVL, ocean, deco, lmkA, lvl …) plus pv/sl/prop, so the renderer needs nothing new.
    Layout rules: blocks between roads keep a walkway every few frontage tiles and a paved path through the middle, terraces never step more
    than one level where people walk, and every terrace edge inside a town gets a slope or stairs now and then. */
-const GTYPES=[['city','도시'],['metro','대도시'],['ind','공업'],['farm','농촌'],['forest','숲속마을']],GSHAPES=[['round','둥근'],['long','길쭉한'],['twin','쌍둥이'],['crescent','초승달'],['archi','군도']];
+const GTYPES=[['city','도시'],['metro','대도시'],['ind','공업'],['farm','농촌'],['forest','숲속마을']],GSHAPES=[['round','둥근'],['oval','타원'],['long','길쭉한'],['twin','쌍둥이'],['crescent','초승달'],['archi','군도'],['heart','하트'],['star','별'],['tri','삼각'],['square','네모'],['penta','오각'],['hexa','육각'],['rhombus','마름모'],['clover','세잎'],['quatre','네잎'],['flower','꽃'],['atoll','환초'],['peanut','땅콩'],['bean','강낭콩'],['drop','물방울'],['egg','달걀'],['lshape','ㄱ자'],['tshape','T자'],['cross','십자'],['horseshoe','말굽'],['bay','만'],['scurve','S자'],['boot','장화'],['fish','물고기'],['tadpole','올챙이'],['triple','세 섬'],['chain','줄섬'],['banana','바나나'],['butterfly','나비'],['lemon','레몬'],['gourd','호리병'],['mitten','벙어리장갑'],['comet','혜성']];
+const MULTI=new Set(['archi','triple','chain','butterfly']);
 const genIsland=(type,shape,num,NS=128)=>{
  const N=NS,HN=NS+1,Sc=NS/128,K={EMPTY:0,ROAD:1,RES:2,COM:3,IND:4,POWER:5,WATER:6,POLICE:7,FIRE:8,PARK:9,LMK:10},TWA=1,NN=N*N;
  let sd=((num*2654435761)^0x9e3779b9)>>>0||7;const R=()=>{sd^=sd<<13;sd>>>=0;sd^=sd>>>17;sd^=sd<<5;sd>>>=0;return sd/4294967296;};
@@ -16,16 +17,40 @@ const genIsland=(type,shape,num,NS=128)=>{
  if(shape==='twin'){const o=(20+R()*6)*Sc;blobs.push([cx-ca*o,cy-sa*o,(26+R()*5)*Sc],[cx+ca*o,cy+sa*o,(24+R()*6)*Sc]);}
  else if(shape==='archi'){const n=4+((R()*3)|0);for(let k=0;k<n;k++){const a=k/n*6.283+R()*.6,r=k===0?0:(22+R()*16)*Sc;blobs.push([cx+Math.cos(a)*r,cy+Math.sin(a)*r,(k===0?20+R()*4:10+R()*7)*Sc]);}}
  else blobs.push([cx,cy,46*Sc]);
+ /* 모양 사전: 반지름 ~46칸 기준 좌표(U,V)에서 1보다 작으면 땅. 원·다각형·꽃잎·막대를 합(min)·차(max)로 엮는다 */
+ const ci=(U,V,x,y,r)=>Math.hypot(U-x,V-y)/r,poly=(U,V,n,r,ph=0)=>{const a=Math.atan2(V,U)+ph,s=Math.PI/n,k=((a%(2*s))+2*s)%(2*s)-s;return Math.hypot(U,V)*Math.cos(k)/(r*Math.cos(s));},
+  lobe=(U,V,n,r,a,p=1)=>{const t=Math.atan2(V,U);return Math.hypot(U,V)/(r*(1+a*(Math.pow(Math.abs(Math.cos(t*n/2)),p)*2-1)));},
+  box=(U,V,x,y,w,h,p=5)=>Math.pow(Math.pow(Math.abs(U-x)/w,p)+Math.pow(Math.abs(V-y)/h,p),1/p),
+  seg=(U,V,ax,ay,bx,by,r0,r1=r0)=>{const dx=bx-ax,dy=by-ay,t=Math.max(0,Math.min(1,((U-ax)*dx+(V-ay)*dy)/(dx*dx+dy*dy))),r=r0+(r1-r0)*t;return Math.hypot(U-ax-dx*t,V-ay-dy*t)/r;},
+  arc=(U,V,R0,w,a0,a1)=>{let t=Math.atan2(V,U);const m=(a0+a1)/2,h=(a1-a0)/2;let d=t-m;d=Math.atan2(Math.sin(d),Math.cos(d));const tc=m+Math.max(-h,Math.min(h,d));return Math.hypot(U-R0*Math.cos(tc),V-R0*Math.sin(tc))/w;},
+  mn=(...a)=>Math.min(...a),cut=(a,b)=>Math.max(a,2-b);
+ const SH={round:(U,V)=>Math.hypot(U,V)/46,oval:(U,V)=>Math.hypot(U/54,V/36),
+  heart:(U,V)=>mn(ci(U,V,-19,-14,25),ci(U,V,19,-14,25),seg(U,V,0,-6,0,44,34,3)),
+  star:(U,V)=>lobe(U,V,5,40,.26,2.5),tri:(U,V)=>poly(U,V,3,54,Math.PI/6),square:(U,V)=>box(U,V,0,0,40,40,6),penta:(U,V)=>poly(U,V,5,48),hexa:(U,V)=>poly(U,V,6,47),
+  rhombus:(U,V)=>Math.abs(U)/60+Math.abs(V)/36,clover:(U,V)=>mn(ci(U,V,0,-26,23),ci(U,V,-23,14,23),ci(U,V,23,14,23),ci(U,V,0,0,18)),quatre:(U,V)=>mn(ci(U,V,0,-26,21),ci(U,V,0,26,21),ci(U,V,-26,0,21),ci(U,V,26,0,21),ci(U,V,0,0,18)),flower:(U,V)=>lobe(U,V,6,40,.24,1.6),
+  atoll:(U,V)=>Math.abs(Math.hypot(U,V)-36)/13,peanut:(U,V)=>mn(ci(U,V,-22,0,28),ci(U,V,22,0,28),seg(U,V,-22,0,22,0,20)),
+  bean:(U,V)=>cut(Math.hypot(U/54,V/38),ci(U,V,0,38,22)),drop:(U,V)=>mn(ci(U,V,14,0,34),seg(U,V,14,0,-52,0,30,4)),egg:(U,V)=>Math.hypot(U/(U>0?50:38),V/40),
+  lshape:(U,V)=>mn(box(U,V,-14,0,18,46),box(U,V,10,26,40,18)),tshape:(U,V)=>mn(box(U,V,0,-26,50,17),box(U,V,0,8,17,44)),cross:(U,V)=>mn(box(U,V,0,0,52,17),box(U,V,0,0,17,52)),
+  horseshoe:(U,V)=>arc(U,V,32,15,-Math.PI*.15,Math.PI*1.15),bay:(U,V)=>cut(Math.hypot(U,V)/46,box(U,V,0,32,13,26)),
+  scurve:(U,V)=>mn(arc(U+18,V,24,13,-Math.PI*.1,Math.PI*1.1),arc(U-18,V,24,13,Math.PI*.9,Math.PI*2.1)),
+  boot:(U,V)=>mn(box(U,V,-8,-14,17,38),box(U,V,12,26,30,13)),fish:(U,V)=>mn(Math.hypot((U-10)/40,V/27),seg(U,V,-30,0,-52,-20,10),seg(U,V,-30,0,-52,20,10)),
+  tadpole:(U,V)=>mn(ci(U,V,18,0,30),seg(U,V,10,0,-30,14,22,6),seg(U,V,-30,14,-50,4,6,3)),
+  triple:(U,V)=>mn(ci(U,V,0,-28,22),ci(U,V,-26,18,20),ci(U,V,26,18,21)),chain:(U,V)=>mn(ci(U,V,-40,0,18),ci(U,V,0,0,21),ci(U,V,40,0,18)),
+  banana:(U,V)=>arc(U,V+30,52,15,Math.PI*.2,Math.PI*.8),butterfly:(U,V)=>mn(ci(U,V,-22,-16,22),ci(U,V,22,-16,22),ci(U,V,-18,22,16),ci(U,V,18,22,16)),
+  lemon:(U,V)=>Math.max(ci(U,V,0,-32,58),ci(U,V,0,32,58)),gourd:(U,V)=>mn(ci(U,V,-16,0,32),ci(U,V,28,0,20)),
+  mitten:(U,V)=>mn(box(U,V,0,6,28,34,3),seg(U,V,-24,-6,-40,-30,11)),comet:(U,V)=>mn(ci(U,V,24,0,26),seg(U,V,24,0,-56,10,24,5))};
  const sh=(x,y)=>{const u=(x-cx)*ca+(y-cy)*sa,v=-(x-cx)*sa+(y-cy)*ca;
   if(shape==='long')return Math.hypot(u/56/Sc,v/27/Sc);
   if(shape==='crescent'){const d=Math.hypot(x-cx,y-cy)/48/Sc,d2=Math.hypot(x-(cx+ca*26*Sc),y-(cy+sa*26*Sc))/30/Sc;return Math.max(d,2-d2);}
   if(shape==='twin'){let m=9;for(const [bx,by,br] of blobs)m=Math.min(m,Math.hypot(x-bx,y-by)/br);const [a,b]=blobs,t=Math.max(0,Math.min(1,((x-a[0])*(b[0]-a[0])+(y-a[1])*(b[1]-a[1]))/((b[0]-a[0])**2+(b[1]-a[1])**2))),px=a[0]+(b[0]-a[0])*t,py=a[1]+(b[1]-a[1])*t;return Math.min(m,Math.hypot(x-px,y-py)/9/Sc);}
+  if(SH[shape]){const U=u/Sc,V=v/Sc;return SH[shape](U,V);}
   let m=9;for(const [bx,by,br] of blobs)m=Math.min(m,Math.hypot(x-bx,y-by)/br);return m;};
  const ocean=new Uint8Array(NN).fill(1);
- for(let y=4;y<N-4;y++)for(let x=4;x<N-4;x++){const d=sh(x,y)+(fbm(x/18/Sc,y/18/Sc)-.5)*.55;if(d<1)ocean[id(x,y)]=0;}
+
+ for(let y=4;y<N-4;y++)for(let x=4;x<N-4;x++){const d=sh(x,y)+(fbm(x/18/Sc,y/18/Sc)-.5)*(SH[shape]&&shape!=='round'&&shape!=='oval'?.3:.55);if(d<1)ocean[id(x,y)]=0;}
  /* keep the big pieces only */
  {const lab=new Int32Array(NN).fill(-1),sz=[];for(let i=0;i<NN;i++){if(ocean[i]||lab[i]>=0)continue;const q=[i];lab[i]=sz.length;let n=0;while(q.length){const j=q.pop();n++;const x=j%N,y=(j/N)|0;for(const [dx,dy] of D4){const xx=x+dx,yy=y+dy;if(!In(xx,yy))continue;const k=id(xx,yy);if(!ocean[k]&&lab[k]<0){lab[k]=sz.length;q.push(k);}}}sz.push(n);}
-  const mx=Math.max(...sz);for(let i=0;i<NN;i++)if(!ocean[i]&&sz[lab[i]]<(shape==='archi'?40*Sc*Sc:mx*.25))ocean[i]=1;}
+  const mx=Math.max(...sz);for(let i=0;i<NN;i++)if(!ocean[i]&&sz[lab[i]]<(MULTI.has(shape)?40*Sc*Sc:mx*.25))ocean[i]=1;}
  /* distance to the coast */
  const cd=new Int16Array(NN).fill(999);{const q=[];for(let i=0;i<NN;i++)if(ocean[i]){cd[i]=0;q.push(i);}for(let h=0;h<q.length;h++){const i=q[h],x=i%N,y=(i/N)|0;for(const [dx,dy] of D4){const xx=x+dx,yy=y+dy;if(!In(xx,yy))continue;const k=id(xx,yy);if(cd[k]>cd[i]+1){cd[k]=cd[i]+1;q.push(k);}}}}
  /* 2. terraces */
@@ -78,7 +103,7 @@ const genIsland=(type,shape,num,NS=128)=>{
   pub:'church 1 1|chapel 1 1|kinder 1 1|policeBox 1 1|fireStation 1 1|observatory 1 1|lectureHall 2 1|natatorium 2 1|temple 2 2',
   fac:'tennis 2 1|basketball 2 1|miniGolf 2 2|festival 2 2|iceRink 2 2|nightMarket 2 2|bigWheel 2 2|viewTower 2 2|lakePark 3 3|botanic 3 2|market 3 2|zoo 3 3|aquarium 3 3|arena 3 3|waterpark 3 3|driveIn 3 3|golfRange 3 2',
   tow:'tw2 2 2|tw3 2 2|tw5 2 2|tw8 2 2|tw17 2 2|twinTower 2 2|roundTower 2 2|mixedTower 2 2',
-  farm:'barn 2 1|farmhouse 1 1|riceMill 1 1|flourMill 1 1|greenhouseFarm 2 2|silo 1 1|wind 1 1|dairy 2 1|equestrian 3 2|waterTower 1 1',vil:'hanok 1 1|cabin 1 1|country 1 1|peanut 1 1',wild:'campsite 3 2|observatory 1 1|lighthouse 1 1'};
+  farm:'barn 2 1|farmhouse 1 1|riceMill 1 1|flourMill 1 1|greenhouseFarm 3 2|silo 1 1|wind 1 1|dairy 2 1|equestrian 3 2|waterTower 1 1',vil:'hanok 1 1|cabin 1 1|country 1 1|peanut 1 1',wild:'campsite 3 2|observatory 1 1|lighthouse 1 1'};
  const BIGS=[],bigm=new Uint8Array(NN),used={};
  const poolOf=(z,L)=>{const t=type,q=R();if(t==='metro')return z==='com'?(L>=4?'tow':q<.65?'off':'com'):z==='res'?'mres':z==='park'?'fac':null;if(t==='city')return z==='com'?(q<.3?'off':'com'):z==='res'?'res':z==='pub'?'pub':z==='park'?'fac':null;
   if(t==='ind')return z==='ind'?'ind':z==='com'?'com':z==='res'?'res':null;if(t==='farm')return z==='field'?'farm':z==='res'?(R()<.5?'farm':'vil'):z==='com'?'vil':null;return z==='res'?'vil':z==='wild'?'wild':null;};
@@ -108,7 +133,7 @@ const genIsland=(type,shape,num,NS=128)=>{
    /* 농경지: 물에서 가까우면 논, 멀면 밭·풀밭(짚뭉치)·과수. 물이 멀고 블록이 크면 둠벙(작은 저수지)을 판다 */
    let wmin=1e9;for(const i of c)wmin=Math.min(wmin,WD[i]);
    if(wmin>9&&c.length>=20&&R()<.7){for(let t=0;t<40;t++){const i=c[(R()*c.length)|0],x=i%N,y=(i/N)|0,s=R()<.5?2:3,q=[];let ok=true;for(let yy=y;yy<y+s&&ok;yy++)for(let xx=x;xx<x+s;xx++){const j=id(xx,yy);if(!In(xx,yy)||blk[j]!==blk[i]||bigm[j]||nearR(j)||LVL[j]!==LVL[i]){ok=false;break;}q.push(j);}if(!ok)continue;for(const j of q){terr[j]=TWA;}wDist();wmin=0;break;}}
-   const q0=R(),kindF=wmin<=10&&q0<.55?'paddy':q0<.78?'field':q0<.92?'pasture':'orchard';
+   const q0=R(),kindF=wmin<=10&&q0<.36?'paddy':q0<.74?'field':q0<.9?'pasture':'orchard';
    for(const i of c){if(bigm[i]||water(i))continue;if(nearR(i)&&R()<.06){kind[i]=K.RES;lvl[i]=1;continue;}
     const k=kindF==='paddy'&&WD[i]>12?'field':kindF;
     if(k==='paddy')terr[i]=12;else if(k==='field')terr[i]=10;else if(k==='pasture'){if(R()<.07)prop[i]=hayP(R());else if(R()<.04)tree(i);}else{if((i%N+((i/N)|0))%2===0)tree(i);}}
