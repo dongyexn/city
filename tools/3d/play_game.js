@@ -136,7 +136,11 @@ const applyEnv=()=>{if(!W||!LT||!LT.sun)return;const t=ENV.t,e=Math.sin((t-6)/12
  /* sun and moon ride an arc across the sky behind the island */
  {const arc=f=>[6+88*f,24-17*Math.sin(Math.PI*Math.min(1,Math.max(0,f)))],vis=f=>ss(0,.05,f)*(1-ss(.95,1,f)),wv=wx==='rain'?.15:wx==='snow'?.35:1,fs=(t-5.5)/13,fm=((t-18.5+24)%24)/11;
   SKYB={sun:[...arc(fs),vis(fs)*wv,`#${lerpC(C3('#fffbef'),C3('#ffc77e'),gold).getHexString()}`],moon:[...arc(fm),vis(fm)*wv*ss(.1,.6,nt)]};
-  const su=$('sun'),mo=$('moon');if(su){su.style.left=SKYB.sun[0]+'%';su.style.top=SKYB.sun[1]+'%';su.style.opacity=SKYB.sun[2];su.style.setProperty('--c',SKYB.sun[3]);}if(mo){mo.style.left=SKYB.moon[0]+'%';mo.style.top=SKYB.moon[1]+'%';mo.style.opacity=SKYB.moon[2];}}
+  const su=$('sun'),mo=$('moon');if(su){su.style.left=SKYB.sun[0]+'%';su.style.top=SKYB.sun[1]+'%';su.style.opacity=SKYB.sun[2];su.style.setProperty('--c',SKYB.sun[3]);}if(mo){mo.style.left=SKYB.moon[0]+'%';mo.style.top=SKYB.moon[1]+'%';mo.style.opacity=SKYB.moon[2];}
+  /* 달의 모양: 계절마다 첫날 밤은 보름달(1계절=2일). 일 년에 한 번 — 여름 둘째 날 정오 무렵 일식, 가을 보름밤 자정 무렵 월식 */
+  const I=window.__SKYI,dy=ENV.day||0,nd=t<12?dy-1:dy,full=((nd%2)+2)%2===0;if(mo&&I){const k=full?'full':'cres';if(mo.dataset.k!==k){mo.dataset.k=k;mo.style.setProperty('--img','url('+I[k]+')');}
+   const tt=t<12?t+24:t,le=full&&ENV.sea===2?Math.max(0,1-Math.abs(tt-24.5)/1.6):0;mo.style.filter=le>0?`brightness(${(1-.3*le).toFixed(3)}) sepia(${(.8*le).toFixed(3)}) saturate(${(1+2.5*le).toFixed(3)}) hue-rotate(${(-28*le).toFixed(1)}deg)`:'';}
+  if(su){const se=ENV.sea===1&&dy%2===1&&t>11&&t<13.4?(t-11)/2.4:-1;su.classList.toggle('ecl',se>=0);if(se>=0){su.style.setProperty('--ex',((se-.5)*2.3*34).toFixed(1)+'px');su.style.setProperty('--gl',(1-Math.max(0,1-Math.abs(se-.5)*4)*.85).toFixed(3));}else su.style.removeProperty('--gl');}}
  {const st=$('stars');if(st){const o=ss(.25,.85,nt)*(wx==='clear'?1:wx==='snow'?.2:0);st.style.opacity=o;st.style.display=o>.01?'':'none';SKYB.stars=o;}}
  {const sv=$('envb').querySelector('svg'),mn=nt>.5?'1':'0';if(sv&&sv.dataset.m!==mn){sv.dataset.m=mn;sv.innerHTML=mn==='1'?'<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>':'<path d="M12 8a4 4 0 1 0 0 8 4 4 0 1 0 0-8z"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.9 4.9 1.4 1.4"/><path d="m17.7 17.7 1.4 1.4"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.3 17.7-1.4 1.4"/><path d="m19.1 4.9-1.4 1.4"/>';}}
  if(window.__XMAT)window.__XMAT.emissiveIntensity=.35+nt*1.6;if(window.__FW){window.__FW.emissive.set('#1b8fd6');window.__FW.emissiveIntensity=.1+.5*(1-day)+(wx!=='clear'?.15:0);}
@@ -454,3 +458,38 @@ $('islb').onclick=()=>{const p=$('isl');p.hidden=!p.hidden;$('islb').setAttribut
 resize();setTimeout(async()=>{await boot();fit();syncTop();syncMo();requestAnimationFrame(loop);window.__ready=1;},30);
 
 window.__dbg={sl:v=>{forceSl=v;},gen:genIsland,b64d,rot:d=>rotView(d),ed:()=>ED,clouds:()=>clouds,rebuild:()=>rebuild(),info:()=>{r.info.autoReset=false;r.info.reset();r.render(W.sc,cam);const i=r.info.render;r.shadowMap.needsUpdate=false;r.info.reset();r.render(W.sc,cam);const t=JSON.stringify({calls:i.calls,tris:i.triangles,geo:r.info.memory.geometries,tex:r.info.memory.textures});r.info.autoReset=true;return t;},tr:()=>TR2,env:o=>{if(o&&o.sea!==undefined){ENV.sea=o.sea;}if(o&&o.snap){Object.assign(SC,{gt:[...SEAT[ENV.sea].gt],aut:SEAT[ENV.sea].aut,blos:SEAT[ENV.sea].blos,snow:SEAT[ENV.sea].snow});seaTick(1);}Object.assign(ENV,o);applyEnv();return [...litMats].length+' lamps '+(window.__LAMPS||[]).length;},show:(t,x,z,r)=>{tool=t;rot=r||0;drawUI();show([[x,z]]);need=true;return GH.children.length+' '+why(x,z);},sim:s=>{for(let k=0;k<Math.round(s/.1);k++){lastT=performance.now()-100;tick(performance.now());}},edit:(t,tiles,sel,o={})=>{tool=t;if(sel!==undefined)selTer=sel;if(o.road!==undefined)selRoad=o.road;if(o.h!==undefined)selH=o.h;if(o.L!==undefined)flatL=o.L;if(o.rot!==undefined)rot=o.rot;commit(tiles);return why(tiles[0][0],tiles[0][1])||"ok";},ppl:()=>PPL,thumb:k=>{try{return thumb(k).length}catch(e){return String(e.stack||e)}},ghost:(x,z)=>{try{tool="bld";ghostAt(x,z);return GH.children.length}catch(e){return String(e.stack||e)}},cars:()=>CARS,step:s=>{lastT=performance.now()-s*1000;const m=motion;motion=true;syncMo();for(let k=0;k<Math.ceil(s/.1);k++){lastT=performance.now()-100;tick(performance.now());}r.shadowMap.needsUpdate=true;r.render(W.sc,cam);motion=m;},clouds,pick,cam,V,W:()=>W,GS:()=>GS,go:(x,z,k)=>{V.tx=x;V.tz=z;V.k=k;setCam();},rebuild};
+
+
+/* 해·달 — 3D 무광 클레이(해 A: 부푼 원판 + 콩 햇살, 달 B: 통통한 초승달). 시작 때 한 번만 그림으로 굽고 하늘에는 그 그림을 띄운다 */
+(()=>{try{const S=256,r=new THREE.WebGLRenderer({antialias:true,alpha:true,preserveDrawingBuffer:true});r.setSize(S,S);r.outputColorSpace=THREE.SRGBColorSpace;
+ const env=new THREE.PMREMGenerator(r).fromScene(new RoomEnvironment(),.04).texture,cam=new THREE.PerspectiveCamera(22,1,.1,100);cam.position.set(0,-.9,10.2);cam.lookAt(0,0,0);
+/* 무광 점토: 거친 표면 + 아주 고운 입자 요철 */
+const GR=(()=>{const c=document.createElement('canvas');c.width=c.height=256;const g=c.getContext('2d'),im=g.createImageData(256,256);for(let i=0;i<im.data.length;i+=4){const v=128+(Math.random()-.5)*70;im.data[i]=im.data[i+1]=im.data[i+2]=v;im.data[i+3]=255;}g.putImageData(im,0,0);g.filter='blur(.6px)';g.drawImage(c,0,0);const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(3,3);return t;})();
+const mat=(c,ro=.92)=>new THREE.MeshStandardMaterial({color:c,roughness:ro,metalness:0,bumpMap:GR,bumpScale:.6,envMapIntensity:.18});
+/* 부푼 원판: 슈퍼타원 단면을 돌린다 — 앞면이 통통하게 솟고 가장자리는 둥글다 */
+const pillow=(Rr,H,m,n=4.5)=>{const P=[];for(let k=0;k<=48;k++){const t=-Math.PI/2+k/48*Math.PI,c=Math.cos(t),si=Math.sin(t);P.push(new THREE.Vector2(Math.max(1e-4,Rr*Math.pow(Math.abs(c),2/n)),H*Math.sign(si)*Math.pow(Math.abs(si),2/n)));}const g=new THREE.LatheGeometry(P,96);g.rotateX(Math.PI/2);g.computeVertexNormals();return new THREE.Mesh(g,m);};
+const surfZ=(x,y,Rr,H,n=4.5)=>{const q=Math.min(.999,Math.hypot(x,y)/Rr);return H*Math.pow(1-Math.pow(q,n),1/n);};
+const puff=(shape,depth,bev,m,segs=10)=>{const g=new THREE.ExtrudeGeometry(shape,{depth,bevelEnabled:true,bevelThickness:bev,bevelSize:bev*.92,bevelSegments:segs,curveSegments:64});g.translate(0,0,-depth/2);g.computeVertexNormals();return new THREE.Mesh(g,m);};
+const circle=R=>{const s=new THREE.Shape();s.absarc(0,0,R,0,Math.PI*2);return s;};
+const capsule=(L,w)=>{const s=new THREE.Shape();s.moveTo(-w,0);s.lineTo(-w,L);s.absarc(0,L,w,Math.PI,0,true);s.lineTo(w,0);s.absarc(0,0,w,0,Math.PI,true);return s;};
+const drop=(L,w)=>{const s=new THREE.Shape();s.moveTo(-w,0);s.quadraticCurveTo(-w*.55,L*.7,0,L);s.quadraticCurveTo(w*.55,L*.7,w,0);s.absarc(0,0,w,0,Math.PI,true);return s;};
+const flower=(R,n,a)=>{const s=new THREE.Shape(),N=n*24;for(let k=0;k<=N;k++){const t=k/N*Math.PI*2,rr=R+a*Math.pow(Math.abs(Math.cos(t*n/2)),.7);k?s.lineTo(Math.cos(t)*rr,Math.sin(t)*rr):s.moveTo(Math.cos(t)*rr,Math.sin(t)*rr);}return s;};
+const crescent=(R,o)=>{const ri=R*.84,cx=o,cy=o*.5,d=Math.hypot(cx,cy),a=(R*R-ri*ri+d*d)/(2*d),h=Math.sqrt(R*R-a*a),bx=a*cx/d,by=a*cy/d,p1=[bx+h*cy/d,by-h*cx/d],p2=[bx-h*cy/d,by+h*cx/d];
+ const s=new THREE.Shape(),t1=Math.atan2(p1[1],p1[0]),t2=Math.atan2(p2[1],p2[0]);let e2=t1;while(e2<=t2)e2+=Math.PI*2;s.absarc(0,0,R,t2,e2,false);const u1=Math.atan2(p1[1]-cy,p1[0]-cx),u2=Math.atan2(p2[1]-cy,p2[0]-cx);let f2=u2;while(f2>=u1)f2-=Math.PI*2;s.absarc(cx,cy,ri,u1,f2,true);return s;};
+/* 꽃 쿠션: 부푼 원판의 둘레를 물결로 늘린다 */
+const pflower=(Rr,H,n,a,m)=>{const e=pillow(Rr,H,m),p=e.geometry.attributes.position;for(let i=0;i<p.count;i++){const x=p.getX(i),y=p.getY(i),t=Math.atan2(y,x),f=1+a*(Math.pow(Math.abs(Math.cos(t*n/2)),.8)-.5);p.setXY(i,x*f,y*f);}e.geometry.computeVertexNormals();return e;};
+/* 통통한 초승달: 호를 따라 굵기가 줄어드는 관(끝은 둥근 공) */
+const pcres=(Rr,w,span,m)=>{const pts=[];for(let k=0;k<=40;k++){const t=Math.PI*.5+span*(k/40-.5)+Math.PI*.35;pts.push(new THREE.Vector3(Math.cos(t)*Rr,Math.sin(t)*Rr,0));}const cv=new THREE.CatmullRomCurve3(pts),T=80,RS=32,g=new THREE.TubeGeometry(cv,T,w,RS,false),p=g.attributes.position;
+ for(let i=0;i<=T;i++){const u=i/T,c=cv.getPointAt(u),sc=Math.max(.02,Math.pow(Math.sin(Math.PI*u),.5));for(let j=0;j<=RS;j++){const k=i*(RS+1)+j;p.setXYZ(k,c.x+(p.getX(k)-c.x)*sc,c.y+(p.getY(k)-c.y)*sc,(p.getZ(k))*sc*.42);}}g.computeVertexNormals();const G=new THREE.Group();G.add(new THREE.Mesh(g,m));
+ return G;};
+const SUNY='#ffd264',SUNR='#ffc25a',MOONC='#f8e9b8',DENT='#dcc88a';
+const rays=(g,n,make,r0,m)=>{for(let k=0;k<n;k++){const a=k/n*Math.PI*2,e=puff(make(),.05,.07,m,6);e.scale.z=.7;e.rotation.z=a-Math.PI/2;e.position.set(Math.cos(a)*r0,Math.sin(a)*r0,0);g.add(e);}};
+/* 눌린 분화구: 어두운 바닥 + 밝은 둥근 테 */
+const dent=(g,x,y,Rr,m,PR,PH,rc=MOONC)=>{const z=surfZ(x,y,PR,PH);const b=new THREE.Mesh(new THREE.CircleGeometry(Rr,32),m);b.position.set(x,y,z+.004);g.add(b);const t=new THREE.Mesh(new THREE.TorusGeometry(Rr,Rr*.2,16,40),mat(rc,.55));t.scale.z=.45;t.position.set(x,y,z);g.add(t);};
+
+ const shot=obj=>{const sc=new THREE.Scene();sc.environment=env;sc.add(new THREE.HemisphereLight('#ffffff','#c4b28e',1.15));const d=new THREE.DirectionalLight('#ffffff',1.5);d.position.set(-3,4,6);sc.add(d);obj.rotation.x=-.18;obj.rotation.y=.12;sc.add(obj);r.render(sc,cam);return r.domElement.toDataURL();};
+ const sun=new THREE.Group();sun.add(pillow(.95,.22,mat(SUNY)));rays(sun,8,()=>capsule(.32,.13),1.42,mat(SUNR));
+ const moon=new THREE.Group();moon.add(pcres(.82,.42,Math.PI*1.25,mat(MOONC)));
+ const fm=new THREE.Group();fm.add(pillow(.9,.2,mat(MOONC)));{const dm=mat(DENT,.7);dent(fm,-.3,-.18,.19,dm,.9,.2);dent(fm,.32,.28,.14,dm,.9,.2);dent(fm,.28,-.4,.1,dm,.9,.2);}
+ const su=shot(sun),mo=shot(moon),fu=shot(fm);r.dispose();r.forceContextLoss();window.__SKYI={cres:mo,full:fu};
+ $('sun').style.setProperty('--img','url('+su+')');try{applyEnv();}catch(e){}}catch(e){console.warn('sky bake',e);}})();

@@ -19,18 +19,13 @@ body{margin:0;background:linear-gradient(var(--sky1),var(--sky2) 55%,var(--sky3)
 @media (prefers-reduced-motion:reduce){#stars i{animation:none}}
 /* 해·달 — 카툰 클레이: 무광 공에 부드러운 명암, 둥근 꽃잎 햇살, 움푹한 분화구 */
 #sun,#moon{position:fixed;left:-300px;top:0;border-radius:50%;pointer-events:none;opacity:0;transform:translate(-50%,-50%)}
-#sun{width:200px;height:200px;background:radial-gradient(circle closest-side,rgba(255,236,190,.42) 22%,rgba(255,228,170,.18) 46%,rgba(255,222,165,0) 100%)}
-#sun::before{content:"";position:absolute;left:50%;top:50%;width:92px;height:92px;margin:-46px 0 0 -46px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cg stroke='%23e8902e' stroke-width='7' stroke-linecap='round'%3E%3Cline x1='50.0' y1='15.2' x2='50.0' y2='8.2'/%3E%3Cline x1='76.2' y1='26.0' x2='81.1' y2='21.1'/%3E%3Cline x1='87.0' y1='52.2' x2='94.0' y2='52.2'/%3E%3Cline x1='76.2' y1='78.4' x2='81.1' y2='83.3'/%3E%3Cline x1='50.0' y1='89.2' x2='50.0' y2='96.2'/%3E%3Cline x1='23.8' y1='78.4' x2='18.9' y2='83.3'/%3E%3Cline x1='13.0' y1='52.2' x2='6.0' y2='52.2'/%3E%3Cline x1='23.8' y1='26.0' x2='18.9' y2='21.1'/%3E%3C/g%3E%3Cg stroke='%23ffc548' stroke-width='7' stroke-linecap='round'%3E%3Cline x1='50.0' y1='13.0' x2='50.0' y2='6.0'/%3E%3Cline x1='76.2' y1='23.8' x2='81.1' y2='18.9'/%3E%3Cline x1='87.0' y1='50.0' x2='94.0' y2='50.0'/%3E%3Cline x1='76.2' y1='76.2' x2='81.1' y2='81.1'/%3E%3Cline x1='50.0' y1='87.0' x2='50.0' y2='94.0'/%3E%3Cline x1='23.8' y1='76.2' x2='18.9' y2='81.1'/%3E%3Cline x1='13.0' y1='50.0' x2='6.0' y2='50.0'/%3E%3Cline x1='23.8' y1='23.8' x2='18.9' y2='18.9'/%3E%3C/g%3E%3Cg stroke='%23ffe39a' stroke-width='2.2' stroke-linecap='round' opacity='.8'%3E%3Cline x1='49.4' y1='10.5' x2='49.4' y2='8.0'/%3E%3Cline x1='76.6' y1='21.8' x2='78.4' y2='20.0'/%3E%3Cline x1='87.9' y1='49.0' x2='90.4' y2='49.0'/%3E%3Cline x1='76.6' y1='76.2' x2='78.4' y2='78.0'/%3E%3Cline x1='49.4' y1='87.5' x2='49.4' y2='90.0'/%3E%3Cline x1='22.2' y1='76.2' x2='20.4' y2='78.0'/%3E%3Cline x1='10.9' y1='49.0' x2='8.4' y2='49.0'/%3E%3Cline x1='22.2' y1='21.8' x2='20.4' y2='20.0'/%3E%3C/g%3E%3C/svg%3E") center/contain no-repeat;animation:sunr 90s linear infinite}
-@keyframes sunr{to{transform:rotate(360deg)}}
-/* 두께 있는 클레이 원판: 납작한 앞면 + 아래로 비치는 옆면(두께) + 둥글린 테두리 */
-#sun::after{content:"";position:absolute;left:50%;top:50%;width:52px;height:52px;margin:-28px 0 0 -26px;border-radius:50%;
- background:radial-gradient(circle at 38% 34%,var(--c,#fff3c4) 0,#ffdc6e 46%,#ffcd52 100%);
- box-shadow:inset 0 2px 2px rgba(255,255,255,.65),inset 0 -2px 3px rgba(222,132,40,.45),inset 0 0 0 1px rgba(255,236,170,.6),0 4px 0 #e8902e,0 5px 6px rgba(190,100,30,.25)}
-#moon{width:120px;height:120px;background:radial-gradient(circle closest-side,rgba(232,236,255,.22) 0 34%,rgba(232,236,255,.07) 62%,rgba(232,236,255,0) 100%)}
-#moon::before{content:"";position:absolute;left:50%;top:50%;width:44px;height:44px;margin:-24px 0 0 -22px;border-radius:50%;
- background:radial-gradient(circle at 30% 61%,#e8d8a8 0 8.6%,rgba(255,255,255,.7) 9.4% 11%,rgba(0,0,0,0) 11.6%),radial-gradient(circle at 63% 37%,#e8d8a8 0 6.6%,rgba(255,255,255,.7) 7.4% 9%,rgba(0,0,0,0) 9.6%),
-  radial-gradient(circle at 61% 73%,#ebdcae 0 4.4%,rgba(255,255,255,.65) 5.2% 6.6%,rgba(0,0,0,0) 7.2%),radial-gradient(circle at 38% 34%,#fffbef 0,#fbf1d2 50%,#f3e4b8 100%);
- box-shadow:inset 0 2px 2px rgba(255,255,255,.7),inset 0 -2px 3px rgba(160,136,86,.35),0 4px 0 #cdb57c,0 5px 10px rgba(240,232,200,.35)}
+#sun{width:150px;height:150px;background:radial-gradient(circle closest-side,rgba(255,236,190,calc(.36*var(--gl,1))) 20%,rgba(255,228,170,calc(.14*var(--gl,1))) 46%,rgba(255,222,165,0) 100%)}
+#moon::after{display:none}
+#sun::before{display:none;content:"";position:absolute;left:50%;top:50%;width:31px;height:31px;margin:-17px 0 0 -16px;border-radius:50%;background:radial-gradient(circle at 40% 36%,#4a5372,#2a3048);box-shadow:0 0 6px 2px rgba(255,236,190,.55);transform:translateX(var(--ex,0));z-index:1}
+#sun.ecl::before{display:block}
+#sun::after,#moon::before{content:"";position:absolute;left:50%;top:50%;background:var(--img) center/contain no-repeat}
+#sun::after{width:66px;height:66px;margin:-33px 0 0 -33px}
+#moon::before{width:80px;height:80px;margin:-40px 0 0 -40px}
 /* 판 */
 .glass{background:var(--fill);-webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--edge),var(--hi),var(--drop)}
 button{font:600 14px var(--font);color:var(--fg2);background:transparent;border:0;border-radius:3px;padding:10px 13px;white-space:nowrap;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .12s cubic-bezier(.4,0,.2,1),color .12s}
