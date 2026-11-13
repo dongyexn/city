@@ -255,7 +255,7 @@ const why=(x,z)=>{const i=z*N+x;if(x<1||z<1||x>=N-1||z>=N-1||!W.land(x,z))return
  if(W.riv(x,z))return '물 위';if(GS.lmkA[i]>=0||bigAt(i)>=0)return '먼저 철거';
  if((tool==='tree'||tool==='land'||tool==='bld')&&GS.kind[i]===K.ROAD)return '도로 위';return '';};
 const apply=tiles=>{let n=0,bad='';for(const [x,z] of tiles){const i=z*N+x,w=why(x,z);if(w){bad=w;continue;}
-  if(tool==='road'){clearT(i);if(selRoad===0){GS.kind[i]=K.ROAD;GS.pv[i]=0;}else{GS.kind[i]=K.EMPTY;if(W.riv(x,z)&&selRoad!==4)GS.terr[i]=0;GS.pv[i]=selRoad;}}
+  if(tool==='road'){clearT(i);if(selRoad===0){GS.kind[i]=K.ROAD;GS.pv[i]=0;GS.man[i]|=1;/* 놓은 자리 높이 그대로 — 자동 높이 맞춤이 끌어올리지 않게 */}else{GS.kind[i]=K.EMPTY;if(W.riv(x,z)&&selRoad!==4)GS.terr[i]=0;GS.pv[i]=selRoad;}}
   else if(tool==='del'){const b=bigAt(i),a=GS.lmkA[i];if(b>=0)ED.big.splice(b,1);else if(a>=0){for(let j=0;j<N*N;j++)if(GS.lmkA[j]===a){GS.lmkA[j]=-1;GS.kind[j]=K.EMPTY;}}else if(ED.fb.has(i)||GS.deco[i]||GS.prop[i]||(GS.kind[i]>=K.RES&&GS.kind[i]!==K.PARK)||(W.riv(x,z)&&GS.pv[i]===4)){clearT(i);if(W.riv(x,z)&&GS.pv[i]===4)GS.pv[i]=0;if(GS.kind[i]!==K.ROAD)GS.kind[i]=K.EMPTY;}
    /* bare ground: the block itself goes — the column drops one level, keeping its surface */
    else if(GS.sl[i]){GS.sl[i]=0;GS.man[i]=1;}
