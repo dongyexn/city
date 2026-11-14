@@ -109,7 +109,7 @@ const genIsland=(type,shape,num,NS=128)=>{
      const c=1+MT[j]*26+(terr[j]===TWA?(terr[i]===TWA?3:9):0)+(LVL[j]!==LVL[i]?2:0)+fbm(xx/6,yy/6+3,2)*1.2+(d!==dr&&i!==src?6:0)+(kind[j]===K.ROAD?-.6:0),nd=dd+c,ns=j*4+d;if(nd<dist[ns]){dist[ns]=nd;from[ns]=st;push(nd,ns);}}}return null;};
  const FROADS=()=>{const ox=Math.cos(FTH),oy=Math.sin(FTH);
   /* 마을 자리: 산자락(산 기운 .08~.32), 들보다 한두 단 높지 않은 곳, 서로 멀리 */
-  const nv=Sc>1.2?4:3;for(let k=0;k<nv;k++){let best=-1,bs=-1e9;for(let t=0;t<900;t++){const i=(R()*NN)|0;if(ocean[i]||terr[i]===TWA||cd[i]<5||MT[i]<.06||MT[i]>.3||LVL[i]>3)continue;const x=i%N,y=(i/N)|0;let dm=99;for(const [a,b] of VIL)dm=Math.min(dm,Math.hypot(a-x,b-y));if(VIL.length&&dm<24*Sc)continue;const sc=dm+R()*6;if(sc>bs){bs=sc;best=i;}}if(best>=0)VIL.push([best%N,(best/N)|0]);}
+  const nv=Sc>1.2?4:3;for(let k=0;k<nv;k++){let best=-1,bs=-1e9;for(let t=0;t<900;t++){const i=(R()*NN)|0;if(ocean[i]||terr[i]===TWA||cd[i]<5||MT[i]<.06||MT[i]>.3||LVL[i]>3)continue;const x=i%N,y=(i/N)|0;let dm=99;for(const [a,b] of VIL)dm=Math.min(dm,Math.hypot(a-x,b-y));if(VIL.length&&dm<24*Sc)continue;const mN=MT[id(x,Math.max(0,y-6))]||0,mS=MT[id(x,Math.min(N-1,y+6))]||0,sc=dm+R()*6+(mN-mS)*40;/* 배산임수: 뒤(북)는 산, 앞(남)은 들 */if(sc>bs){bs=sc;best=i;}}if(best>=0)VIL.push([best%N,(best/N)|0]);}
   /* 지방도: 열린 쪽 바닷가에서 가장 안쪽 마을까지 */
   let m0=-1,md=1e9;for(let i=0;i<NN;i++){if(ocean[i]||cd[i]!==2||terr[i]===TWA)continue;const x=i%N,y=(i/N)|0,d=Math.hypot(x-(cx+ox*FMC*1.6),y-(cy+oy*FMC*1.6));if(d<md){md=d;m0=i;}}
   if(m0>=0&&VIL.length){VIL.sort((a,b)=>Math.hypot(b[0]-m0%N,b[1]-((m0/N)|0))-Math.hypot(a[0]-m0%N,a[1]-((m0/N)|0)));const far=VIL[0],g=id(far[0],far[1]),P=route(m0,i=>i===g);if(P)for(const j of P)kind[j]=K.ROAD;}
@@ -175,7 +175,7 @@ const genIsland=(type,shape,num,NS=128)=>{
   const ao=(R()*9)|0,bo=(R()*7)|0,h2=(a,b)=>((Math.imul(a,73856093)^Math.imul(b,19349663))>>>0);
   for(let i=0;i<NN;i++){if(!land(i)||water(i)||isR(i)||bigm[i]||kind[i]||prop[i])continue;const x=i%N,y=(i/N)|0,a=alongX?x:y,b=alongX?y:x,v=vd(x,y),m=MT[i];
    if(v<VR){/* 마을 안: 텃밭·마당 나무 */const q=R();if(q<.22){terr[i]=10;lvl[i]=1+(h2(x>>1,y>>1)%250);}else if(q<.42)tree(i);continue;}
-   if(m>=.3||LVL[i]>=4){/* 산: 빽빽한 숲, 꼭대기엔 바위 */if(LVL[i]>=5&&fbm(x/5,y/5+7)>.62)terr[i]=9;else if(R()<.86)tree(i);continue;}
+   if(m>=.3||LVL[i]>=4){/* 산: 빽빽한 숲, 꼭대기엔 바위 */if(LVL[i]>=5&&fbm(x/5,y/5+7)>.62)terr[i]=9;else if(R()<.86){tree(i);if(R()<.75)deco[i]=21;/* 산은 소나무가 주인, 활엽수는 사이사이(가을 단풍) */}continue;}
    if(m>=.1){/* 산자락: 물 가까운 골짜기엔 다랑논(단마다 따로 필지) · 과수원 줄나무 · 비탈밭 · 풀밭 */const z=fbm(x/9+11,y/9);if(WD[i]<=12*Sc&&fbm(x/12+60,y/12)>.48){terr[i]=12;lvl[i]=1+(h2(LVL[i]*97+Math.floor(a/4),Math.floor(b/3)+300)%250);continue;}if(z<.42){if((a%2===0)&&(b%2===0))tree(i);}else if(z<.62){terr[i]=10;lvl[i]=1+(h2(Math.floor((a+fbm(x/5,y/5)*3)/5),Math.floor(b/3)+77)%250);}else if(R()<.25)tree(i);else if(R()<.04)prop[i]=hayP(R());continue;}
    const pa=a-ao,pB=b-bo,ra=((pa%9)+9)%9,rb=((pB%7)+7)%7;
    if(WD[i]<=(7+fbm(x/14+40,y/14)*9)*Sc&&LVL[i]<=2){if(ra===8||rb===6){terr[i]=0;if(rb===6&&ra!==8&&(((Math.floor(pB/7)%2)+2)%2===0))pv[i]=6;continue;}terr[i]=12;lvl[i]=1+(h2(Math.floor(pa/9),Math.floor(pB/7)*2+(rb>=3?1:0))%250);continue;}
