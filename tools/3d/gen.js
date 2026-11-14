@@ -89,7 +89,7 @@ const genIsland=(type,shape,num,NS=128)=>{
   /* 수원: 섬 안쪽(바다에서 먼 곳)의 한쪽, 하구: 그 반대편 바다 */
   const th=FV?FTH+Math.PI+(R()-.5)*.5:R()*Math.PI*2,ux=Math.cos(th),uy=Math.sin(th);let s0=-1;for(let f=.55;f>=0&&s0<0;f-=.1){const px=Math.round(cx+ux*mcd*f),py=Math.round(cy+uy*mcd*f);if(In(px,py)&&land(id(px,py))&&cd[id(px,py)]>4*Sc)s0=id(px,py);}
   const rv={forest:.85,farm:.95,city:.85,ind:.6,metro:.9}[type]||.8;
-  if(s0>=0&&R()<rv){let sx=s0%N,sy=(s0/N)|0;const lk={forest:.8,farm:.65,city:.45,ind:.25,metro:.3}[type]||.4;
+  if(s0>=0&&R()<rv){let sx=s0%N,sy=(s0/N)|0;const lk=FV?1:{forest:.8,farm:.65,city:.45,ind:.25,metro:.3}[type]||.4;
    if(R()<lk){const r=(5+R()*4)*Sc;blob(sx,sy,r,.38,R()*30);sx-=ux*r*.7;sy-=uy*r*.7;}
    const tx=cx-ux*N,ty=cy-uy*N,[n,ex,ey]=flow(sx,sy,tx,ty,2.2,type==="metro"?5.5:4.6,false);
    /* 지류: 옆 고지대에서 본류로 */const nt=type==='forest'||type==='farm'?2:R()<.6?1:0;
@@ -164,8 +164,11 @@ const genIsland=(type,shape,num,NS=128)=>{
   const pb=(cands,pool)=>{if(!cands.length)return false;const i=cands[(R()*cands.length)|0],b=blk[i],c=cands.filter(j=>blk[j]===b);const sv=GB.farm;GB.farm=pool;const ok=placeBig(c,'farm',b);GB.farm=sv;return ok;};
   const nearV=front.filter(i=>vd(i%N,(i/N)|0)<VR),midV=front.filter(i=>{const d=vd(i%N,(i/N)|0);return d>=VR*.7&&d<VR*1.8;}),plain=front.filter(i=>MT[i]<.05&&vd(i%N,(i/N)|0)>VR*1.4);
   /* 버스터미널: 첫(가장 큰) 마을 */{const t=nearV.filter(i=>Math.hypot(i%N-VIL[VIL.length-1][0],((i/N)|0)-VIL[VIL.length-1][1])<VR*1.4);pb(t.length?t:nearV,'busTerminal 2 1');}
-  for(let k=0;k<VIL.length*9;k++)pb(nearV,'hanok 1 1|country 1 1|farmhouse 1 1|cabin 1 1|peanut 1 1|hanok 1 1');
-  for(let k=0;k<VIL.length*2;k++)pb(midV,'barn 2 1|riceMill 1 1|silo 1 1|dairy 2 1|flourMill 1 1|waterTower 1 1|farmhouse 1 1');
+  /* 큰 마을: 마을회관·경로당, 마을마트·농약사, 교회 / 마을마다 어귀(들 쪽)에 정자목 */{const V0=VIL[VIL.length-1],t=nearV.filter(i=>Math.hypot(i%N-V0[0],((i/N)|0)-V0[1])<VR*1.4);pb(t.length?t:nearV,'villageHall 2 1');pb(t.length?t:nearV,'villageMart 2 1');pb(nearV,'farmSupply 1 1');pb(nearV,'chapel 1 1');}
+  for(const [vx,vy] of VIL){const e=front.filter(i=>{const d=Math.hypot(i%N-vx,((i/N)|0)-vy);return d>VR*.55&&d<VR*1.3&&MT[i]<.12;});if(e.length)pb(e,'villageTree 2 2');}
+  for(let k=0;k<VIL.length*9;k++)pb(nearV,'slateHouse 1 1|yangok 1 1|yangokBlue 1 1|farmhouse 1 1|slateHouse 1 1|hanok 1 1|yangok 1 1');
+  for(let k=0;k<VIL.length*2;k++)pb(midV,'cowshed 3 2|containerStore 1 1|riceMill 1 1|barn 2 1|silo 1 1|containerStore 1 1');
+  /* 물가 양수장 */for(let k=0;k<2;k++)pb(front.filter(i=>WD[i]<=3*Sc),'pumpHouse 1 1');
   for(let k=0;k<3+((R()*3)|0);k++)pb(plain,'greenhouseFarm 4 3');
   if(R()<.6)pb(midV,'equestrian 4 3');if(R()<.6)pb(plain,'wind 1 1');
   /* 경지: 논은 물(강·저수지) 가까운 낮은 들에 8×3칸 직사각 필지, 9칸마다 가로 농로, 두 필지마다 세로 농로 */
@@ -173,20 +176,23 @@ const genIsland=(type,shape,num,NS=128)=>{
   for(let i=0;i<NN;i++){if(!land(i)||water(i)||isR(i)||bigm[i]||kind[i]||prop[i])continue;const x=i%N,y=(i/N)|0,a=alongX?x:y,b=alongX?y:x,v=vd(x,y),m=MT[i];
    if(v<VR){/* 마을 안: 텃밭·마당 나무 */const q=R();if(q<.22){terr[i]=10;lvl[i]=1+(h2(x>>1,y>>1)%250);}else if(q<.42)tree(i);continue;}
    if(m>=.3||LVL[i]>=4){/* 산: 빽빽한 숲, 꼭대기엔 바위 */if(LVL[i]>=5&&fbm(x/5,y/5+7)>.62)terr[i]=9;else if(R()<.86)tree(i);continue;}
-   if(m>=.1){/* 산자락: 과수원 줄나무 · 비탈밭 · 풀밭 */const z=fbm(x/9+11,y/9);if(z<.42){if((a%2===0)&&(b%2===0))tree(i);}else if(z<.62){terr[i]=10;lvl[i]=1+(h2(Math.floor((a+fbm(x/5,y/5)*3)/5),Math.floor(b/3)+77)%250);}else if(R()<.25)tree(i);else if(R()<.04)prop[i]=hayP(R());continue;}
+   if(m>=.1){/* 산자락: 물 가까운 골짜기엔 다랑논(단마다 따로 필지) · 과수원 줄나무 · 비탈밭 · 풀밭 */const z=fbm(x/9+11,y/9);if(WD[i]<=12*Sc&&fbm(x/12+60,y/12)>.48){terr[i]=12;lvl[i]=1+(h2(LVL[i]*97+Math.floor(a/4),Math.floor(b/3)+300)%250);continue;}if(z<.42){if((a%2===0)&&(b%2===0))tree(i);}else if(z<.62){terr[i]=10;lvl[i]=1+(h2(Math.floor((a+fbm(x/5,y/5)*3)/5),Math.floor(b/3)+77)%250);}else if(R()<.25)tree(i);else if(R()<.04)prop[i]=hayP(R());continue;}
    const pa=a-ao,pB=b-bo,ra=((pa%9)+9)%9,rb=((pB%7)+7)%7;
    if(WD[i]<=(7+fbm(x/14+40,y/14)*9)*Sc&&LVL[i]<=2){if(ra===8||rb===6){terr[i]=0;if(rb===6&&ra!==8&&(((Math.floor(pB/7)%2)+2)%2===0))pv[i]=6;continue;}terr[i]=12;lvl[i]=1+(h2(Math.floor(pa/9),Math.floor(pB/7)*2+(rb>=3?1:0))%250);continue;}
    /* 밭: 경계가 조금씩 굽은 필지. 열에 하나는 풀밭(짚뭉치) */const ka=Math.floor((a+fbm(x/7+3,y/7)*4)/6),kb=Math.floor((b+fbm(x/7,y/7+3)*4)/4),hh=h2(ka,kb+500);
    if(hh%10===0){if(R()<.08)prop[i]=hayP(R());continue;}if(ra===8&&hh%3===0){terr[i]=0;continue;}terr[i]=10;lvl[i]=1+(hh%250);}
+  /* 둑길: 들판을 지나는 강 양옆 한 칸은 농로(자전거·경운기 길) */for(let i=0;i<NN;i++){if(!land(i)||water(i)||isR(i)||bigm[i]||kind[i]||LVL[i]>2||MT[i]>.1)continue;const x=i%N,y=(i/N)|0;if(!D4.some(([dx,dy])=>In(x+dx,y+dy)&&terr[id(x+dx,y+dy)]===TWA&&!ocean[id(x+dx,y+dy)]))continue;if(terr[i]!==0&&terr[i]!==10&&terr[i]!==12)continue;terr[i]=0;lvl[i]=0;pv[i]=6;prop[i]=0;deco[i]=0;}
+  /* 산소: 산 중턱 양지에 몇 기 */{let n=0;for(let t=0;t<4000&&n<4+((R()*3)|0);t++){const i=(R()*NN)|0;if(!land(i)||water(i)||isR(i)||bigm[i]||kind[i]||MT[i]<.3||MT[i]>.6||LVL[i]<3||terr[i]===9)continue;const x=i%N,y=(i/N)|0;if(!D4.every(([dx,dy])=>In(x+dx,y+dy)&&LVL[id(x+dx,y+dy)]===LVL[i]&&!bigm[id(x+dx,y+dy)]))continue;bigm[i]=1;deco[i]=0;prop[i]=0;terr[i]=0;BIGS.push(['grave',x,y,1,1,'z+']);n++;}}
   /* 길가 밭 한쪽에 원두막 */for(let k=0;k<4;k++){const c=front.filter(i=>terr[i]===10&&!prop[i]&&!bigm[i]&&vd(i%N,(i/N)|0)>VR);if(!c.length)break;const i=c[(R()*c.length)|0];terr[i]=0;lvl[i]=0;prop[i]=hutP(R());}};
  /* 농로 잇기: 차도에 닿지 않은 농로 묶음은 풀밭(필요하면 논밭 가장자리)을 지나 가장 가까운 같은 높이 차도까지 길을 내고, 끝내 못 닿으면 풀밭으로 되돌린다 */
  const FLINK=()=>{const seen=new Uint8Array(NN),isRd=i=>kind[i]===K.ROAD;
   for(let s0=0;s0<NN;s0++){if(pv[s0]!==6||seen[s0])continue;const comp=[s0];seen[s0]=1;for(let h=0;h<comp.length;h++){const i=comp[h],x=i%N,y=(i/N)|0;for(const [dx,dy] of D4){const xx=x+dx,yy=y+dy;if(!In(xx,yy))continue;const j=id(xx,yy);if(pv[j]===6&&!seen[j]){seen[j]=1;comp.push(j);}}}
    const touch=comp.some(i=>{const x=i%N,y=(i/N)|0;return D4.some(([dx,dy])=>{const xx=x+dx,yy=y+dy;if(!In(xx,yy))return false;const j=id(xx,yy);return isRd(j)&&LVL[j]===LVL[i];});});if(touch)continue;
    const dist=new Map(),from=new Map(),H=[];for(const i of comp){dist.set(i,0);H.push([0,i]);}let goal=-1;
-   while(H.length&&goal<0){let bi=0;for(let k=1;k<H.length;k++)if(H[k][0]<H[bi][0])bi=k;const [d,i]=H[bi];H[bi]=H[H.length-1];H.pop();if(d>dist.get(i)||d>40)continue;const x=i%N,y=(i/N)|0;
+   const hp=e=>{H.push(e);let k=H.length-1;while(k){const q=(k-1)>>1;if(H[q][0]<=H[k][0])break;[H[q],H[k]]=[H[k],H[q]];k=q;}},hpop=()=>{const t=H[0],l=H.pop();if(H.length){H[0]=l;let k=0;for(;;){const a2=2*k+1,b2=a2+1;let m=k;if(a2<H.length&&H[a2][0]<H[m][0])m=a2;if(b2<H.length&&H[b2][0]<H[m][0])m=b2;if(m===k)break;[H[m],H[k]]=[H[k],H[m]];k=m;}}return t;};
+   while(H.length&&goal<0){const [d,i]=hpop();if(d>dist.get(i)||d>40)continue;const x=i%N,y=(i/N)|0;
     for(const [dx,dy] of D4){const xx=x+dx,yy=y+dy;if(!In(xx,yy))continue;const j=id(xx,yy);if(LVL[j]!==LVL[i])continue;if(isRd(j)){goal=i;break;}
-     if(ocean[j]||terr[j]===TWA||kind[j]||bigm[j]||pv[j]===6)continue;const c=(terr[j]===0?1:terr[j]===10||terr[j]===12?3:6)+(prop[j]?4:0)+(deco[j]?1:0),nd=d+c;if(!dist.has(j)||nd<dist.get(j)){dist.set(j,nd);from.set(j,i);H.push([nd,j]);}}}
+     if(ocean[j]||terr[j]===TWA||kind[j]||bigm[j]||pv[j]===6)continue;const c=(terr[j]===0?1:terr[j]===10||terr[j]===12?3:6)+(prop[j]?4:0)+(deco[j]?1:0),nd=d+c;if(!dist.has(j)||nd<dist.get(j)){dist.set(j,nd);from.set(j,i);hp([nd,j]);}}}
    if(goal>=0){let j=goal;while(j!==undefined&&pv[j]!==6){pv[j]=6;terr[j]=0;prop[j]=0;deco[j]=0;lvl[j]=0;j=from.get(j);}}else for(const i of comp)pv[i]=0;}};
  if(FV){FFILL();FLINK();}else for(const c of BL){if(c.length>220)continue;let x0=1e9,x1=-1,y0=1e9,y1=-1,mx=0,my=0;for(const i of c){const x=i%N,y=(i/N)|0;x0=Math.min(x0,x);x1=Math.max(x1,x);y0=Math.min(y0,y);y1=Math.max(y1,y);mx+=x;my+=y;}mx/=c.length;my/=c.length;
   const d=cdist(mx,my)/RAD,front=c.filter(nearR),devd=dev(Math.round(mx),Math.round(my));if(!front.length||!devd)continue;
