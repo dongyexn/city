@@ -21,6 +21,7 @@ body{margin:0;background:linear-gradient(var(--sky1),var(--sky2) 55%,var(--sky3)
 #sun,#moon{position:fixed;left:-300px;top:0;border-radius:50%;pointer-events:none;opacity:0;transform:translate(-50%,-50%)}
 #sun{width:150px;height:150px;background:radial-gradient(circle closest-side,rgba(255,236,190,calc(.36*var(--gl,1))) 20%,rgba(255,228,170,calc(.14*var(--gl,1))) 46%,rgba(255,222,165,0) 100%)}
 #moon::after{display:none}
+/* 해·달은 섬 앞에 그린다(확대해도 섬 뒤로 숨지 않게), 판·단추는 그 위 */#sun,#moon{z-index:1}#top,#bar,#pick,#env,#isl,#bgm,#msg,#hamb,#htip,#shot{z-index:20}
 #sun::before{display:none;content:"";position:absolute;left:50%;top:50%;width:30px;height:30px;margin:-15px 0 0 -15px;border-radius:50%;background:radial-gradient(circle at 40% 36%,#4a5372,#2a3048);box-shadow:0 0 6px 2px rgba(255,236,190,.55);transform:translateX(var(--ex,0));z-index:2}
 #sun.ecl::before{display:block}
 #sun::after,#moon::before{content:"";position:absolute;left:50%;top:50%;background:var(--img) center/contain no-repeat}
