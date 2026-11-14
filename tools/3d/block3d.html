@@ -1167,7 +1167,7 @@ const mk=(A,m,cast)=>{const g=new THREE.BufferGeometry();g.setAttribute('positio
   g.fillStyle='rgba(60,35,15,.18)';g.fillRect(0,n-2,n,2);g.fillRect(n-2,0,2,n);g.fillStyle='rgba(255,255,255,.22)';g.fillRect(0,0,n,2);g.fillRect(0,0,2,n);});
  const skirtT=tex((g,n)=>{g.clearRect(0,0,n,n);g.fillStyle='#6cc248';g.beginPath();g.moveTo(0,0);g.lineTo(n,0);let x=n;while(x>0){const w=10+((x*7)%13),d=n*.55+((x*13)%23);g.lineTo(x-w*.5,d);g.lineTo(x-w,n*.42);x-=w;}g.closePath();g.fill();
   const q2=g.createLinearGradient(0,0,0,n*.75);q2.addColorStop(0,'rgba(255,255,255,.45)');q2.addColorStop(.12,'rgba(255,255,255,0)');q2.addColorStop(1,'rgba(30,60,10,.25)');g.globalCompositeOperation='source-atop';g.fillStyle=q2;g.fillRect(0,0,n,n);},128);
- let SANDR=null;const top=(x,y)=>{if(!land(x,y))return null;if(riv(x,y)){const w=hW(x,y);return [w,w,w,w];}const c=cH(x,y),e=isLawn(x,y)&&!(SANDR&&SANDR[y*N+x])?.135:0;return [c[0]+e,c[1]+e,c[2]+e,c[3]+e];};
+ let SANDR=null;const top=(x,y)=>{if(!land(x,y))return null;if(riv(x,y)){const w=hW(x,y);return [w,w,w,w];}const c=cH(x,y),e=isLawn(x,y)&&!(SANDR&&SANDR[y*N+x])&&PAVE[y*N+x]!==6?.135:0;/* 농로는 차도와 같은 높이 */return [c[0]+e,c[1]+e,c[2]+e,c[3]+e];};
  const tmax=(x,y)=>{const t=top(x,y);return t?Math.max(...t):-99;};
  const dist=new Int16Array(N*N).fill(-1),Q=[];for(let y=0;y<N;y++)for(let x=0;x<N;x++){if(!land(x,y))continue;if(!land(x-1,y)||!land(x+1,y)||!land(x,y-1)||!land(x,y+1)){dist[y*N+x]=0;Q.push(y*N+x);}}
  for(let h=0;h<Q.length;h++){const i=Q[h],x=i%N,y=(i/N)|0;for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){const xx=x+dx,yy=y+dy;if(!land(xx,yy))continue;const j=yy*N+xx;if(dist[j]<0){dist[j]=dist[i]+1;Q.push(j);}}}
@@ -1466,7 +1466,7 @@ const nl=(x,y)=>land(x,y)&&!isLawn(x,y)&&!riv(x,y)&&Math.abs(hT(x,y)-CY)<.3;
 {const CP=[],cw=.12,ch=.12,q6=(a,b,c,d)=>CP.push(...a,...b,...c,...c,...b,...d);
  const edge=(p,q,hp,hq,nx,nz)=>{const pi=[p[0]+nx*cw,p[1]+nz*cw],qi=[q[0]+nx*cw,q[1]+nz*cw];
   q6([p[0],hp+ch,p[1]],[pi[0],hp+ch,pi[1]],[q[0],hq+ch,q[1]],[qi[0],hq+ch,qi[1]]);q6([pi[0],hp,pi[1]],[pi[0],hp+ch,pi[1]],[qi[0],hq,qi[1]],[qi[0],hq+ch,qi[1]]);q6([p[0],hp-.4,p[1]],[p[0],hp+ch,p[1]],[q[0],hq-.4,q[1]],[q[0],hq+ch,q[1]]);};
- const nr=(x,y)=>land(x,y)&&!isR(x,y)&&!riv(x,y),wr=(x,y)=>riv(x,y)&&!isR(x,y),BW=[],bank=(p,q,hp,hq)=>BW.push(p[0],hp,p[1], p[0],RF,p[1], q[0],hq,q[1], q[0],hq,q[1], p[0],RF,p[1], q[0],RF,q[1]);
+ const nr=(x,y)=>land(x,y)&&!isR(x,y)&&!riv(x,y)&&PAVE[y*N+x]!==6,wr=(x,y)=>riv(x,y)&&!isR(x,y),BW=[],bank=(p,q,hp,hq)=>BW.push(p[0],hp,p[1], p[0],RF,p[1], q[0],hq,q[1], q[0],hq,q[1], p[0],RF,p[1], q[0],RF,q[1]);
  for(let y=0;y<N;y++)for(let x=0;x<N;x++){if(!isR(x,y)||!land(x,y)||riv(x,y))continue;const c=cH(x,y);
   if(nr(x,y-1))edge([x,y],[x+1,y],c[0],c[1],0,1);if(nr(x,y+1))edge([x,y+1],[x+1,y+1],c[3],c[2],0,-1);if(nr(x-1,y))edge([x,y],[x,y+1],c[0],c[3],1,0);if(nr(x+1,y))edge([x+1,y],[x+1,y+1],c[1],c[2],-1,0);if(wr(x,y-1))bank([x,y],[x+1,y],c[0],c[1]);if(wr(x,y+1))bank([x,y+1],[x+1,y+1],c[3],c[2]);if(wr(x-1,y))bank([x,y],[x,y+1],c[0],c[3]);if(wr(x+1,y))bank([x+1,y],[x+1,y+1],c[1],c[2]);}
  if(BW.length){const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(BW,3));g.computeVertexNormals();sc.add(new THREE.Mesh(g,M('#5d667c',{side:THREE.DoubleSide})));}
