@@ -54,7 +54,7 @@ const genIsland=(type,shape,num,NS=128)=>{
  /* distance to the coast */
  const cd=new Int16Array(NN).fill(999);{const q=[];for(let i=0;i<NN;i++)if(ocean[i]){cd[i]=0;q.push(i);}for(let h=0;h<q.length;h++){const i=q[h],x=i%N,y=(i/N)|0;for(const [dx,dy] of D4){const xx=x+dx,yy=y+dy;if(!In(xx,yy))continue;const k=id(xx,yy);if(cd[k]>cd[i]+1){cd[k]=cd[i]+1;q.push(k);}}}}
  /* 2. terraces */
- const maxL={metro:3,city:4,ind:3,farm:5,forest:5}[type]||4,LVL=new Uint8Array(NN);
+ const maxL={metro:3,city:4,ind:3,farm:5,forest:7}[type]||4,/* 산이 있는 섬(숲·농촌 산줄기)만 7단까지 */LVL=new Uint8Array(NN);
  for(let i=0;i<NN;i++){if(ocean[i])continue;const x=i%N,y=(i/N)|0,h=fbm(x/26+3,y/26+7)*1.25+Math.min(1,cd[i]/12)*.55-.55;LVL[i]=Math.max(1,Math.min(maxL,1+Math.floor(h*maxL*1.15)));}
  for(let p=0;p<2;p++){const L2=LVL.slice();for(let y=1;y<N-1;y++)for(let x=1;x<N-1;x++){const i=id(x,y);if(ocean[i])continue;const c={};for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){const k=id(x+dx,y+dy);if(!ocean[k])c[LVL[k]]=(c[LVL[k]]||0)+1;}let b=LVL[i],bn=0;for(const l in c)if(c[l]>bn){bn=c[l];b=+l;}L2[i]=b;}LVL.set(L2);}
  const relax=()=>{let ch=true,g=0;while(ch&&g++<40){ch=false;for(let y=0;y<N;y++)for(let x=0;x<N;x++){const i=id(x,y);if(ocean[i])continue;for(const [dx,dy] of D4){const xx=x+dx,yy=y+dy;if(!In(xx,yy))continue;const k=id(xx,yy);if(!ocean[k]&&LVL[i]>LVL[k]+1){LVL[i]=LVL[k]+1;ch=true;}}}}};relax();
@@ -63,7 +63,7 @@ const genIsland=(type,shape,num,NS=128)=>{
  if(FV){for(let i=0;i<NN;i++)if(!ocean[i]&&cd[i]<999&&cd[i]>FMC)FMC=cd[i];const ox=Math.cos(FTH),oy=Math.sin(FTH);
   for(let i=0;i<NN;i++){if(ocean[i])continue;const x=i%N,y=(i/N)|0,rr=1-cd[i]/FMC,an=Math.atan2(y-cy,x-cx),op=Math.max(0,Math.cos(an-FTH));
    const m=Math.max(0,Math.min(1,(rr+(fbm(x/10/Sc+5,y/10/Sc)-.5)*.55-.47)/.4))*(1-.95*Math.pow(op,1.2));MT[i]=m;
-   LVL[i]=m>.12?Math.max(1,Math.min(5,1+Math.round(m*4.6+(fbm(x/4/Sc,y/4/Sc+9)-.5)*1.6))):(fbm(x/16/Sc+2,y/16/Sc)>.66?2:1);}
+   LVL[i]=m>.12?Math.max(1,Math.min(7,1+Math.round(m*6.4+(fbm(x/4/Sc,y/4/Sc+9)-.5)*1.6))):(fbm(x/16/Sc+2,y/16/Sc)>.66?2:1);}
   relax();}
  for(let i=0;i<NN;i++)if(!ocean[i]&&cd[i]<=1)LVL[i]=Math.min(LVL[i],2);relax();
  /* 3. town centres: one per blob for twin/archi, otherwise the land centroid */
@@ -244,4 +244,4 @@ const genIsland=(type,shape,num,NS=128)=>{
  const H=new Uint8Array(HN*HN);for(let y=0;y<HN;y++)for(let x=0;x<HN;x++)H[y*HN+x]=Math.max(0,(LVL[id(Math.min(x,N-1),Math.min(y,N-1))]||1)-1);
  /* 논 사이엔 경사가 없다 — 논 칸의 경사는 없애 계단식 단으로(밭 경사는 밭흙 경사로 남긴다). 섬 가장자리 절벽에 바로 붙은 논은 풀 둔치로 */for(let i=0;i<NN;i++){if(sl[i]&&terr[i]===12&&!isR(i)&&pv[i]!==6)sl[i]=0;}
  for(let i=0;i<NN;i++){if(terr[i]!==12)continue;const x=i%N,y=(i/N)|0;let e=false;for(let a=-1;a<=1&&!e;a++)for(let b=-1;b<=1;b++){if(!In(x+b,y+a)||!land(id(x+b,y+a))){e=true;break;}}if(e){terr[i]=0;lvl[i]=0;}}
- return {N,HN,K,TWA,H:b64e(H),terr:b64e(terr),kind:b64e(kind),lvl:b64e(lvl),deco:b64e(deco),ocean:b64e(ocean),LVL:b64e(LVL),lmkA:b64e(new Uint8Array(lmkA.buffer)),pv:b64e(pv),sl:b64e(sl),prop:b64e(prop),big:BIGS,auto:type!=='farm'&&type!=='forest',hmin:0,hmax:maxL};};
+ return {N,HN,K,TWA,H:b64e(H),terr:b64e(terr),kind:b64e(kind),lvl:b64e(lvl),deco:b64e(deco),ocean:b64e(ocean),LVL:b64e(LVL),lmkA:b64e(new Uint8Array(lmkA.buffer)),pv:b64e(pv),sl:b64e(sl),prop:b64e(prop),big:BIGS,auto:type!=='farm'&&type!=='forest',hmin:0,hmax:FV?7:maxL};};
