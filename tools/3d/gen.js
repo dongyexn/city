@@ -170,7 +170,7 @@ const genIsland=(type,shape,num,NS=128)=>{
   /* 들 가운데엔 들에 어울리는 시설(창고 컨테이너·하우스·양수장)만 — 축사·정미소·헛간·사일로는 마을 언저리 */const edgeV=front.filter(i=>{const d=vd(i%N,(i/N)|0);return d>=VR*.5&&d<VR*1.05;});for(let k=0;k<VIL.length*2;k++)pb(edgeV,'cowshed 3 2|riceMill 1 1|barn 2 1|silo 1 1');for(let k=0;k<VIL.length;k++)pb(midV,'containerStore 1 1');
   /* 물가 양수장 */for(let k=0;k<2;k++)pb(front.filter(i=>WD[i]<=3*Sc),'pumpHouse 1 1');
   for(let k=0;k<3+((R()*3)|0);k++)pb(plain,'greenhouseFarm 4 3');
-  if(R()<.6)pb(edgeV,'equestrian 4 3');if(R()<.6)pb(plain,'wind 2 2');
+  if(R()<.6)pb(edgeV,'equestrian 4 3');/* 풍력발전기는 바람 센 바닷가나 산자락에 */if(R()<.75){const wc=front.filter(i=>cd[i]>0&&cd[i]<=4*Sc||MT[i]>=.12);pb(wc.length?wc:plain,'wind 2 2');}
   /* 경지: 논은 물(강·저수지) 가까운 낮은 들에 8×3칸 직사각 필지, 9칸마다 가로 농로, 두 필지마다 세로 농로 */
   const ao=(R()*9)|0,bo=(R()*7)|0,h2=(a,b)=>((Math.imul(a,73856093)^Math.imul(b,19349663))>>>0);
   for(let i=0;i<NN;i++){if(!land(i)||water(i)||isR(i)||bigm[i]||kind[i]||prop[i])continue;const x=i%N,y=(i/N)|0,a=alongX?x:y,b=alongX?y:x,v=vd(x,y),m=MT[i];
