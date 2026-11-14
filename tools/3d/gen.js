@@ -143,11 +143,11 @@ const genIsland=(type,shape,num,NS=128)=>{
   mres:'terraceApt 2 2|mixedTower 2 2|cityHome 1 1|penthouse 1 1|cornerShop 1 1',
   com:'pocha 2 1|hypermarket 3 2|dept 3 3|cafe 1 1|ramen 1 1|icecream 1 1|stationery 1 1|optician 1 1|petshop 1 1|karaoke 1 1',
   off:'twinTower 2 2|roundTower 2 2|lab 2 2|convention 3 2|datacenter 2 1|hotel 2 1|bankHQ 2 1|setback 1 1|broadcast 1 1|cowork 1 1',
-  ind:'coldStore 2 1|brewery 2 1|recycle 2 1|sawmill 2 1|truckDepot 2 1|dairy 2 1|bakery 2 1|foundry 2 1|paperMill 2 2|chemTanks 2 2|solarFarm 2 2|containerYard 2 2|oilTanks 2 2|cementPlant 2 2|carPlant 3 2|fab 3 2|kiln 1 1|waterTower 1 1|pylon 1 1|printShop 1 1|silo 1 1|wind 2 2',
+  ind:'coldStore 2 1|brewery 2 1|recycle 2 1|sawmill 2 1|truckDepot 2 1|dairy 2 1|bakery 2 1|foundry 2 1|paperMill 2 2|chemTanks 2 2|solarFarm 2 2|containerYard 2 2|oilTanks 2 2|cementPlant 2 2|carPlant 3 2|fab 3 2|kiln 1 1|waterTower 1 1|pylon 1 1|printShop 1 1|silo 2 2|wind 2 2',
   pub:'church 1 1|chapel 1 1|kinder 1 1|policeBox 1 1|fireStation 1 1|observatory 1 1|lectureHall 2 1|natatorium 2 1|temple 2 2',
   fac:'tennis 2 1|basketball 2 1|miniGolf 2 2|festival 2 2|iceRink 2 2|nightMarket 2 2|bigWheel 2 2|viewTower 2 2|lakePark 3 3|botanic 3 2|market 3 2|zoo 3 3|aquarium 3 3|arena 3 3|waterpark 3 3|driveIn 3 3|golfRange 3 2',
   tow:'tw2 2 2|tw3 2 2|tw5 2 2|tw8 2 2|tw17 2 2|twinTower 2 2|roundTower 2 2|mixedTower 2 2',
-  farm:'barn 2 1|farmhouse 1 1|riceMill 1 1|flourMill 1 1|greenhouseFarm 4 3|silo 1 1|wind 2 2|dairy 2 1|equestrian 4 3|waterTower 1 1',vil:'hanok 1 1|cabin 1 1|country 1 1|peanut 1 1|farmhouse 1 1',wild:'campsite 3 2|observatory 1 1|lighthouse 1 1'};
+  farm:'barn 2 1|farmhouse 2 2|riceMill 1 1|flourMill 1 1|greenhouseFarm 4 3|silo 2 2|wind 2 2|dairy 2 1|equestrian 4 3|waterTower 1 1',vil:'hanok 1 1|cabin 1 1|country 1 1|peanut 1 1|farmhouse 2 2',wild:'campsite 3 2|observatory 1 1|lighthouse 1 1'};
  const BIGS=[],bigm=new Uint8Array(NN),used={};
  const poolOf=(z,L)=>{const t=type,q=R();if(t==='metro')return z==='com'?(L>=4?'tow':q<.65?'off':'com'):z==='res'?'mres':z==='park'?'fac':null;if(t==='city')return z==='com'?(q<.3?'off':'com'):z==='res'?'res':z==='pub'?'pub':z==='park'?'fac':null;
   if(t==='ind')return z==='ind'?'ind':z==='com'?'com':z==='res'?'res':null;if(t==='farm')return z==='field'?'farm':z==='res'?(R()<.5?'farm':'vil'):z==='com'?'vil':null;return z==='res'?'vil':z==='wild'?'wild':null;};
@@ -166,8 +166,8 @@ const genIsland=(type,shape,num,NS=128)=>{
   /* 버스터미널: 첫(가장 큰) 마을 */{const t=nearV.filter(i=>Math.hypot(i%N-VIL[VIL.length-1][0],((i/N)|0)-VIL[VIL.length-1][1])<VR*1.4);pb(t.length?t:nearV,'busTerminal 2 1');}
   /* 큰 마을: 마을회관·경로당, 마을마트·농약사, 교회 / 마을마다 어귀(들 쪽)에 정자목 */{const V0=VIL[VIL.length-1],t=nearV.filter(i=>Math.hypot(i%N-V0[0],((i/N)|0)-V0[1])<VR*1.4);pb(t.length?t:nearV,'villageHall 2 1');pb(t.length?t:nearV,'villageMart 2 1');pb(nearV,'farmSupply 1 1');pb(nearV,'chapel 1 1');}
   for(const [vx,vy] of VIL){const e=front.filter(i=>{const d=Math.hypot(i%N-vx,((i/N)|0)-vy);return d>VR*.55&&d<VR*1.3&&MT[i]<.12;});if(e.length)pb(e,'villageTree 2 2');}
-  for(let k=0;k<VIL.length*9;k++)pb(nearV,'slateHouse 1 1|yangok 1 1|yangokBlue 1 1|farmhouse 1 1|slateHouse 1 1|hanok 1 1|yangok 1 1');
-  /* 들 가운데엔 들에 어울리는 시설(창고 컨테이너·하우스·양수장)만 — 축사·정미소·헛간·사일로는 마을 언저리 */const edgeV=front.filter(i=>{const d=vd(i%N,(i/N)|0);return d>=VR*.5&&d<VR*1.05;});for(let k=0;k<VIL.length*2;k++)pb(edgeV,'cowshed 3 2|riceMill 1 1|barn 2 1|silo 1 1');for(let k=0;k<VIL.length;k++)pb(midV,'containerStore 1 1');
+  /* 집이 2×2로 커져 자리 찾기가 어려우니 더 여러 번 시도 */for(let k=0;k<VIL.length*36;k++)pb(nearV,'slateHouse 2 2|yangok 2 2|yangokBlue 2 2|farmhouse 2 2|slateHouse 2 2|hanok 1 1|yangok 2 2');
+  /* 들 가운데엔 들에 어울리는 시설(창고 컨테이너·하우스·양수장)만 — 축사·정미소·헛간·사일로는 마을 언저리 */const edgeV=front.filter(i=>{const d=vd(i%N,(i/N)|0);return d>=VR*.5&&d<VR*1.05;});for(let k=0;k<VIL.length*2;k++)pb(edgeV,'cowshed 3 2|riceMill 1 1|barn 2 1|silo 2 2');for(let k=0;k<VIL.length;k++)pb(midV,'containerStore 1 1');
   /* 물가 양수장 */for(let k=0;k<2;k++)pb(front.filter(i=>WD[i]<=3*Sc),'pumpHouse 1 1');
   for(let k=0;k<3+((R()*3)|0);k++)pb(plain,'greenhouseFarm 4 3');
   if(R()<.6)pb(edgeV,'equestrian 4 3');/* 풍력발전기는 바람 센 바닷가나 산자락에 */if(R()<.75){const wc=front.filter(i=>cd[i]>0&&cd[i]<=4*Sc||MT[i]>=.12);pb(wc.length?wc:plain,'wind 2 2');}
