@@ -143,11 +143,11 @@ const genIsland=(type,shape,num,NS=128)=>{
   mres:'terraceApt 2 2|mixedTower 2 2|cityHome 1 1|penthouse 1 1|cornerShop 1 1',
   com:'pocha 2 1|hypermarket 3 2|dept 3 3|cafe 1 1|ramen 1 1|icecream 1 1|stationery 1 1|optician 1 1|petshop 1 1|karaoke 1 1',
   off:'twinTower 2 2|roundTower 2 2|lab 2 2|convention 3 2|datacenter 2 1|hotel 2 1|bankHQ 2 1|setback 1 1|broadcast 1 1|cowork 1 1',
-  ind:'coldStore 2 1|brewery 2 1|recycle 2 1|sawmill 2 1|truckDepot 2 1|dairy 2 1|bakery 2 1|foundry 2 1|paperMill 2 2|chemTanks 2 2|solarFarm 2 2|containerYard 2 2|oilTanks 2 2|cementPlant 2 2|carPlant 3 2|fab 3 2|kiln 1 1|waterTower 1 1|pylon 1 1|printShop 1 1|silo 1 1|wind 1 1',
+  ind:'coldStore 2 1|brewery 2 1|recycle 2 1|sawmill 2 1|truckDepot 2 1|dairy 2 1|bakery 2 1|foundry 2 1|paperMill 2 2|chemTanks 2 2|solarFarm 2 2|containerYard 2 2|oilTanks 2 2|cementPlant 2 2|carPlant 3 2|fab 3 2|kiln 1 1|waterTower 1 1|pylon 1 1|printShop 1 1|silo 1 1|wind 2 2',
   pub:'church 1 1|chapel 1 1|kinder 1 1|policeBox 1 1|fireStation 1 1|observatory 1 1|lectureHall 2 1|natatorium 2 1|temple 2 2',
   fac:'tennis 2 1|basketball 2 1|miniGolf 2 2|festival 2 2|iceRink 2 2|nightMarket 2 2|bigWheel 2 2|viewTower 2 2|lakePark 3 3|botanic 3 2|market 3 2|zoo 3 3|aquarium 3 3|arena 3 3|waterpark 3 3|driveIn 3 3|golfRange 3 2',
   tow:'tw2 2 2|tw3 2 2|tw5 2 2|tw8 2 2|tw17 2 2|twinTower 2 2|roundTower 2 2|mixedTower 2 2',
-  farm:'barn 2 1|farmhouse 1 1|riceMill 1 1|flourMill 1 1|greenhouseFarm 4 3|silo 1 1|wind 1 1|dairy 2 1|equestrian 4 3|waterTower 1 1',vil:'hanok 1 1|cabin 1 1|country 1 1|peanut 1 1|farmhouse 1 1',wild:'campsite 3 2|observatory 1 1|lighthouse 1 1'};
+  farm:'barn 2 1|farmhouse 1 1|riceMill 1 1|flourMill 1 1|greenhouseFarm 4 3|silo 1 1|wind 2 2|dairy 2 1|equestrian 4 3|waterTower 1 1',vil:'hanok 1 1|cabin 1 1|country 1 1|peanut 1 1|farmhouse 1 1',wild:'campsite 3 2|observatory 1 1|lighthouse 1 1'};
  const BIGS=[],bigm=new Uint8Array(NN),used={};
  const poolOf=(z,L)=>{const t=type,q=R();if(t==='metro')return z==='com'?(L>=4?'tow':q<.65?'off':'com'):z==='res'?'mres':z==='park'?'fac':null;if(t==='city')return z==='com'?(q<.3?'off':'com'):z==='res'?'res':z==='pub'?'pub':z==='park'?'fac':null;
   if(t==='ind')return z==='ind'?'ind':z==='com'?'com':z==='res'?'res':null;if(t==='farm')return z==='field'?'farm':z==='res'?(R()<.5?'farm':'vil'):z==='com'?'vil':null;return z==='res'?'vil':z==='wild'?'wild':null;};
@@ -167,10 +167,10 @@ const genIsland=(type,shape,num,NS=128)=>{
   /* 큰 마을: 마을회관·경로당, 마을마트·농약사, 교회 / 마을마다 어귀(들 쪽)에 정자목 */{const V0=VIL[VIL.length-1],t=nearV.filter(i=>Math.hypot(i%N-V0[0],((i/N)|0)-V0[1])<VR*1.4);pb(t.length?t:nearV,'villageHall 2 1');pb(t.length?t:nearV,'villageMart 2 1');pb(nearV,'farmSupply 1 1');pb(nearV,'chapel 1 1');}
   for(const [vx,vy] of VIL){const e=front.filter(i=>{const d=Math.hypot(i%N-vx,((i/N)|0)-vy);return d>VR*.55&&d<VR*1.3&&MT[i]<.12;});if(e.length)pb(e,'villageTree 2 2');}
   for(let k=0;k<VIL.length*9;k++)pb(nearV,'slateHouse 1 1|yangok 1 1|yangokBlue 1 1|farmhouse 1 1|slateHouse 1 1|hanok 1 1|yangok 1 1');
-  for(let k=0;k<VIL.length*2;k++)pb(midV,'cowshed 3 2|containerStore 1 1|riceMill 1 1|barn 2 1|silo 1 1|containerStore 1 1');
+  /* 들 가운데엔 들에 어울리는 시설(창고 컨테이너·하우스·양수장)만 — 축사·정미소·헛간·사일로는 마을 언저리 */const edgeV=front.filter(i=>{const d=vd(i%N,(i/N)|0);return d>=VR*.5&&d<VR*1.05;});for(let k=0;k<VIL.length*2;k++)pb(edgeV,'cowshed 3 2|riceMill 1 1|barn 2 1|silo 1 1');for(let k=0;k<VIL.length;k++)pb(midV,'containerStore 1 1');
   /* 물가 양수장 */for(let k=0;k<2;k++)pb(front.filter(i=>WD[i]<=3*Sc),'pumpHouse 1 1');
   for(let k=0;k<3+((R()*3)|0);k++)pb(plain,'greenhouseFarm 4 3');
-  if(R()<.6)pb(midV,'equestrian 4 3');if(R()<.6)pb(plain,'wind 1 1');
+  if(R()<.6)pb(edgeV,'equestrian 4 3');if(R()<.6)pb(plain,'wind 2 2');
   /* 경지: 논은 물(강·저수지) 가까운 낮은 들에 8×3칸 직사각 필지, 9칸마다 가로 농로, 두 필지마다 세로 농로 */
   const ao=(R()*9)|0,bo=(R()*7)|0,h2=(a,b)=>((Math.imul(a,73856093)^Math.imul(b,19349663))>>>0);
   for(let i=0;i<NN;i++){if(!land(i)||water(i)||isR(i)||bigm[i]||kind[i]||prop[i])continue;const x=i%N,y=(i/N)|0,a=alongX?x:y,b=alongX?y:x,v=vd(x,y),m=MT[i];
@@ -181,6 +181,7 @@ const genIsland=(type,shape,num,NS=128)=>{
    if(WD[i]<=(7+fbm(x/14+40,y/14)*9)*Sc&&LVL[i]<=2){if(ra===8||rb===6){terr[i]=0;if(rb===6&&ra!==8&&(((Math.floor(pB/7)%2)+2)%2===0))pv[i]=6;continue;}terr[i]=12;lvl[i]=1+(h2(Math.floor(pa/9),Math.floor(pB/7)*2+(rb>=3?1:0))%250);continue;}
    /* 밭: 경계가 조금씩 굽은 필지. 열에 하나는 풀밭(짚뭉치) */const ka=Math.floor((a+fbm(x/7+3,y/7)*4)/6),kb=Math.floor((b+fbm(x/7,y/7+3)*4)/4),hh=h2(ka,kb+500);
    if(hh%10===0){if(R()<.08)prop[i]=hayP(R());continue;}if(ra===8&&hh%3===0){terr[i]=0;continue;}terr[i]=10;lvl[i]=1+(hh%250);}
+  /* 들에 어울리지 않는 건물은 둘레 한 칸을 논밭 대신 풀 마당으로 */{const FIT=new Set(['greenhouseFarm','pumpHouse','containerStore','villageTree','wind','grave']);for(const [f,x0,y0,W,Dd] of BIGS){if(FIT.has(f))continue;for(let yy=y0-1;yy<=y0+Dd;yy++)for(let xx=x0-1;xx<=x0+W;xx++){if(!In(xx,yy))continue;const j=id(xx,yy);if(terr[j]===10||terr[j]===12){terr[j]=0;lvl[j]=0;}}}}
   /* 둑길: 들판을 지나는 강 양옆 한 칸은 농로(자전거·경운기 길) */for(let i=0;i<NN;i++){if(!land(i)||water(i)||isR(i)||bigm[i]||kind[i]||LVL[i]>2||MT[i]>.1)continue;const x=i%N,y=(i/N)|0;if(!D4.some(([dx,dy])=>In(x+dx,y+dy)&&terr[id(x+dx,y+dy)]===TWA&&!ocean[id(x+dx,y+dy)]))continue;if(terr[i]!==0&&terr[i]!==10&&terr[i]!==12)continue;terr[i]=0;lvl[i]=0;pv[i]=6;prop[i]=0;deco[i]=0;}
   /* 산소: 산 중턱 양지에 몇 기 */{let n=0;for(let t=0;t<4000&&n<4+((R()*3)|0);t++){const i=(R()*NN)|0;if(!land(i)||water(i)||isR(i)||bigm[i]||kind[i]||MT[i]<.3||MT[i]>.6||LVL[i]<3||terr[i]===9)continue;const x=i%N,y=(i/N)|0;if(!D4.every(([dx,dy])=>In(x+dx,y+dy)&&LVL[id(x+dx,y+dy)]===LVL[i]&&!bigm[id(x+dx,y+dy)]))continue;bigm[i]=1;deco[i]=0;prop[i]=0;terr[i]=0;BIGS.push(['grave',x,y,1,1,'z+']);n++;}}
   /* 길가 밭 한쪽에 원두막 */for(let k=0;k<4;k++){const c=front.filter(i=>terr[i]===10&&!prop[i]&&!bigm[i]&&vd(i%N,(i/N)|0)>VR);if(!c.length)break;const i=c[(R()*c.length)|0];terr[i]=0;lvl[i]=0;prop[i]=hutP(R());}};
@@ -241,5 +242,6 @@ const genIsland=(type,shape,num,NS=128)=>{
  const fth={forest:.42,farm:.56,ind:.56,city:.52,metro:.6}[type];
  if(!FV)for(let i=0;i<NN;i++){if(!land(i)||water(i)||kind[i]||pv[i]||deco[i]||prop[i]||terr[i]===10||terr[i]===12||bigm[i])continue;const x=i%N,y=(i/N)|0;const f=fbm(x/11+90,y/11);if(blk[i]<0||!dev(x,y)){if(f>fth)tree(i);else if(cd[i]===1&&fbm(x/9,y/9+50)>.55)terr[i]=6;else if(LVL[i]>=4&&fbm(x/7+20,y/7)>.7)terr[i]=9;else if(f<.3&&R()<.05)terr[i]=11;}}
  const H=new Uint8Array(HN*HN);for(let y=0;y<HN;y++)for(let x=0;x<HN;x++)H[y*HN+x]=Math.max(0,(LVL[id(Math.min(x,N-1),Math.min(y,N-1))]||1)-1);
- /* 경사 칸엔 논밭을 두지 않는다(흙 경사가 생김) — 풀 경사로 */for(let i=0;i<NN;i++)if(sl[i]&&(terr[i]===10||terr[i]===12)){terr[i]=0;lvl[i]=0;}
+ /* 논 사이엔 경사가 없다 — 논 칸의 경사는 없애 계단식 단으로(밭 경사는 밭흙 경사로 남긴다). 섬 가장자리 절벽에 바로 붙은 논은 풀 둔치로 */for(let i=0;i<NN;i++){if(sl[i]&&terr[i]===12&&!isR(i)&&pv[i]!==6)sl[i]=0;}
+ for(let i=0;i<NN;i++){if(terr[i]!==12)continue;const x=i%N,y=(i/N)|0;let e=false;for(let a=-1;a<=1&&!e;a++)for(let b=-1;b<=1;b++){if(!In(x+b,y+a)||!land(id(x+b,y+a))){e=true;break;}}if(e){terr[i]=0;lvl[i]=0;}}
  return {N,HN,K,TWA,H:b64e(H),terr:b64e(terr),kind:b64e(kind),lvl:b64e(lvl),deco:b64e(deco),ocean:b64e(ocean),LVL:b64e(LVL),lmkA:b64e(new Uint8Array(lmkA.buffer)),pv:b64e(pv),sl:b64e(sl),prop:b64e(prop),big:BIGS,auto:type!=='farm'&&type!=='forest',hmin:0,hmax:maxL};};
