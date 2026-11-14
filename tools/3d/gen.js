@@ -179,7 +179,16 @@ const genIsland=(type,shape,num,NS=128)=>{
    /* 밭: 경계가 조금씩 굽은 필지. 열에 하나는 풀밭(짚뭉치) */const ka=Math.floor((a+fbm(x/7+3,y/7)*4)/6),kb=Math.floor((b+fbm(x/7,y/7+3)*4)/4),hh=h2(ka,kb+500);
    if(hh%10===0){if(R()<.08)prop[i]=hayP(R());continue;}if(ra===8&&hh%3===0){terr[i]=0;continue;}terr[i]=10;lvl[i]=1+(hh%250);}
   /* 길가 밭 한쪽에 원두막 */for(let k=0;k<4;k++){const c=front.filter(i=>terr[i]===10&&!prop[i]&&!bigm[i]&&vd(i%N,(i/N)|0)>VR);if(!c.length)break;const i=c[(R()*c.length)|0];terr[i]=0;lvl[i]=0;prop[i]=hutP(R());}};
- if(FV)FFILL();else for(const c of BL){if(c.length>220)continue;let x0=1e9,x1=-1,y0=1e9,y1=-1,mx=0,my=0;for(const i of c){const x=i%N,y=(i/N)|0;x0=Math.min(x0,x);x1=Math.max(x1,x);y0=Math.min(y0,y);y1=Math.max(y1,y);mx+=x;my+=y;}mx/=c.length;my/=c.length;
+ /* 농로 잇기: 차도에 닿지 않은 농로 묶음은 풀밭(필요하면 논밭 가장자리)을 지나 가장 가까운 같은 높이 차도까지 길을 내고, 끝내 못 닿으면 풀밭으로 되돌린다 */
+ const FLINK=()=>{const seen=new Uint8Array(NN),isRd=i=>kind[i]===K.ROAD;
+  for(let s0=0;s0<NN;s0++){if(pv[s0]!==6||seen[s0])continue;const comp=[s0];seen[s0]=1;for(let h=0;h<comp.length;h++){const i=comp[h],x=i%N,y=(i/N)|0;for(const [dx,dy] of D4){const xx=x+dx,yy=y+dy;if(!In(xx,yy))continue;const j=id(xx,yy);if(pv[j]===6&&!seen[j]){seen[j]=1;comp.push(j);}}}
+   const touch=comp.some(i=>{const x=i%N,y=(i/N)|0;return D4.some(([dx,dy])=>{const xx=x+dx,yy=y+dy;if(!In(xx,yy))return false;const j=id(xx,yy);return isRd(j)&&LVL[j]===LVL[i];});});if(touch)continue;
+   const dist=new Map(),from=new Map(),H=[];for(const i of comp){dist.set(i,0);H.push([0,i]);}let goal=-1;
+   while(H.length&&goal<0){let bi=0;for(let k=1;k<H.length;k++)if(H[k][0]<H[bi][0])bi=k;const [d,i]=H[bi];H[bi]=H[H.length-1];H.pop();if(d>dist.get(i)||d>40)continue;const x=i%N,y=(i/N)|0;
+    for(const [dx,dy] of D4){const xx=x+dx,yy=y+dy;if(!In(xx,yy))continue;const j=id(xx,yy);if(LVL[j]!==LVL[i])continue;if(isRd(j)){goal=i;break;}
+     if(ocean[j]||terr[j]===TWA||kind[j]||bigm[j]||pv[j]===6)continue;const c=(terr[j]===0?1:terr[j]===10||terr[j]===12?3:6)+(prop[j]?4:0)+(deco[j]?1:0),nd=d+c;if(!dist.has(j)||nd<dist.get(j)){dist.set(j,nd);from.set(j,i);H.push([nd,j]);}}}
+   if(goal>=0){let j=goal;while(j!==undefined&&pv[j]!==6){pv[j]=6;terr[j]=0;prop[j]=0;deco[j]=0;lvl[j]=0;j=from.get(j);}}else for(const i of comp)pv[i]=0;}};
+ if(FV){FFILL();FLINK();}else for(const c of BL){if(c.length>220)continue;let x0=1e9,x1=-1,y0=1e9,y1=-1,mx=0,my=0;for(const i of c){const x=i%N,y=(i/N)|0;x0=Math.min(x0,x);x1=Math.max(x1,x);y0=Math.min(y0,y);y1=Math.max(y1,y);mx+=x;my+=y;}mx/=c.length;my/=c.length;
   const d=cdist(mx,my)/RAD,front=c.filter(nearR),devd=dev(Math.round(mx),Math.round(my));if(!front.length||!devd)continue;
   /* zone for the block */
   const r=R();let z='res',L=1;
