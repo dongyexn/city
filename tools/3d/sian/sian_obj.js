@@ -440,7 +440,7 @@ const truckS=(x,z)=>grp(x,B,z,0,()=>{bx(-.12,.06,.02,.12,-.05,.05,M('#f4f6f8'),.
 Object.assign(B3,{
  chapel(){/* 시골 교회: 붉은 벽돌 허리벽 위 흰 회벽 예배당, 짙은 적갈색 지붕, 정면 종탑(아치창·종·루버) 위 뾰족 첨탑과 붉은 십자가, 현관 차양·돌계단, 화단·생울타리·안내판 */
   const wl=wallM('#fbf8f2','#a9c9e8','tall','#7a5a3a',3,1),rf=MT(T.shingle('#8e3a2c'),{roughness:.6}),bk=MT(T.brick('#b5543c','#8a3a28')),st=STN(),wd=MT(T.vplank('#6b4428'));
-  bx(-.38,.12,B,B+.03,-.22,.22,st,.004);gable(-.36,.1,-.2,.2,.3,wl,rf,.22,.035);bx(-.365,.105,B+.03,B+.1,-.205,.205,bk,.004);for(const z of [-.2,.2])for(const x of [-.3,-.18,-.06])bx(x-.014,x+.014,B,B+.2,z-.014,z+.014,bk,.004);
+  bx(-.38,.06,B,B+.03,-.22,.22,st,.004);gable(-.36,.04,-.2,.2,.3,wl,rf,.22,.035);bx(-.365,.045,B+.03,B+.1,-.205,.205,bk,.004);/* 지붕 끝이 종탑 벽 앞에서 멈추게 */for(const z of [-.2,.2])for(const x of [-.3,-.18,-.06])bx(x-.014,x+.014,B,B+.2,z-.014,z+.014,bk,.004);
   tower(.08,.27,B,B+.6,-.095,.095,'#fbf8f2','#a9c9e8','tall','#7a5a3a',.3,5,'#8e3a2c');bx(.075,.275,B+.03,B+.1,-.1,.1,bk,.004);bx(.07,.28,B+.6,B+.625,-.105,.105,st,.004);
   for(const [nx,nz,rx] of [[.276,0,1],[.175,.096,0],[.175,-.096,0]]){const lv=bx(rx?nx:nx-.04,rx?nx+.004:nx+.04,B+.48,B+.57,rx?nz-.04:nz,rx?nz+.04:nz+.004,M('#3a2f28'),.003,false);}
   const sp=add(new THREE.ConeGeometry(.14,.4,4),rf,.175,B+.625+.2,0);sp.rotation.y=Math.PI/4;sph(.03,.175,B+.53,0,M('#c9a24a',{metalness:.5,roughness:.35}),1,1.1,1);
@@ -449,7 +449,7 @@ Object.assign(B3,{
   bx(.27,.37,B+.25,B+.265,-.085,.085,rf,.006);for(const z of [-.075,.075])cyl(.008,.008,.25,.36,B,z,M('#f4f1ea'),8);for(let k=0;k<3;k++)bx(.28+k*.03,.42,B+(2-k)*.014,B+(3-k)*.014,-.07,.07,st,.003);
   for(const z of [-.27,.27]){bx(-.34,.06,B,B+.035,z-.03,z+.03,st,.004);for(let k=0;k<7;k++)sph(.022,-.32+k*.06,B+.045,z,M(['#e0444a','#f2c23d','#ff8ab0','#ffffff'][k%4],{roughness:.6}));}
   for(const [a,b] of [[-.46,-.08],[.08,.46]])bx(.42,.46,B,B+.06,a,b,LEAF('#6fb84f'),.02);grp(.4,B,.3,Math.PI/2,()=>{bx(-.08,.08,.06,.15,-.008,.008,wd,.004);for(const x of [-.06,.06])bx(x-.006,x+.006,0,.07,-.006,.006,PLK('#5a3a22'),.002);});signZ(-.07,.07,B+.075,B+.135,.31,'교회','#ffffff','#8e3a2c','bold 30px sans-serif');
-  grp(-.42,B,-.3,0,()=>{bx(-.04,.04,.03,.04,-.1,.1,PLK('#b98a5a'),.004);for(const z of [-.08,.08])bx(-.035,.035,0,.03,z-.008,z+.008,PLK('#8a5a32'),.002);});lawn(-.48,.48,-.48,.48);tree(-.4,.38,.7);tree(-.42,-.4,.6);},
+  grp(-.42,B,-.3,0,()=>{bx(-.04,.04,.03,.04,-.1,.1,PLK('#b98a5a'),.004);for(const z of [-.08,.08])bx(-.035,.035,0,.03,z-.008,z+.008,PLK('#8a5a32'),.002);});tree(-.4,.38,.7);tree(-.42,-.4,.6);},/* 바닥은 따로 깔지 않고 필지 보도블럭 그대로 */
  temple(){/* 사찰 2×2: 대웅전(단청), 석탑, 돌계단 */const st=MT(T.stone());bx(-.7,.7,B,B+.12,-.7,.1,st,.01);for(let k=0;k<3;k++)bx(-.2,.2,B+k*.04,B+k*.04+.04,.1+k*.06,.16+k*.06,st,.006);
   const dc=TX('dancheong',128,32,(g,w,h)=>{g.fillStyle='#2f8a6a';g.fillRect(0,0,w,h);for(let x=0;x<w;x+=16){g.fillStyle='#e0444a';g.fillRect(x+2,4,12,8);g.fillStyle='#f2d23b';g.fillRect(x+5,14,6,6);g.fillStyle='#3d7de0';g.fillRect(x+2,22,12,6);}},4,1);
   const wl=new THREE.BoxGeometry(1.0,.3,.55);add(wl,[MT(T.hanji(2)),MT(T.hanji(2)),M('#ccc'),M('#ccc'),MT(T.hanji(5)),MT(T.hanji(5))],0,B+.27,-.3);bx(-.52,.52,B+.42,B+.48,-.6,0,MT(dc),.004);for(const x of [-.48,-.24,0,.24,.48])cyl(.02,.022,.32,x,B+.12,-.02,M('#a8402a',{roughness:.6}),10);
