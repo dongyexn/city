@@ -156,6 +156,7 @@ const genIsland=(type,shape,num,NS=128)=>{
    for(const [dx,dy,dir] of [[0,1,'z+'],[0,-1,'z-'],[1,0,'x+'],[-1,0,'x-']]){const k=id(x+dx,y+dy);if(!In(x+dx,y+dy)||!isR(k)||LVL[k]!==Lv)continue;const W=dx?d:w,Dd=dx?w:d;
     const x0=dx>0?x-W+1:dx<0?x:x-((R()*W)|0),y0=dy>0?y-Dd+1:dy<0?y:y-((R()*Dd)|0);let ok=true;
     for(let yy=y0-1;yy<=y0+Dd&&ok;yy++)for(let xx=x0-1;xx<=x0+W;xx++){if(!In(xx,yy)){ok=false;break;}const j=id(xx,yy),inn=xx>=x0&&xx<x0+W&&yy>=y0&&yy<y0+Dd;if(bigm[j]){ok=false;break;}if(!inn)continue;if(blk[j]!==b||kind[j]||lmkA[j]>=0||LVL[j]!==Lv||water(j)){ok=false;break;}}
+    if(ok){let hi=0,rn=0;for(let yy=y0-1;yy<=y0+Dd;yy++)for(let xx=x0-1;xx<=x0+W;xx++){if(xx>=x0&&xx<x0+W&&yy>=y0&&yy<y0+Dd)continue;const j=id(xx,yy);if(ocean[j]||isR(j))continue;rn++;if(LVL[j]>Lv)hi++;}if(hi*3>rn)ok=false;}
     if(ok)for(let e=0;e<(dx?Dd:W)&&ok;e++){const fx=dx>0?x0+W:dx<0?x0-1:x0+e,fy=dy>0?y0+Dd:dy<0?y0-1:y0+e,j=id(fx,fy);if(!In(fx,fy)||!isR(j)||LVL[j]!==Lv)ok=false;}
     if(!ok)continue;for(let yy=y0;yy<y0+Dd;yy++)for(let xx=x0;xx<x0+W;xx++){const j=id(xx,yy);bigm[j]=1;pv[j]=0;deco[j]=0;prop[j]=0;}used[f]=(used[f]||0)+1;BIGS.push([f,x0,y0,W,Dd,dir]);return true;}}}return false;};
  /* 농촌 채우기: 산자락 마을(집은 안길을 보고 띄엄띄엄) → 길가 농가 시설·비닐하우스 단지 → 들의 경지(정리된 논 + 농로, 굽은 경계의 밭) → 산은 숲 */
@@ -174,13 +175,13 @@ const genIsland=(type,shape,num,NS=128)=>{
   /* 경지: 논은 물(강·저수지) 가까운 낮은 들에 8×3칸 직사각 필지, 9칸마다 가로 농로, 두 필지마다 세로 농로 */
   const ao=(R()*9)|0,bo=(R()*7)|0,h2=(a,b)=>((Math.imul(a,73856093)^Math.imul(b,19349663))>>>0);
   for(let i=0;i<NN;i++){if(!land(i)||water(i)||isR(i)||bigm[i]||kind[i]||prop[i])continue;const x=i%N,y=(i/N)|0,a=alongX?x:y,b=alongX?y:x,v=vd(x,y),m=MT[i];
-   if(v<VR){/* 마을 안: 텃밭·마당 나무 */const q=R();if(q<.22){terr[i]=10;lvl[i]=1+(h2(x>>1,y>>1)%250);}else if(q<.42)tree(i);continue;}
+   if(v<VR){/* 마을 안: 텃밭은 몇 칸씩 붙은 덩어리로, 나머지는 마당 나무 */if(fbm(x/3.2+51,y/3.2+17)>.63){terr[i]=10;lvl[i]=1+(h2(x>>2,y>>2)%250);}else if(R()<.2)tree(i);continue;}
    if(m>=.3||LVL[i]>=4){/* 산: 빽빽한 숲, 꼭대기엔 바위 */if(LVL[i]>=5&&fbm(x/5,y/5+7)>.62)terr[i]=9;else if(R()<.86){tree(i);if(R()<.75)deco[i]=21;/* 산은 소나무가 주인, 활엽수는 사이사이(가을 단풍) */}continue;}
-   if(m>=.1){/* 산자락: 물 가까운 골짜기엔 다랑논(단마다 따로 필지) · 과수원 줄나무 · 비탈밭 · 풀밭 */const z=fbm(x/9+11,y/9);if(WD[i]<=12*Sc&&fbm(x/12+60,y/12)>.48){terr[i]=12;lvl[i]=1+(h2(LVL[i]*97+Math.floor(a/4),Math.floor(b/3)+300)%250);continue;}if(z<.42){if((a%2===0)&&(b%2===0))tree(i);}else if(z<.62){terr[i]=10;lvl[i]=1+(h2(Math.floor((a+fbm(x/5,y/5)*3)/5),Math.floor(b/3)+77)%250);}else if(R()<.25)tree(i);else if(R()<.04)prop[i]=hayP(R());continue;}
+   if(m>=.1){/* 산자락: 물 가까운 골짜기엔 다랑논(단마다 따로 필지) · 과수원 줄나무 · 비탈밭 · 풀밭 */const z=fbm(x/9+11,y/9);if(WD[i]<=12*Sc&&fbm(x/12+60,y/12)>.48){terr[i]=12;lvl[i]=1+(h2(LVL[i]*97+Math.floor(a/4),Math.floor(b/3)+300)%250);continue;}if(z<.42){if((a%2===0)&&(b%2===0))tree(i);}else if(z<.62){terr[i]=10;lvl[i]=1+(h2(Math.floor((a+fbm(x/5,y/5)*3)/5),Math.floor(b/3)+77)%250);}else if(R()<.25)tree(i);continue;}
    const pa=a-ao,pB=b-bo,ra=((pa%9)+9)%9,rb=((pB%7)+7)%7;
    if(WD[i]<=(7+fbm(x/14+40,y/14)*9)*Sc&&LVL[i]<=2){if(ra===8||rb===6){terr[i]=0;if(rb===6&&ra!==8&&(((Math.floor(pB/7)%2)+2)%2===0))pv[i]=6;continue;}terr[i]=12;lvl[i]=1+(h2(Math.floor(pa/9),Math.floor(pB/7)*2+(rb>=3?1:0))%250);continue;}
    /* 밭: 경계가 조금씩 굽은 필지. 열에 하나는 풀밭(짚뭉치) */const ka=Math.floor((a+fbm(x/7+3,y/7)*4)/6),kb=Math.floor((b+fbm(x/7,y/7+3)*4)/4),hh=h2(ka,kb+500);
-   if(hh%10===0){if(R()<.08)prop[i]=hayP(R());continue;}if(ra===8&&hh%3===0){terr[i]=0;continue;}terr[i]=10;lvl[i]=1+(hh%250);}
+   if(hh%10===0)continue;if(ra===8&&hh%3===0){terr[i]=0;continue;}terr[i]=10;lvl[i]=1+(hh%250);if(R()<.012)prop[i]=hayP(R());}
   /* 들에 어울리지 않는 건물은 둘레 한 칸을 논밭 대신 풀 마당으로 */{const FIT=new Set(['greenhouseFarm','pumpHouse','containerStore','villageTree','wind','grave']);for(const [f,x0,y0,W,Dd] of BIGS){if(FIT.has(f))continue;for(let yy=y0-1;yy<=y0+Dd;yy++)for(let xx=x0-1;xx<=x0+W;xx++){if(!In(xx,yy))continue;const j=id(xx,yy);if(terr[j]===10||terr[j]===12){terr[j]=0;lvl[j]=0;}}}}
   /* 둑길: 들판을 지나는 강 양옆 한 칸은 농로(자전거·경운기 길) */for(let i=0;i<NN;i++){if(!land(i)||water(i)||isR(i)||bigm[i]||kind[i]||LVL[i]>2||MT[i]>.1)continue;const x=i%N,y=(i/N)|0;if(!D4.some(([dx,dy])=>In(x+dx,y+dy)&&terr[id(x+dx,y+dy)]===TWA&&!ocean[id(x+dx,y+dy)]))continue;if(terr[i]!==0&&terr[i]!==10&&terr[i]!==12)continue;terr[i]=0;lvl[i]=0;pv[i]=6;prop[i]=0;deco[i]=0;}
   /* 산소: 산 중턱 양지에 몇 기 */{let n=0;for(let t=0;t<4000&&n<4+((R()*3)|0);t++){const i=(R()*NN)|0;if(!land(i)||water(i)||isR(i)||bigm[i]||kind[i]||MT[i]<.3||MT[i]>.6||LVL[i]<3||terr[i]===9)continue;const x=i%N,y=(i/N)|0;if(!D4.every(([dx,dy])=>In(x+dx,y+dy)&&LVL[id(x+dx,y+dy)]===LVL[i]&&!bigm[id(x+dx,y+dy)]))continue;bigm[i]=1;deco[i]=0;prop[i]=0;terr[i]=0;BIGS.push(['grave',x,y,1,1,'z+']);n++;}}
