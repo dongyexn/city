@@ -241,6 +241,17 @@ const genIsland=(type,shape,num,NS=128)=>{
  /* 8. nature: forests, beaches, rocky tops */
  const fth={forest:.42,farm:.56,ind:.56,city:.52,metro:.6}[type];
  if(!FV)for(let i=0;i<NN;i++){if(!land(i)||water(i)||kind[i]||pv[i]||deco[i]||prop[i]||terr[i]===10||terr[i]===12||bigm[i])continue;const x=i%N,y=(i/N)|0;const f=fbm(x/11+90,y/11);if(blk[i]<0||!dev(x,y)){if(f>fth)tree(i);else if(cd[i]===1&&fbm(x/9,y/9+50)>.55)terr[i]=6;else if(LVL[i]>=4&&fbm(x/7+20,y/7)>.7)terr[i]=9;else if(f<.3&&R()<.05)terr[i]=11;}}
+ /* 9. 고립 건물 없애기: 길에서 걸어서(같은 높이, 또는 경사로 한 단) 못 닿는 건물 칸은 이웃 길·마당 높이로 땅을 맞추고, 그래도 안 되면 비워 풀밭으로 */
+ {const bld=i=>(kind[i]>=K.RES&&kind[i]!==K.WATER&&kind[i]!==K.PARK)||bigm[i];
+  for(let pass=0;pass<3;pass++){const seen=new Uint8Array(NN),q=[];for(let i=0;i<NN;i++)if(isR(i)){seen[i]=1;q.push(i);}
+   for(let h=0;h<q.length;h++){const i=q[h],x=i%N,y=(i/N)|0;for(const [dx,dy] of D4){if(!In(x+dx,y+dy))continue;const j=id(x+dx,y+dy);if(seen[j]||ocean[j]||water(j))continue;if(!(LVL[j]===LVL[i]||((sl[i]||sl[j])&&Math.abs(LVL[j]-LVL[i])<=1)))continue;if(bld(j)){seen[j]=2;continue;}seen[j]=1;q.push(j);}}
+   const G=new Map();for(let i=0;i<NN;i++){if(!bld(i))continue;let g=lmkA[i]>=0?'l'+lmkA[i]:'t'+i;if(bigm[i]){const b=BIGS.find(([,x0,y0,w,d])=>i%N>=x0&&i%N<x0+w&&((i/N)|0)>=y0&&((i/N)|0)<y0+d);g=b?'b'+BIGS.indexOf(b):g;}if(!G.has(g))G.set(g,[]);G.get(g).push(i);}
+   let fixed=0;for(const [g,cells] of G){if(cells.some(i=>seen[i]===2))continue;if(g[0]==='b'&&BIGS[+g.slice(1)]&&BIGS[+g.slice(1)][0]==='grave')continue;/* 산소는 산길로 오르니 길 연결 없이 둔다 */
+    if(cells.length===1&&!bigm[cells[0]]){const i=cells[0],x=i%N,y=(i/N)|0;let lv=-1;for(const [dx,dy] of D4){if(!In(x+dx,y+dy))continue;const j=id(x+dx,y+dy);if(seen[j]===1&&!sl[j]&&Math.abs(LVL[j]-LVL[i])===1){const ok=D4.every(([ex,ey])=>{if(!In(x+ex,y+ey))return true;const k=id(x+ex,y+ey);return ocean[k]||(Math.abs(LVL[k]-LVL[j])<=1&&!sl[k]);});if(ok){lv=LVL[j];break;}}}
+     if(lv>0){LVL[i]=lv;fixed++;continue;}}
+    if(pass<2)continue;/* 마지막: 비운다 */for(const i of cells){kind[i]=0;lmkA[i]=-1;bigm[i]=0;lvl[i]=0;pv[i]=0;}const bi=g[0]==='b'?+g.slice(1):-1;if(bi>=0)BIGS[bi]=null;fixed++;}
+   if(!fixed&&pass<2)continue;}
+  for(let k=BIGS.length-1;k>=0;k--)if(!BIGS[k])BIGS.splice(k,1);}
  const H=new Uint8Array(HN*HN);for(let y=0;y<HN;y++)for(let x=0;x<HN;x++)H[y*HN+x]=Math.max(0,(LVL[id(Math.min(x,N-1),Math.min(y,N-1))]||1)-1);
  /* 논 사이엔 경사가 없다 — 논 칸의 경사는 없애 계단식 단으로(밭 경사는 밭흙 경사로 남긴다). 섬 가장자리 절벽에 바로 붙은 논은 풀 둔치로 */for(let i=0;i<NN;i++){if(sl[i]&&terr[i]===12&&!isR(i)&&pv[i]!==6)sl[i]=0;}
  for(let i=0;i<NN;i++){if(terr[i]!==12)continue;const x=i%N,y=(i/N)|0;let e=false;for(let a=-1;a<=1&&!e;a++)for(let b=-1;b<=1;b++){if(!In(x+b,y+a)||!land(id(x+b,y+a))){e=true;break;}}if(e){terr[i]=0;lvl[i]=0;}}
