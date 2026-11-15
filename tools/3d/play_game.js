@@ -671,7 +671,7 @@ const BGM=(()=>{
  const bus=T=>{const g=ac.createGain(),dry=ac.createGain(),wet=ac.createGain(),ec=ac.createGain(),wd=ac.createGain(),fd=ac.createGain(),dt=ac.createConstantSource();
   dry.gain.value=.7;wet.gain.value=.75;ec.gain.value=.25;g.connect(dry);g.connect(wet);g.connect(ec);dry.connect(out);wet.connect(rv);ec.connect(dl);dl.delayTime.value=60/T.bpm*.75;
   wd.gain.value=T.wow;fd.gain.value=4;wow.connect(wd);flu.connect(fd);dt.offset.value=T.slow;dt.start();const det=ac.createGain();det.gain.value=1;wd.connect(det);fd.connect(det);dt.connect(det);
-  /* 먹먹함: 느린 주기로 방 필터가 닫혔다 열린다 */const t=ac.currentTime;room.frequency.cancelScheduledValues(t);room.frequency.setTargetAtTime(T.under?900:8000,t,.5);
+  /* 먹먹함: 느린 주기로 방 필터가 닫혔다 열린다 */const t=ac.currentTime;room.frequency.cancelScheduledValues(t);room.frequency.setTargetAtTime(T.under?2600:5200,t,2);/* 늘 아주 살짝 먹먹하게(곡이 바뀌면 천천히) */
   return {g,dry,wet,ec,wd,fd,dt,det,n:[dt]};};
  const env=(e,t0,a,peak,d,hold=0)=>{e.gain.setValueAtTime(0,t0);e.gain.linearRampToValueAtTime(peak,t0+a);if(hold)e.gain.setValueAtTime(peak,t0+a+hold);e.gain.exponentialRampToValueAtTime(.0001,t0+a+hold+d);return t0+a+hold+d;};
  const osc=(B,type,fr,dst)=>{const o=ac.createOscillator();o.type=type;o.frequency.value=fr;B.det.connect(o.detune);o.connect(dst);o.onended=()=>{try{B.det.disconnect(o.detune);}catch(_){}};return o;};
@@ -688,7 +688,7 @@ const BGM=(()=>{
  const drum=(B,kind,t,v=1)=>{const lp=ac.createBiquadFilter();lp.type='lowpass';lp.frequency.value=2400;lp.connect(B.g);
   if(kind==='k'){const o=ac.createOscillator(),e=ac.createGain();o.frequency.setValueAtTime(110,t);o.frequency.exponentialRampToValueAtTime(42,t+.22);o.connect(e);e.connect(lp);env(e,t,.003,.32*v,.28);o.start(t);o.stop(t+.35);}
   else{const s=ac.createBufferSource();s.buffer=NB();const bp=ac.createBiquadFilter(),e=ac.createGain();bp.type=kind==='s'?'bandpass':'highpass';bp.frequency.value=kind==='s'?1700:7000;s.connect(bp);bp.connect(e);e.connect(lp);env(e,t,.002,(kind==='s'?.16:.04)*v,kind==='s'?.2:.05);s.start(t);s.stop(t+.3);}};
- const bar=T0=>{const T=TR[cur],B=G,beat=60/T.bpm,L=beat*4,ch=T.pr[bi%8],R=Math.random,b8=bi%8;bi++;played++;
+ const bar=(T0,X)=>{const T=TR[X.k],B=X.B,beat=60/T.bpm,L=beat*4,ch=T.pr[X.bi%8],R=Math.random,b8=X.bi%8;X.bi++;if(X.B===G)played++;
   if(T.choir)choir(B,ch,T,T0,L);else pad(B,ch,T,T0,L);
   voice(B,[['sine',f(T.k+ch[0]-24),1],['triangle',f(T.k+ch[0]-24),.3]],T0,.05,.09,L*.9,700,L*.2);
   if(T.keys)for(const o of [0,2,3.5])for(const n of ch.slice(1,4))INS.keys(B,f(T.k+n),T0+o*beat+R()*.02,beat*.8,.5);
@@ -697,14 +697,13 @@ const BGM=(()=>{
   if(T.drums&&b8!==7){for(let q=0;q<4;q++){if(q===0||(T.drums===1&&q===2&&R()<.5))drum(B,'k',T0+q*beat,.9);if(q===1||q===3)drum(B,'s',T0+q*beat,T.drums===2&&q===1?0:.8);}for(let q=0;q<8;q++)if(R()<.7)drum(B,'h',T0+q*beat/2+(q%2?beat*.06:0),.7);}
   if(T.beat)drum(B,'k',T0,.55),drum(B,'k',T0+beat*.6,.35);
   if(T.swell&&b8===7){const s=ac.createBufferSource();s.buffer=NB();s.loop=true;const bp=ac.createBiquadFilter(),e=ac.createGain();bp.type='bandpass';bp.frequency.value=900;bp.Q.value=.8;s.connect(bp);bp.connect(e);e.connect(B.g);e.gain.setValueAtTime(0,T0);e.gain.linearRampToValueAtTime(.05,T0+L-.02);e.gain.linearRampToValueAtTime(0,T0+L);s.start(T0);s.stop(T0+L+.05);}
-  /* 다른 방: 8마디마다 한두 마디 먹먹해졌다가 돌아온다 */if(T.muf&&!T.under&&(b8===3||b8===6)&&R()<T.muf){room.frequency.setTargetAtTime(650,T0,.35);room.frequency.setTargetAtTime(8000,T0+L*(R()<.5?1:2),.6);}
-  if(T.under){room.frequency.setTargetAtTime(700+Math.sin(bi*.7)*250,T0,1.2);}
-  if(shuf&&played>=40&&b8===7){played=0;const nk=(cur+1+((Math.random()*(TR.length-1))|0))%TR.length;setTimeout(()=>{if(on&&shuf){startT(nk);sv();if(window.__BGMSYNC)window.__BGMSYNC();}},Math.max(0,(T0+L-ac.currentTime)*1000-200));}};
- const stopT=()=>{if(tm){clearInterval(tm);tm=null;}if(G&&ac){const g=G,t=ac.currentTime;g.g.gain.setValueAtTime(1,t);g.g.gain.linearRampToValueAtTime(0,t+1.5);for(const s of g.n){try{s.stop(t+1.6);}catch(_){}}setTimeout(()=>{try{g.g.disconnect();g.dry.disconnect();g.wet.disconnect();g.ec.disconnect();wow.disconnect(g.wd);flu.disconnect(g.fd);}catch(_){}},2600);G=null;}};
- const startT=k=>{init();if(!ac)return;ac.resume();stopT();cur=k;played=0;const T=TR[k];G=bus(T);bi=0;nx=ac.currentTime+.15;
-  {/* 레코드 잡음: 낮은 쉬익 + 띄엄띄엄 타닥 */const b=noiseBuf(4,(i,L)=>(Math.random()*2-1)*.25+(Math.random()<.0004?(Math.random()*2-1)*3:0)),s=ac.createBufferSource();s.buffer=b;s.loop=true;const hp=ac.createBiquadFilter();hp.type='highpass';hp.frequency.value=900;const g=ac.createGain();g.gain.value=.035;s.connect(hp);hp.connect(g);g.connect(G.g);s.start();G.n.push(s);}
+  /* 갑자기 먹먹해지는 필터는 뺐다 — 늘 아주 살짝 걸린 채로 둔다 */
+  if(X.B===G&&shuf&&played>=40&&b8===7){played=0;const nk=(cur+1+((Math.random()*(TR.length-1))|0))%TR.length;setTimeout(()=>{if(on&&shuf){startT(nk);sv();if(window.__BGMSYNC)window.__BGMSYNC();}},Math.max(0,(T0+L*.5-ac.currentTime)*1000));/* 마지막 마디 중간부터 다음 곡이 겹쳐 들어온다 */}};
+ const stopT=(fd=1.5)=>{if(G&&ac){const g=G,X=g.X,t=ac.currentTime;g.g.gain.cancelScheduledValues(t);g.g.gain.setValueAtTime(g.g.gain.value,t);g.g.gain.linearRampToValueAtTime(0,t+fd);for(const s of g.n){try{s.stop(t+fd+.1);}catch(_){}}setTimeout(()=>{clearInterval(X.tm);X.dead=1;try{g.g.disconnect();g.dry.disconnect();g.wet.disconnect();g.ec.disconnect();wow.disconnect(g.wd);flu.disconnect(g.fd);}catch(_){}},fd*1000+2500);G=null;}};/* 앞 곡은 fd초 동안 계속 연주하면서 서서히 줄어든다 */
+ const startT=k=>{init();if(!ac)return;ac.resume();const xf=!!G;stopT(xf?7:1.5);cur=k;played=0;const T=TR[k];G=bus(T);const X={k,B:G,bi:0,nx:ac.currentTime+.15};G.X=X;if(xf){const t0=ac.currentTime;G.g.gain.setValueAtTime(0,t0);G.g.gain.linearRampToValueAtTime(1,t0+7);}/* 곡 넘김: 7초 동안 겹치며 천천히 */
+  {/* 레코드 잡음: 낮은 쉬익 + 띄엄띄엄 타닥 */const b=noiseBuf(4,(i,L)=>(Math.random()*2-1)*.25+(Math.random()<.0004?(Math.random()*2-1)*3:0)),s=ac.createBufferSource();s.buffer=b;s.loop=true;const hp=ac.createBiquadFilter();hp.type='highpass';hp.frequency.value=900;const g=ac.createGain();g.gain.value=.018;/* 잡음 줄임 */s.connect(hp);hp.connect(g);g.connect(G.g);s.start();G.n.push(s);}
   const t=ac.currentTime;out.gain.cancelScheduledValues(t);out.gain.setValueAtTime(out.gain.value,t);out.gain.linearRampToValueAtTime(vol*vol*2.6,t+2.5);
-  const tick=()=>{if(!G)return;while(nx<ac.currentTime+1.2){bar(nx);nx+=60/TR[cur].bpm*4;}};tick();tm=setInterval(tick,300);};
+  const tick=()=>{if(X.dead)return;while(X.nx<ac.currentTime+1.2){bar(X.nx,X);X.nx+=60/TR[X.k].bpm*4;}};tick();X.tm=setInterval(tick,300);};
  return {TR,get cur(){return cur;},get on(){return on;},get vol(){return vol;},get shuf(){return shuf;},
   play(k){on=true;startT(k);sv();},stop(){on=false;stopT();if(ac){const t=ac.currentTime;out.gain.cancelScheduledValues(t);out.gain.setValueAtTime(out.gain.value,t);out.gain.linearRampToValueAtTime(0,t+1.5);}sv();},
   setShuf(v){shuf=v;played=0;sv();},rand(){const k=(Math.random()*TR.length)|0;this.play(k===cur?(k+1)%TR.length:k);},
