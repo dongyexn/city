@@ -245,6 +245,8 @@ const genIsland=(type,shape,num,NS=128)=>{
  /* 7. terrace edges in town: a ramp (lawn) or stairs (paved) here and there so people can climb */
  const walk=i=>land(i)&&!water(i)&&!isR(i)&&(kind[i]===0||kind[i]===K.PARK)&&lmkA[i]<0&&!bigm[i];
  for(let y=2;y<N-2;y++)for(let x=2;x<N-2;x++){const b=id(x,y);if(!walk(b)||sl[b]||deco[b]||prop[b]||cdist(x,y)>RAD*1.2)continue;D4.forEach(([dx,dy],di)=>{if(sl[b])return;const a=id(x-dx,y-dy),c2=id(x+dx,y+dy);if(!walk(a)||!walk(c2))return;if(LVL[a]===LVL[b]-1&&LVL[c2]===LVL[b]){let near=false;for(let r=-3;r<=3&&!near;r++)for(let s=-3;s<=3;s++){const k=id(x+r,y+s);if(In(x+r,y+s)&&sl[k]){near=true;break;}}if(near||R()>.5)return;const dir=dx===1?2:dx===-1?4:dy===1?1:3;sl[b]=dir+(pv[b]?4:0);}});}
+ /* 7b. 물 둑(마크 규칙): 물보다 낮은 땅이 물 바로 옆에 있으면 물이 그쪽으로 쏟아지므로, 그 땅을 물 높이로 올려 둑을 만든다. 올릴 수 없는 칸(길·건물·경사·시설)이면 물을 그 높이로 낮춘다 */
+ for(let it=0;it<8;it++){let ch=0;for(let i=0;i<NN;i++){if(!land(i)||!water(i))continue;const x=i%N,y=(i/N)|0;for(const [dx,dy] of D4){if(!In(x+dx,y+dy))continue;const j=id(x+dx,y+dy);if(!land(j)||water(j)||LVL[j]>=LVL[i])continue;if(!isR(j)&&(!kind[j]||kind[j]===K.PARK)&&!bigm[j]&&lmkA[j]<0&&!sl[j])LVL[j]=LVL[i];else LVL[i]=LVL[j];ch++;}}if(!ch)break;}
  /* 8. nature: forests, beaches, rocky tops */
  const fth={forest:.42,farm:.56,ind:.56,city:.52,metro:.6}[type];
  if(!FV)for(let i=0;i<NN;i++){if(!land(i)||water(i)||kind[i]||pv[i]||deco[i]||prop[i]||terr[i]===10||terr[i]===12||bigm[i])continue;const x=i%N,y=(i/N)|0;const f=fbm(x/11+90,y/11);if(blk[i]<0||!dev(x,y)){if(f>fth)tree(i);else if(cd[i]===1&&fbm(x/9,y/9+50)>.55)terr[i]=6;else if(LVL[i]>=4&&fbm(x/7+20,y/7)>.7)terr[i]=9;else if(f<.3&&R()<.05)terr[i]=11;}}
