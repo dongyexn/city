@@ -252,19 +252,30 @@ const genIsland=(type,shape,num,NS=128)=>{
  /* 8. nature: forests, beaches, rocky tops */
  const fth={forest:.42,farm:.56,ind:.56,city:.52,metro:.6}[type];
  if(!FV)for(let i=0;i<NN;i++){if(!land(i)||water(i)||kind[i]||pv[i]||deco[i]||prop[i]||terr[i]===10||terr[i]===12||bigm[i])continue;const x=i%N,y=(i/N)|0;const f=fbm(x/11+90,y/11);if(blk[i]<0||!dev(x,y)){if(f>fth)tree(i);else if(cd[i]===1&&fbm(x/9,y/9+50)>.55)terr[i]=6;else if(LVL[i]>=4&&fbm(x/7+20,y/7)>.7)terr[i]=9;else if(f<.3&&R()<.05)terr[i]=11;}}
+ const TPLT=[['templeHall',1,1,5,3,0],['yosa',6,1,1,3,-Math.PI/2],['sanshin',0,0,1,1,0],['buddha',0,3,1,1,0],['stoneLantern',3,4,1,1,0],['stonePagoda',3,5,1,1,0],['bellPavilion',0,5,2,2,0],['iljumun',2,7,3,1,0]],TPLS=new Set(TPLT.map(e=>e[0]));
  /* 8b. 산사(산지가람): 농촌·숲 섬의 산 중턱이나 꼭대기(3단 이상), 높이 차 1단 안쪽인 7×8 자리에 한 곳. 터를 고르고 앞(일주문)은 내리막 쪽 */
  if(type==='farm'||type==='forest'){let best=null,bs=-1e9;const avg=(x0,y0,dx,dy,n)=>{let s=0,c=0;for(let k=0;k<n;k++){const x=x0+(dy?k:0),y=y0+(dx?k:0);if(!In(x,y))return -1;const j=id(x,y);if(ocean[j])return -1;s+=LVL[j];c++;}return s/c;};
   for(const [w,d,dir,fx,fy] of [[7,8,'z+',0,1],[7,8,'z-',0,-1],[8,7,'x+',1,0],[8,7,'x-',-1,0]])for(let y0=1;y0+d<N-1;y0++)for(let x0=1;x0+w<N-1;x0++){let mn=99,mx=0,ok=true;
    for(let yy=y0;yy<y0+d&&ok;yy++)for(let xx=x0;xx<x0+w;xx++){const j=id(xx,yy);if(ocean[j]||water(j)||kind[j]||bigm[j]||lmkA[j]>=0||cd[j]<2||terr[j]===10||terr[j]===12){ok=false;break;}const L=LVL[j];if(L<mn)mn=L;if(L>mx)mx=L;}
    if(!ok||mn<3||mx-mn>1)continue;const F=fy>0?avg(x0,y0+d,0,1,w):fy<0?avg(x0,y0-1,0,1,w):fx>0?avg(x0+w,y0,1,0,d):avg(x0-1,y0,1,0,d),Bk=fy>0?avg(x0,y0-1,0,1,w):fy<0?avg(x0,y0+d,0,1,w):fx>0?avg(x0-1,y0,1,0,d):avg(x0+w,y0,1,0,d);
    if(F<0||F>mx)continue;const sc=(Bk<0?mx:Bk)-F+mx*.35+R()*.3;if(sc>bs){bs=sc;best=[x0,y0,w,d,dir,mx];}}
-  if(best){const [x0,y0,w,d,dir,L0]=best;for(let yy=y0-1;yy<=y0+d;yy++)for(let xx=x0-1;xx<=x0+w;xx++){if(!In(xx,yy))continue;const j=id(xx,yy);sl[j]=0;if(xx<x0||yy<y0||xx>=x0+w||yy>=y0+d)continue;LVL[j]=L0;terr[j]=0;deco[j]=0;lvl[j]=0;pv[j]=0;prop[j]=0;bigm[j]=1;}BIGS.push(['templeComplex',x0,y0,w,d,dir]);}}
+  if(best){const [x0,y0,w,d,dir,L0]=best;for(let yy=y0-1;yy<=y0+d;yy++)for(let xx=x0-1;xx<=x0+w;xx++){if(!In(xx,yy))continue;const j=id(xx,yy);sl[j]=0;if(xx<x0||yy<y0||xx>=x0+w||yy>=y0+d)continue;LVL[j]=L0;terr[j]=0;deco[j]=0;lvl[j]=0;pv[j]=0;prop[j]=0;}
+   /* 사찰 틀(지역 7열×8행, 앞 = 8행 쪽): 전각·석물은 따로 놓인 건물이라 하나씩 옮기고 지울 수 있다. 마당은 흙, 일주문 앞 길은 박석, 빈자리는 숲 */
+   const sa={'z+':0,'x+':Math.PI/2,'z-':Math.PI,'x-':-Math.PI/2}[dir],cs=Math.round(Math.cos(sa)),sn=Math.round(Math.sin(sa)),DN=a=>{const k=((Math.round(a/(Math.PI/2))%4)+4)%4;return ['z+','x+','z-','x-'][k];},
+    at=(c,r)=>{const lx=c+.5-3.5,lz=r+.5-4;return id(Math.floor(x0+w/2+lx*cs+lz*sn),Math.floor(y0+d/2-lx*sn+lz*cs));},used=new Set();
+   for(const [f,c0,r0,lw,ld,ia] of TPLT){const lx=c0+lw/2-3.5,lz=r0+ld/2-4,cx=x0+w/2+lx*cs+lz*sn,cz=y0+d/2-lx*sn+lz*cs,fw=sn?ld:lw,fd=sn?lw:ld,bx0=Math.round(cx-fw/2),by0=Math.round(cz-fd/2);
+    BIGS.push([f,bx0,by0,fw,fd,DN(sa+ia)]);for(let yy=by0;yy<by0+fd;yy++)for(let xx=bx0;xx<bx0+fw;xx++){const j=id(xx,yy);bigm[j]=1;used.add(j);}}
+   for(let r=0;r<8;r++)for(let c=0;c<7;c++){const j=at(c,r);if(used.has(j))continue;if((r>=4&&r<=6&&c>=1&&c<=5)||(r===4&&(c===0||c===6)))terr[j]=6;else if(r===7||r<4||c===0||c===6)tree(j);}{const j=at(3,6);terr[j]=0;pv[j]=1;}
+   /* 절 아랫마을: 산사에서 조금 떨어진(5~22칸) 집은 한옥으로 — 2×2 집터는 그대로 바꾸고, 붙은 1칸 집 네 칸은 한옥 한 채로 */
+   const tcx=x0+w/2,tcy=y0+d/2,RESN=new Set(['farmhouse','slateHouse','yangok','yangokBlue','terraceApt','mixedTower','country','cityHome','peanut','cabin','container','penthouse']),dd=(x,y)=>Math.hypot(x-tcx,y-tcy);
+   for(const b of BIGS){if(!b||!RESN.has(b[0])||b[3]!==2||b[4]!==2)continue;const q=dd(b[1]+1,b[2]+1);if(q>=5&&q<=22&&R()<.85)b[0]='hanok';}
+   for(let y=1;y<N-2;y++)for(let x=1;x<N-2;x++){const q=dd(x+1,y+1);if(q<5||q>22)continue;const c4=[id(x,y),id(x+1,y),id(x,y+1),id(x+1,y+1)];if(!c4.every(j=>kind[j]===K.RES&&!bigm[j]&&lmkA[j]<0&&LVL[j]===LVL[c4[0]]))continue;if(R()<.3)continue;for(const j of c4){kind[j]=0;lvl[j]=0;bigm[j]=1;}BIGS.push(['hanok',x,y,2,2,'z+']);}}}
  /* 9. 고립 건물 없애기: 길에서 걸어서(같은 높이, 또는 경사로 한 단) 못 닿는 건물 칸은 이웃 길·마당 높이로 땅을 맞추고, 그래도 안 되면 비워 풀밭으로 */
  {const bld=i=>(kind[i]>=K.RES&&kind[i]!==K.WATER&&kind[i]!==K.PARK)||bigm[i];
   for(let pass=0;pass<3;pass++){const seen=new Uint8Array(NN),q=[];for(let i=0;i<NN;i++)if(isR(i)){seen[i]=1;q.push(i);}
    for(let h=0;h<q.length;h++){const i=q[h],x=i%N,y=(i/N)|0;for(const [dx,dy] of D4){if(!In(x+dx,y+dy))continue;const j=id(x+dx,y+dy);if(seen[j]||ocean[j]||water(j))continue;if(!(LVL[j]===LVL[i]||((sl[i]||sl[j])&&Math.abs(LVL[j]-LVL[i])<=1)))continue;if(bld(j)){seen[j]=2;continue;}seen[j]=1;q.push(j);}}
    const G=new Map();for(let i=0;i<NN;i++){if(!bld(i))continue;let g=lmkA[i]>=0?'l'+lmkA[i]:'t'+i;if(bigm[i]){const b=BIGS.find(([,x0,y0,w,d])=>i%N>=x0&&i%N<x0+w&&((i/N)|0)>=y0&&((i/N)|0)<y0+d);g=b?'b'+BIGS.indexOf(b):g;}if(!G.has(g))G.set(g,[]);G.get(g).push(i);}
-   let fixed=0;for(const [g,cells] of G){if(cells.some(i=>seen[i]===2))continue;if(g[0]==='b'&&BIGS[+g.slice(1)]&&(BIGS[+g.slice(1)][0]==='grave'||BIGS[+g.slice(1)][0]==='templeComplex'))continue;/* 산소는 산길로 오르니 길 연결 없이 둔다 */
+   let fixed=0;for(const [g,cells] of G){if(cells.some(i=>seen[i]===2))continue;if(g[0]==='b'&&BIGS[+g.slice(1)]&&(BIGS[+g.slice(1)][0]==='grave'||TPLS.has(BIGS[+g.slice(1)][0])))continue;/* 산소는 산길로 오르니 길 연결 없이 둔다 */
     if(cells.length===1&&!bigm[cells[0]]){const i=cells[0],x=i%N,y=(i/N)|0;let lv=-1;for(const [dx,dy] of D4){if(!In(x+dx,y+dy))continue;const j=id(x+dx,y+dy);if(seen[j]===1&&!sl[j]&&Math.abs(LVL[j]-LVL[i])===1){const ok=D4.every(([ex,ey])=>{if(!In(x+ex,y+ey))return true;const k=id(x+ex,y+ey);return ocean[k]||(Math.abs(LVL[k]-LVL[j])<=1&&!sl[k]);});if(ok){lv=LVL[j];break;}}}
      if(lv>0){LVL[i]=lv;fixed++;continue;}}
     if(pass<2)continue;/* 마지막: 비운다 */for(const i of cells){kind[i]=0;lmkA[i]=-1;bigm[i]=0;lvl[i]=0;pv[i]=0;}const bi=g[0]==='b'?+g.slice(1):-1;if(bi>=0)BIGS[bi]=null;fixed++;}
