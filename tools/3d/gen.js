@@ -3,8 +3,8 @@
    Builds the same fields the saved maps carry (kind, terr, LVL, ocean, deco, lmkA, lvl …) plus pv/sl/prop, so the renderer needs nothing new.
    Layout rules: blocks between roads keep a walkway every few frontage tiles and a paved path through the middle, terraces never step more
    than one level where people walk, and every terrace edge inside a town gets a slope or stairs now and then. */
-const GTYPES=[['city','도시'],['metro','대도시'],['ind','공업'],['farm','농촌'],['forest','숲속마을']],GSHAPES=[['round','둥근'],['oval','타원'],['long','길쭉한'],['twin','쌍둥이'],['crescent','초승달'],['archi','군도'],['heart','하트'],['star','별'],['tri','삼각'],['square','네모'],['penta','오각'],['hexa','육각'],['rhombus','마름모'],['clover','세잎'],['quatre','네잎'],['flower','꽃'],['atoll','환초'],['peanut','땅콩'],['bean','강낭콩'],['drop','물방울'],['egg','달걀'],['lshape','ㄱ자'],['tshape','T자'],['cross','십자'],['horseshoe','말굽'],['bay','만'],['scurve','S자'],['boot','장화'],['fish','물고기'],['tadpole','올챙이'],['triple','세 섬'],['chain','줄섬'],['banana','바나나'],['butterfly','나비'],['lemon','레몬'],['gourd','호리병'],['mitten','벙어리장갑'],['comet','혜성']];
-const MULTI=new Set(['archi','triple','chain','butterfly']);
+const GTYPES=[['city','도시'],['metro','대도시'],['ind','공업'],['farm','농촌'],['forest','숲속마을']],GSHAPES=[['round','둥근'],['oval','타원'],['long','길쭉한'],['twin','쌍둥이'],['crescent','초승달'],['archi','군도'],['sea','바다섬'],['heart','하트'],['star','별'],['tri','삼각'],['square','네모'],['penta','오각'],['hexa','육각'],['rhombus','마름모'],['clover','세잎'],['quatre','네잎'],['flower','꽃'],['atoll','환초'],['peanut','땅콩'],['bean','강낭콩'],['drop','물방울'],['egg','달걀'],['lshape','ㄱ자'],['tshape','T자'],['cross','십자'],['horseshoe','말굽'],['bay','만'],['scurve','S자'],['boot','장화'],['fish','물고기'],['tadpole','올챙이'],['triple','세 섬'],['chain','줄섬'],['banana','바나나'],['butterfly','나비'],['lemon','레몬'],['gourd','호리병'],['mitten','벙어리장갑'],['comet','혜성']];
+const MULTI=new Set(['archi','triple','chain','butterfly','sea']);
 const genIsland=(type,shape,num,NS=128)=>{
  const N=NS,HN=NS+1,Sc=NS/128,K={EMPTY:0,ROAD:1,RES:2,COM:3,IND:4,POWER:5,WATER:6,POLICE:7,FIRE:8,PARK:9,LMK:10},TWA=1,NN=N*N;
  let sd=((num*2654435761)^0x9e3779b9)>>>0||7;const R=()=>{sd^=sd<<13;sd>>>=0;sd^=sd>>>17;sd^=sd<<5;sd>>>=0;return sd/4294967296;};
@@ -16,6 +16,7 @@ const genIsland=(type,shape,num,NS=128)=>{
  const cx=N/2,cy=N/2,an=R()*Math.PI,ca=Math.cos(an),sa=Math.sin(an),blobs=[];
  if(shape==='twin'){const o=(20+R()*6)*Sc;blobs.push([cx-ca*o,cy-sa*o,(26+R()*5)*Sc],[cx+ca*o,cy+sa*o,(24+R()*6)*Sc]);}
  else if(shape==='archi'){const n=4+((R()*3)|0);for(let k=0;k<n;k++){const a=k/n*6.283+R()*.6,r=k===0?0:(22+R()*16)*Sc;blobs.push([cx+Math.cos(a)*r,cy+Math.sin(a)*r,(k===0?20+R()*4:10+R()*7)*Sc]);}}
+ else if(shape==='sea'){/* 바다섬: 섬 윗면 대부분이 바다, 그 안에 작은 섬 몇 개 */const n=3+((R()*3)|0);for(let k=0;k<n;k++){const a=k/n*6.283+R()*.7,r=k===0?R()*8:(20+R()*10)*Sc;blobs.push([cx+Math.cos(a)*r,cy+Math.sin(a)*r,(k===0?15+R()*4:8+R()*5)*Sc]);}}
  else blobs.push([cx,cy,46*Sc]);
  /* 모양 사전: 반지름 ~46칸 기준 좌표(U,V)에서 1보다 작으면 땅. 원·다각형·꽃잎·막대를 합(min)·차(max)로 엮는다 */
  const ci=(U,V,x,y,r)=>Math.hypot(U-x,V-y)/r,poly=(U,V,n,r,ph=0)=>{const a=Math.atan2(V,U)+ph,s=Math.PI/n,k=((a%(2*s))+2*s)%(2*s)-s;return Math.hypot(U,V)*Math.cos(k)/(r*Math.cos(s));},
@@ -70,7 +71,7 @@ const genIsland=(type,shape,num,NS=128)=>{
  const land=i=>!ocean[i];const centres=[];{for(const [bx,by] of blobs){let best=-1,bd=1e9;for(let i=0;i<NN;i++){if(!land(i)||cd[i]<5)continue;const d=Math.hypot(i%N-bx,((i/N)|0)-by);if(d<bd){bd=d;best=i;}}if(best>=0)centres.push([best%N,(best/N)|0]);}}
  if(!centres.length)centres.push([cx,cy]);
  const cdist=(x,y)=>{let m=1e9;for(const [a,b] of centres)m=Math.min(m,Math.hypot(x-a,y-b));return m;};
- const RAD={metro:60,city:34,ind:38,farm:44,forest:24}[type]*(shape==='archi'?.55:shape==='twin'?.8:1)*Sc;
+ const RAD={metro:60,city:34,ind:38,farm:44,forest:24}[type]*(shape==='archi'||shape==='sea'?.55:shape==='twin'?.8:1)*Sc;
  const dev=(x,y)=>{const i=id(x,y);if(!land(i)||cd[i]<2)return false;return cdist(x,y)/RAD+(fbm(x/14+40,y/14)-.5)*.6<1;};
  /* 4. river (not on the small archipelago pieces) */
  const terr=new Uint8Array(NN),kind=new Uint8Array(NN),lvl=new Uint8Array(NN),deco=new Uint8Array(NN),pv=new Uint8Array(NN),sl=new Uint8Array(NN),prop=new Uint8Array(NN),lmkA=new Int32Array(NN).fill(-1);
@@ -269,4 +270,5 @@ const genIsland=(type,shape,num,NS=128)=>{
  /* 밭·논과 잔디 사이엔 경사를 두지 않는다(단차가 생김) */for(let i=0;i<NN;i++){if(!sl[i]||sl[i]>4)continue;const x=i%N,y=(i/N)|0,D=[null,[0,1],[1,0],[0,-1],[-1,0]][sl[i]],j=In(x+D[0],y+D[1])?id(x+D[0],y+D[1]):-1,f=k=>k>=0&&(terr[k]===10||terr[k]===12);if(f(i)||f(j))sl[i]=0;}
  /* 논 사이엔 경사가 없다 — 논 칸의 경사는 없애 계단식 단으로(밭 경사는 밭흙 경사로 남긴다). 섬 가장자리 절벽에 바로 붙은 논은 풀 둔치로 */for(let i=0;i<NN;i++){if(sl[i]&&terr[i]===12&&!isR(i)&&pv[i]!==6)sl[i]=0;}
  for(let i=0;i<NN;i++){if(terr[i]!==12)continue;const x=i%N,y=(i/N)|0;let e=false;for(let a=-1;a<=1&&!e;a++)for(let b=-1;b<=1;b++){if(!In(x+b,y+a)||!land(id(x+b,y+a))){e=true;break;}}if(e){terr[i]=0;lvl[i]=0;}}
+ if(shape==='sea'){/* 둥근 섬 테두리 안의 바다는 섬 위의 물(1단)로: 가장자리는 섬 밖으로 쏟아지는 폭포가 된다 */for(let y=3;y<N-3;y++)for(let x=3;x<N-3;x++){const i=id(x,y);if(!ocean[i])continue;if(Math.hypot(x-cx,y-cy)/(44*Sc)+(fbm(x/18/Sc+7,y/18/Sc)-.5)*.3>=1)continue;ocean[i]=0;terr[i]=TWA;LVL[i]=1;kind[i]=0;deco[i]=0;pv[i]=0;sl[i]=0;prop[i]=0;lvl[i]=0;}}
  return {N,HN,K,TWA,H:b64e(H),terr:b64e(terr),kind:b64e(kind),lvl:b64e(lvl),deco:b64e(deco),ocean:b64e(ocean),LVL:b64e(LVL),lmkA:b64e(new Uint8Array(lmkA.buffer)),pv:b64e(pv),sl:b64e(sl),prop:b64e(prop),big:BIGS,auto:type!=='farm'&&type!=='forest',hmin:0,hmax:FV?7:maxL};};
