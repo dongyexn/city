@@ -283,10 +283,17 @@ const slAuto=(x,z)=>{const h=W.hT(x,z),DIR=(dx,dz)=>dx>0?2:dx<0?4:dz>0?1:3,isSl=
  for(const r of [1,2,3,4]){const [dx,dz]=SLD[r];if(hi(x+dx,z+dz))return r;}let best=1,lo=h-.3;for(const r of [1,2,3,4]){const [dx,dz]=SLD[r];const g=W.land(x-dx,z-dz)?W.hT(x-dx,z-dz):h-.31;if(g<lo){lo=g;best=r;}}return best;};
 /* the ramp is the tile's own top layer, so lift the tile one level unless the low side already drops a level — otherwise the ramp would sink into a pit */
 const slLift=(x,z,r)=>{const [dx,dz]=SLD[r],h=W.hT(x,z),lo=W.land(x-dx,z-dz)&&!W.riv(x-dx,z-dz)?W.hT(x-dx,z-dz):-99;return lo>h-.3&&GS.LVL[z*N+x]<LMX();};
-/* 물은 블록처럼 자연을 따른다: 물을 부은 칸이 같은 높이로 이어진 움푹한 바닥(둘레가 모두 더 높고 64칸 이하)이면 그 바닥 전체가 물에 잠긴다.
-   둘레에 더 낮은 땅이 있으면 물은 그쪽으로 넘쳐 흐르므로(폭포로 그려짐) 부은 칸만 물이 된다. 길·건물·큰 시설 칸은 벽으로 본다 */
-const fillBasin=i0=>{const L=GS.LVL[i0],seen=new Set([i0]),q=[i0];let leak=false;for(let h=0;h<q.length&&!leak;h++){const i=q[h],x=i%N,z=(i/N)|0;for(const [dx,dz] of [[1,0],[-1,0],[0,1],[0,-1]]){const xx=x+dx,zz=z+dz;if(xx<0||zz<0||xx>=N||zz>=N||!W.land(xx,zz)){leak=true;break;}const j=zz*N+xx;if(seen.has(j))continue;const lj=GS.LVL[j];if(lj<L){leak=true;break;}if(lj>L)continue;if(GS.kind[j]===K.ROAD||(GS.kind[j]>=K.RES&&GS.kind[j]!==K.PARK)||bigAt(j)>=0||GS.sl[j])continue;seen.add(j);q.push(j);if(q.length>64){leak=true;break;}}}
- if(leak)return;for(const j of q){if(GS.terr[j]===GS.TWA)continue;clearT(j);GS.kind[j]=K.EMPTY;GS.terr[j]=GS.TWA;GS.pv[j]=0;}};
+/* 물 블록(마인크래프트 규칙): 손으로 부은 물 칸이 원천(man 8). 원천에서 같은 높이로는 한 칸마다 한 단계씩 얕아지며 7칸까지 퍼지고(man 비트 5~7에 1~7),
+   더 낮은 칸을 만나면 떨어져 그 높이에서 다시 퍼진다. 더 높은 칸·길·건물·큰 시설·경사는 막는다. 편집할 때마다 흐름을 처음부터 다시 계산한다 */
+const FO=new Map();/* 흐르는 물이 덮기 전의 바닥(지형·포장) */
+const flowAll=()=>{const M=GS.man,NN=N*N;for(let i=0;i<NN;i++)if(M[i]&224){M[i]&=31;if(GS.terr[i]===GS.TWA){const o=FO.get(i);GS.terr[i]=o?o[0]:0;GS.pv[i]=o?o[1]:0;}}
+ const best=new Uint8Array(NN).fill(255),q=[];for(let i=0;i<NN;i++)if((M[i]&8)&&GS.terr[i]===GS.TWA){best[i]=0;q.push(i);}
+ const open=j=>{const x=j%N,z=(j/N)|0;return W.land(x,z)&&!(GS.terr[j]===10||GS.terr[j]===12||(GS.pv[j]&&GS.pv[j]!==9))&&/* 논밭·포장길은 물이 덮지 않는다 */!GS.deco[j]&&!GS.prop[j]&&GS.kind[j]!==K.ROAD&&!(GS.kind[j]>=K.RES&&GS.kind[j]!==K.PARK)&&bigAt(j)<0&&!GS.sl[j]&&GS.lmkA[j]<0;};
+ for(let h=0;h<q.length&&q.length<1500;h++){const i=q[h],d=best[i],x=i%N,z=(i/N)|0;for(const [dx,dz] of [[1,0],[-1,0],[0,1],[0,-1]]){const xx=x+dx,zz=z+dz;if(xx<0||zz<0||xx>=N||zz>=N)continue;const j=zz*N+xx;if(!open(j))continue;
+   const dl=GS.LVL[j]-GS.LVL[i];if(dl>0)continue;const nd=dl<0?1:d+1;/* 떨어진 물은 아래에서 거의 가득 찬 채로 다시 퍼진다 */if(nd>7||nd>=best[j])continue;
+   if(GS.terr[j]===GS.TWA&&!(M[j]&224)&&best[j]===255){if(!(M[j]&8))continue;}/* 원래 있던 강·호수는 그대로 */
+   best[j]=nd;q.push(j);}}
+ for(const i of q){if(!best[i])continue;if(GS.terr[i]===GS.TWA&&!(M[i]&224))continue;FO.set(i,[GS.terr[i],GS.pv[i]]);clearT(i);GS.kind[i]=K.EMPTY;GS.terr[i]=GS.TWA;GS.pv[i]=0;M[i]=(M[i]&31)|(best[i]<<5);}};
 const clearT=i=>{/* 이 칸이 2×2 건물의 일부면 그 건물 전체를 지운다 */for(const a of [i,i-1,i-N,i-N-1]){if(a<0)continue;const f=ED.fb.get(a);if(!f||f[3]!==2)continue;const ax=a%N,ix=i%N;if(ix<ax||ix>ax+1)continue;ED.fb.delete(a);for(const j of [a,a+1,a+N,a+N+1])if(j!==i&&GS.kind[j]!==K.ROAD)GS.kind[j]=K.EMPTY;}ED.fb.delete(i);GS.deco[i]=0;GS.prop[i]=0;};
 const bigDir=()=>DIRN[rot]||'z+',bigFp=(x,z)=>{const e=window.__O.BIG[selBig],sw=bigDir()[0]==='x';let w=Math.ceil(e[2]),d=Math.ceil(e[3]);if(sw)[w,d]=[d,w];return [x-(w>>1),z-(d>>1),w,d];};
 const rdirP=(x,z)=>{for(let r=1;r<4;r++)for(const [dx,dy,n] of [[0,1,'z+'],[1,0,'x+'],[0,-1,'z-'],[-1,0,'x-']]){const xx=x+dx*r,yy=z+dy*r;if(xx>=0&&yy>=0&&xx<N&&yy<N&&GS.kind[yy*N+xx]===K.ROAD&&W.land(xx,yy))return n;}return 'z+';};
@@ -310,14 +317,14 @@ const apply=tiles=>{let n=0,bad='';for(const [x,z] of tiles){const i=z*N+x,w=why
   else if(tool==='ter'&&slMode()){const st=slMode()===2,b4=st?4:0,cur=GS.sl[i];if(cur&&(cur>4)===st&&tiles.length===1&&!rot)GS.sl[i]=(cur-b4)%4+1+b4;else{const r=rot||slAuto(x,z);if(!cur&&slLift(x,z,r)){GS.LVL[i]++;GS.man[i]=1;}GS.sl[i]=r+b4;}n++;continue;}
   else if(tool==='ter'&&TERS[selTer][1]===-4){clearT(i);GS.kind[i]=K.EMPTY;GS.pv[i]=5;}
   else if(tool==='land'){const it=LAND[selLand][1];clearT(i);GS.kind[i]=K.EMPTY;if(it==='tree'){GS.deco[i]=1;GS.man[i]|=2;}else if(typeof it==='number'){GS.terr[i]=it;GS.pv[i]=9;}else{const r=rot||DIRN.indexOf(rdirP(x,z))||1,n=+it.slice(1);GS.prop[i]=(n&15)|(r<<4)|((n>>4)<<7);}}
-  else if(tool==='ter'){const t=TERS[selTer][1];clearT(i);GS.kind[i]=K.EMPTY;GS.terr[i]=t<0?GS.TWA:t;GS.pv[i]=t<0?0:9;if(t<0)fillBasin(i);}
+  else if(tool==='ter'){const t=TERS[selTer][1];clearT(i);GS.kind[i]=K.EMPTY;GS.terr[i]=t<0?GS.TWA:t;GS.pv[i]=t<0?0:9;if(t<0){GS.man[i]=(GS.man[i]&31)|8;}else GS.man[i]&=~8;}
   else if(tool==='tree'){clearT(i);GS.kind[i]=K.EMPTY;GS.deco[i]=1;GS.man[i]|=2;}
   else if(tool==='bld'){const c=PCAT(),L=window.__O.CAT[c[0]];clearT(i);GS.kind[i]=c[2];const it=selItem>=0?selItem:n===0?pendRand:(Math.random()*L.length)|0,f=[c[0],it,rot?DIRN[rot]:undefined];/* 건물은 사람 크기에 맞게 2×2: 오른쪽·아래 세 칸이 비어 있으면 함께 쓴다 */const q=[i+1,i+N,i+N+1];if(x<N-2&&z<N-2&&q.every(j=>GS.kind[j]!==K.ROAD&&W.land(j%N,(j/N)|0)&&GS.LVL[j]===GS.LVL[i]&&!GS.sl[j]&&GS.terr[j]!==GS.TWA)){for(const j of q)clearT(j);for(const j of q)GS.kind[j]=c[2];GS.kind[i]=c[2];f[3]=2;}ED.fb.set(i,f);}
   else if(tool==='big'){const [x0,y0,w,d]=bigFp(x,z);for(let yy=y0;yy<y0+d;yy++)for(let xx=x0;xx<x0+w;xx++){const j=yy*N+xx;clearT(j);GS.kind[j]=K.EMPTY;GS.sl[j]=0;}ED.big.push([selBig,x0,y0,w,d,bigDir()]);}
   if(!(tool==='hgt'||(tool==='ter'&&(TERS[selTer][1]>=0||TERS[selTer][1]===-4))||(tool==='road'&&RID()>0&&RID()!==6)))GS.sl[i]=0;n++;}
  if(!n&&bad)msg(bad);return n;};
 let busyT=0;const busy=(t,fn)=>{msg(t,0);clearTimeout(busyT);busyT=setTimeout(()=>{fn();clrH();save();syncTop();msg('');},16);};
-const commit=tiles=>{if(!tiles.length)return;const before=snap();if(!apply(tiles)){clrH();need=true;return;}if(tool==='bld')rollRand();UN.push(before);if(UN.length>20)UN.shift();RE.length=0;busy('반영 중',rebuild);};
+const commit=tiles=>{if(!tiles.length)return;const before=snap();if(!apply(tiles)){clrH();need=true;return;}if(tool==='ter'||tool==='hgt'||tool==='del'||tool==='road'||tool==='bld')flowAll();if(tool==='bld')rollRand();UN.push(before);if(UN.length>20)UN.shift();RE.length=0;busy('반영 중',rebuild);};
 const undo=()=>{const s=UN.pop();if(!s)return;RE.push(snap());put(s);busy('되돌리는 중',rebuild);},redo=()=>{const s=RE.pop();if(!s)return;UN.push(snap());put(s);busy('다시 적용 중',rebuild);};
 const info=(x,z)=>{const i=z*N+x,b=bigAt(i),f=ED.fb.get(i);return b>=0?window.__O.BIG[ED.big[b][0]][0]:GS.lmkA[i]>=0?'단지·공원':f?window.__O.CAT[f[0]][f[1]][0]:GS.kind[i]===K.ROAD?'도로':W.riv(x,z)?'물':window.__PAVE&&window.__PAVE[i]?'보도':(GS.terr[i]===5?'흙':'빈 땅')+' · 높이 '+GS.LVL[i];};
 /* ---- view ---- */
