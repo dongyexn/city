@@ -269,7 +269,11 @@ const genIsland=(type,shape,num,NS=128)=>{
    /* 절 아랫마을: 산사에서 조금 떨어진(5~22칸) 집은 한옥으로 — 2×2 집터는 그대로 바꾸고, 붙은 1칸 집 네 칸은 한옥 한 채로 */
    const tcx=x0+w/2,tcy=y0+d/2,RESN=new Set(['farmhouse','slateHouse','yangok','yangokBlue','terraceApt','mixedTower','country','cityHome','peanut','cabin','container','penthouse']),dd=(x,y)=>Math.hypot(x-tcx,y-tcy);
    for(const b of BIGS){if(!b||!RESN.has(b[0])||b[3]!==2||b[4]!==2)continue;const q=dd(b[1]+1,b[2]+1);if(q>=5&&q<=22&&R()<.85)b[0]='hanok';}
-   for(let y=1;y<N-2;y++)for(let x=1;x<N-2;x++){const q=dd(x+1,y+1);if(q<5||q>22)continue;const c4=[id(x,y),id(x+1,y),id(x,y+1),id(x+1,y+1)];if(!c4.every(j=>kind[j]===K.RES&&!bigm[j]&&lmkA[j]<0&&LVL[j]===LVL[c4[0]]))continue;if(R()<.3)continue;for(const j of c4){kind[j]=0;lvl[j]=0;bigm[j]=1;}BIGS.push(['hanok',x,y,2,2,'z+']);}}}
+   for(let y=1;y<N-2;y++)for(let x=1;x<N-2;x++){const q=dd(x+1,y+1);if(q<5||q>22)continue;const c4=[id(x,y),id(x+1,y),id(x,y+1),id(x+1,y+1)];if(!c4.every(j=>kind[j]===K.RES&&!bigm[j]&&lmkA[j]<0&&LVL[j]===LVL[c4[0]]))continue;if(R()<.3)continue;for(const j of c4){kind[j]=0;lvl[j]=0;bigm[j]=1;}BIGS.push(['hanok',x,y,2,2,'z+']);}
+   /* 빈 땅에도 한옥 몇 채: 길에 붙은(같은 높이) 평평한 2×2 자리, 서로 3칸 넘게 떨어지게 */{const placed=[];const FD={'z+':[0,1],'z-':[0,-1],'x+':[1,0],'x-':[-1,0]};for(let t=0;t<4000&&placed.length<5;t++){const x=1+((R()*(N-4))|0),y=1+((R()*(N-4))|0),q=dd(x+1,y+1);if(q<6||q>20)continue;const c4=[id(x,y),id(x+1,y),id(x,y+1),id(x+1,y+1)],L=LVL[c4[0]];
+    if(!c4.every(j=>!ocean[j]&&!water(j)&&!kind[j]&&!bigm[j]&&lmkA[j]<0&&!pv[j]&&!sl[j]&&LVL[j]===L&&terr[j]!==10&&terr[j]!==12))continue;if(placed.some(([a,b])=>Math.abs(a-x)<4&&Math.abs(b-y)<4))continue;
+    let dir=null;for(const [dn,[fx,fy]] of Object.entries(FD)){const r1=fx>0?[[x+2,y],[x+2,y+1]]:fx<0?[[x-1,y],[x-1,y+1]]:fy>0?[[x,y+2],[x+1,y+2]]:[[x,y-1],[x+1,y-1]];if(r1.every(([a,b])=>In(a,b)&&isR(id(a,b))&&LVL[id(a,b)]===L)){dir=dn;break;}}if(!dir)continue;
+    for(const j of c4){deco[j]=0;terr[j]=0;lvl[j]=0;prop[j]=0;bigm[j]=1;}BIGS.push(['hanok',x,y,2,2,dir]);placed.push([x,y]);}}}}
  /* 9. 고립 건물 없애기: 길에서 걸어서(같은 높이, 또는 경사로 한 단) 못 닿는 건물 칸은 이웃 길·마당 높이로 땅을 맞추고, 그래도 안 되면 비워 풀밭으로 */
  {const bld=i=>(kind[i]>=K.RES&&kind[i]!==K.WATER&&kind[i]!==K.PARK)||bigm[i];
   for(let pass=0;pass<3;pass++){const seen=new Uint8Array(NN),q=[];for(let i=0;i<NN;i++)if(isR(i)){seen[i]=1;q.push(i);}
