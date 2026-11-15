@@ -83,11 +83,11 @@ button:disabled{color:var(--mut);opacity:.5;cursor:default}
 #shot{position:fixed;inset:0;background:rgba(8,12,20,.72);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:16px;z-index:20}
 #shotc{max-width:100%;max-height:calc(100% - 80px);border-radius:12px;box-shadow:0 8px 40px rgba(0,0,0,.4)}
 #shot .sbar{display:flex;gap:4px;padding:6px}
-.card{display:flex;flex-direction:column;align-items:center;gap:3px;flex:none;width:78px;padding:6px 4px 5px;position:relative;border-radius:14px}
+.card{display:flex;flex-direction:column;align-items:center;gap:2px;flex:none;width:66px;padding:5px 3px 4px;position:relative;border-radius:14px}
 .card[aria-pressed="true"]{background:rgba(255,255,255,.14);color:var(--fg)}
 .card .sz{position:absolute;top:4px;right:5px;font:600 9px/1.4 var(--font);font-style:normal;color:#fff;background:rgba(20,24,30,.55);padding:0 4px;border-radius:6px;pointer-events:none}
-.card .ic{width:60px;height:60px;border-radius:10px;display:grid;place-items:center;font:600 22px var(--font);color:var(--mut);object-fit:contain}
-.card span:not(.ic){font:500 11px var(--font);color:var(--mut);max-width:72px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.card .ic{width:48px;height:48px;border-radius:9px;display:grid;place-items:center;font:600 22px var(--font);color:var(--mut);object-fit:contain}
+.card span:not(.ic){font:500 10.5px var(--font);color:var(--mut);max-width:62px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .card[aria-pressed="true"] span:not(.ic){color:var(--fg);font-weight:600}
 .card img.ic{filter:saturate(1.3) contrast(1.06)}
 .card img.ic[src=""],.card img.ic:not([src]),.card img.ic[data-wait]{background:var(--sub)}
@@ -135,7 +135,7 @@ button:disabled{color:var(--mut);opacity:.5;cursor:default}
  #cats{flex-wrap:wrap;row-gap:2px}
  #cats .sep{flex-basis:100%;width:auto;height:0;margin:0}
  .row .dir{min-width:40px;padding:8px 8px}
- .card{width:66px;border-radius:14px}.card .ic{width:50px;height:50px;border-radius:10px}.card span:not(.ic){max-width:60px}
+ .card{width:58px;border-radius:12px}.card .ic{width:42px;height:42px;border-radius:9px}.card span:not(.ic){max-width:54px}
  #env,#isl,#bgm{top:auto;bottom:calc(76px + max(8px,calc(env(safe-area-inset-bottom,0px) - 10px)));left:max(12px,env(safe-area-inset-left,0px));right:max(12px,env(safe-area-inset-right,0px));width:auto;z-index:30;touch-action:pan-y}
  #env .er button,#isl .er button,#isl .slot{border-radius:14px}
  #isl,#env{max-height:calc(100% - 120px - env(safe-area-inset-top,0px))}

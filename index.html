@@ -92,11 +92,11 @@ button:disabled{color:var(--mut);opacity:.5;cursor:default}
 #shot{position:fixed;inset:0;background:rgba(8,12,20,.72);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:16px;z-index:20}
 #shotc{max-width:100%;max-height:calc(100% - 80px);border-radius:12px;box-shadow:0 8px 40px rgba(0,0,0,.4)}
 #shot .sbar{display:flex;gap:4px;padding:6px}
-.card{display:flex;flex-direction:column;align-items:center;gap:3px;flex:none;width:78px;padding:6px 4px 5px;position:relative;border-radius:14px}
+.card{display:flex;flex-direction:column;align-items:center;gap:2px;flex:none;width:66px;padding:5px 3px 4px;position:relative;border-radius:14px}
 .card[aria-pressed="true"]{background:rgba(255,255,255,.14);color:var(--fg)}
 .card .sz{position:absolute;top:4px;right:5px;font:600 9px/1.4 var(--font);font-style:normal;color:#fff;background:rgba(20,24,30,.55);padding:0 4px;border-radius:6px;pointer-events:none}
-.card .ic{width:60px;height:60px;border-radius:10px;display:grid;place-items:center;font:600 22px var(--font);color:var(--mut);object-fit:contain}
-.card span:not(.ic){font:500 11px var(--font);color:var(--mut);max-width:72px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.card .ic{width:48px;height:48px;border-radius:9px;display:grid;place-items:center;font:600 22px var(--font);color:var(--mut);object-fit:contain}
+.card span:not(.ic){font:500 10.5px var(--font);color:var(--mut);max-width:62px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .card[aria-pressed="true"] span:not(.ic){color:var(--fg);font-weight:600}
 .card img.ic{filter:saturate(1.3) contrast(1.06)}
 .card img.ic[src=""],.card img.ic:not([src]),.card img.ic[data-wait]{background:var(--sub)}
@@ -144,7 +144,7 @@ button:disabled{color:var(--mut);opacity:.5;cursor:default}
  #cats{flex-wrap:wrap;row-gap:2px}
  #cats .sep{flex-basis:100%;width:auto;height:0;margin:0}
  .row .dir{min-width:40px;padding:8px 8px}
- .card{width:66px;border-radius:14px}.card .ic{width:50px;height:50px;border-radius:10px}.card span:not(.ic){max-width:60px}
+ .card{width:58px;border-radius:12px}.card .ic{width:42px;height:42px;border-radius:9px}.card span:not(.ic){max-width:54px}
  #env,#isl,#bgm{top:auto;bottom:calc(76px + max(8px,calc(env(safe-area-inset-bottom,0px) - 10px)));left:max(12px,env(safe-area-inset-left,0px));right:max(12px,env(safe-area-inset-right,0px));width:auto;z-index:30;touch-action:pan-y}
  #env .er button,#isl .er button,#isl .slot{border-radius:14px}
  #isl,#env{max-height:calc(100% - 120px - env(safe-area-inset-top,0px))}
@@ -2508,20 +2508,28 @@ const pick=(cx,cy)=>{const b=cv.getBoundingClientRect();org.set((cx-b.left)/b.wi
 const CATS=[['res','주거',K.RES],['com','상업',K.COM],['off','업무',K.COM],['ind','공업',K.IND],['pub','공공',K.POWER]];let selGr=0;const GRN=['전체','저층','중층','고층'],grOf=e=>e[1]==='house'?1:e[1]<=3?1:e[1]<=7?2:3;
 /* 건물 카탈로그 순서: 분야 → 등급 → 이 순서(작은 것·친숙한 것부터) */const RURAL=new Set(['farmhouse','slateHouse','yangok','yangokBlue','villageHall','villageMart','farmSupply','riceMill','barn','cowshed','silo','containerStore','pumpHouse','greenhouseFarm','wind','busTerminal']);
 const BGR={terraceApt:2,cityHome:2,cornerShop:2,penthouse:3,mixedTower:3,hypermarket:2,dept:3,setback:3,broadcast:2,cowork:1,datacenter:2,hotel:3,bankHQ:3,twinTower:3,roundTower:3,lab:2,convention:2,tw2:3,tw3:3,tw5:3,tw8:3,tw17:3,lectureHall:2};
-const CORD={res:['단독주택 주황','단독주택 파랑','단독주택 회색','단독주택 초록','단독주택 빨강','땅콩주택','전원주택','통나무오두막','컨테이너하우스','한옥','타운하우스 민트','타운하우스 화이트','타운하우스 벽돌','테라스 하우스','연립주택 하늘색','빌라 베이지 3층','회색 벽돌 빌라','상가주택','붉은 벽돌 빌라','노란 벽돌 빌라','필로티 원룸','그린루프 빌라','빌라 베이지 5층','도시형생활주택','발코니 맨션','테라스아파트','오피스텔','소형 아파트','펜트하우스','주상복합'],
- com:['편의점 민트','편의점 블루','정육점','분식집','세탁소','패스트푸드','베이커리','목재 카페','브런치카페','꽃집','서점','치킨집','미용실','은행','라멘집','아이스크림','문구점','안경점','펫숍','노래방','포장마차','약국','상가 3층','영화관','근린상가 4층','전자상가','근린상가 5층','메디컬 빌딩','쇼핑몰','대형마트','백화점'],
- off:['코워킹','스타트업 오피스','띠창 오피스 5층','석조 빌딩 5층','벽돌 오피스 5층','유리 오피스 6층','그레이 띠창 6층','샌드스톤 6층','격자창 오피스 6층','띠창 오피스 7층','석조 빌딩 7층','방송국','연구소','데이터센터','컨벤션','유리 오피스 8층','베이지 띠창 8층','격자창 오피스 8층','브론즈 글라스','석조 빌딩 9층','띠창 오피스 10층','차콜 오피스 10층','유리 오피스 11층','그린 글라스 타워','다크 글라스 타워','셋백타워','호텔','은행본점','트윈타워','원통타워'],
- ind:['창고 회색','창고 파랑','공장동','벽돌 공장','물류센터','정밀공장','인쇄소','제분소','벽돌가마','급수탑','송전탑','냉동창고','양조장','재활용센터','목재소','트럭차고지','우유공장','제빵공장','주물공장','제지공장','화학탱크','태양광','컨테이너야적장','정유탱크','시멘트공장','공장','자동차공장','반도체공장'],
- pub:['파출소','119 안전센터','우체국','보건소','주민센터','유치원','도서관','미술관','경찰서','소방서','초등학교','중학교','고등학교','박물관','체육관','실내수영장','강의동','시청','구청','법원','종합병원','대학교','성당','교회','사찰','천문대','등대','버스터미널','변전소','정수장','발전소'],
- rural:['농가','슬레이트농가','기와양옥','기와양옥(파랑)','마을회관','마을마트','농약사','방앗간','양수장','컨테이너창고','축사','철골축사','사일로','비닐하우스','풍력발전','버스터미널'],
- fac:['테니스장','농구장','미니골프','스케이트장','축제광장','야시장','대관람차','전망타워','캠핑장','골프연습장','식물원','전통시장','여객선터미널','승마장','수족관','동물원','아레나','워터파크','자동차극장','호수공원','고궁','놀이공원','종합경기장','야구장','기차역','소형공항']};let tool='move',selCat=0,selItem=0,dragRot=false,selBig=0,selTer=0,selRoad=0,selH=0,bs=1,flatL=1,rot=0,pendRand=0;const ROADS=[['차도','T:road',0],['횡단보도','T:cw',6],['보도 A','T:p1',1],['보도 B','T:p2',2],['보도 C','T:p3',3],['데크','T:p4',4],['농로','T:nong',5]],RID=()=>ROADS[selRoad][2],HGT=['올리기','내리기','평탄화'];const DIRN=[null,'z+','x+','z-','x-'],TERS=[['잔디',7,'T:grass'],['꽃밭',11,'T:flower'],['흙',5,'T:dirt'],['모래',6,'T:sand'],['자갈',-4,'T:p5'],['돌',9,'T:rock'],['물',-1,'T:water'],['밭',10,'T:farm'],['논',12,'T:paddy']];
+/* 건물 분야(섹터): 이름 순서 = 메뉴 순서. 'B:'는 큰 자리 건물 쪽 이름 */const SECTS=[
+ ['주거',1,['단독주택 주황','단독주택 파랑','단독주택 회색','단독주택 초록','단독주택 빨강','땅콩주택','전원주택','통나무오두막','컨테이너하우스','한옥','타운하우스 민트','타운하우스 화이트','타운하우스 벽돌','테라스 하우스','연립주택 하늘색','빌라 베이지 3층','회색 벽돌 빌라','상가주택','붉은 벽돌 빌라','노란 벽돌 빌라','필로티 원룸','그린루프 빌라','빌라 베이지 5층','도시형생활주택','발코니 맨션','테라스아파트','오피스텔','소형 아파트','펜트하우스','주상복합']],
+ ['상업',1,['편의점 민트','편의점 블루','정육점','분식집','세탁소','패스트푸드','베이커리','목재 카페','브런치카페','꽃집','서점','치킨집','미용실','은행','라멘집','아이스크림','문구점','안경점','펫숍','노래방','포장마차','약국','상가 3층','영화관','근린상가 4층','전자상가','근린상가 5층','메디컬 빌딩','쇼핑몰','대형마트','백화점','호텔']],
+ ['업무',1,['코워킹','스타트업 오피스','띠창 오피스 5층','석조 빌딩 5층','벽돌 오피스 5층','유리 오피스 6층','그레이 띠창 6층','샌드스톤 6층','격자창 오피스 6층','띠창 오피스 7층','석조 빌딩 7층','방송국','연구소','데이터센터','컨벤션','유리 오피스 8층','베이지 띠창 8층','격자창 오피스 8층','브론즈 글라스','석조 빌딩 9층','띠창 오피스 10층','차콜 오피스 10층','유리 오피스 11층','그린 글라스 타워','다크 글라스 타워','셋백타워','은행본점','트윈타워','원통타워']],
+ ['공업',0,['창고 회색','창고 파랑','공장동','벽돌 공장','물류센터','정밀공장','인쇄소','제분소','벽돌가마','냉동창고','양조장','재활용센터','목재소','트럭차고지','우유공장','제빵공장','주물공장','제지공장','화학탱크','컨테이너야적장','시멘트공장','공장','자동차공장','반도체공장']],
+ ['기반시설',0,['송전탑','급수탑','변전소','정수장','태양광','정유탱크','발전소']],
+ ['공공',0,['파출소','119 안전센터','우체국','주민센터','보건소','경찰서','소방서','구청','시청','법원','종합병원']],
+ ['교육·문화',0,['유치원','초등학교','중학교','고등학교','강의동','대학교','도서관','미술관','박물관','천문대','성당','교회','사찰','고궁']],
+ ['여가',0,['체육관','실내수영장','테니스장','농구장','미니골프','스케이트장','골프연습장','승마장','아레나','종합경기장','야구장','축제광장','야시장','전통시장','캠핑장','자동차극장','대관람차','전망타워','놀이공원','워터파크','수족관','동물원','식물원','호수공원']],
+ ['교통',0,['버스터미널','기차역','여객선터미널','소형공항','등대']],
+ ['농촌',0,['농가','슬레이트농가','기와양옥','기와양옥(파랑)','마을회관','마을마트','농약사','방앗간','양수장','컨테이너창고','축사','철골축사','사일로','비닐하우스','풍력발전','B:버스터미널']]];
+let selSec=0,selPC='res',selIsBig=false;const PCAT=()=>CATS.find(c=>c[0]===selPC)||CATS[0];
+/* 섹터 항목 풀이: 이름 → 1칸 건물(분류·번호) 또는 큰 자리 건물. 어느 섹터에도 없는 건물은 원래 분류 섹터 끝에 */let SECX=null;const secItems=()=>{if(SECX)return SECX;const O=window.__O,P=new Map(),Bm=new Map();for(const [k] of CATS)O.CAT[k].forEach((e,i)=>{if(k==='off'&&e[1]>=10)return;if(!P.has(e[0]))P.set(e[0],{n:e[0],g:grOf(e),p:[k,i,e]});});O.BIG.forEach((e,i)=>{if(e[5]==='villageTree'||e[5]==='grave')return;if(!Bm.has(e[0]))Bm.set(e[0],{n:e[0],g:BGR[e[5]]||1,b:[e,i]});});const used=new Set();
+  SECX=SECTS.map(([l,gr,L])=>L.map(n=>{let t;if(n.startsWith('B:')){t=Bm.get(n.slice(2));}else t=P.get(n)||Bm.get(n);if(t)used.add(t);return t;}).filter(Boolean));
+  const home={res:0,com:1,off:2,ind:3,pub:5,fac:7};for(const t of [...P.values(),...Bm.values()])if(!used.has(t)){const c=t.p?t.p[0]:(t.b[0][4]||'fac');SECX[home[c]??7].push(t);}return SECX;};let tool='move',selCat=0,selItem=0,dragRot=false,selBig=0,selTer=0,selRoad=0,selH=0,bs=1,flatL=1,rot=0,pendRand=0;const ROADS=[['차도','T:road',0],['횡단보도','T:cw',6],['보도 A','T:p1',1],['보도 B','T:p2',2],['보도 C','T:p3',3],['데크','T:p4',4],['농로','T:nong',5]],RID=()=>ROADS[selRoad][2],HGT=['올리기','내리기','평탄화'];const DIRN=[null,'z+','x+','z-','x-'],TERS=[['잔디',7,'T:grass'],['꽃밭',11,'T:flower'],['흙',5,'T:dirt'],['모래',6,'T:sand'],['자갈',-4,'T:p5'],['돌',9,'T:rock'],['물',-1,'T:water'],['밭',10,'T:farm'],['논',12,'T:paddy']];
 /* 조경: trees, planted beds and loose props. props live in GS.prop (low 4 bits kind, high bits facing) */
 const LAND=[['나무','tree','P:tree'],['벤치','p1','P:bench'],['화분','p2','P:planter'],['휴지통','p3','P:bin'],['강아지 동상','p4','P:dog'],['가로수','p5','P:stt'],['바위','p6','P:rock']];let landX=0;const landAll=()=>{if(!landX&&window.__O&&window.__O.PN){landX=1;window.__O.PN.forEach(([n],k)=>{if(n!=='짚뭉치')LAND.push([n,'p'+(7+k),'Q:'+k]);});/* 정자목·산소는 조경에서 큰 자리(2×2·1×1)로 놓는다 */for(const [f,n] of [['villageTree','정자목'],['grave','산소']]){const i=window.__O.BIG.findIndex(e=>e[5]===f);if(i>=0)LAND.push([n,'B:'+i,'B:'+i+':z+']);}}return LAND;};let lbig=false;let selLand=0,forceSl=0,selLC=0;
 /* 조경 섹터 — 이름으로 묶는다(LAND 순서·번호는 그대로) */
 const LCAT=[['식재',['나무','가로수','정자목','화분','정원 연못','바위','성탄 트리']],['거리',['벤치','휴지통','버스정류장','자판기','우체통','소화전','공중전화','자전거','파라솔']],['놀이·쉼터',['정자','그네','미끄럼틀','시소','캠핑 세트']],['조형물',['동상','강아지 동상','시계탑','소형 분수','장승']],['농촌',['장독대','원두막','허수아비','경운기','산소']],['담장',['돌담','나무 울타리']]];
 const lcOf=n=>{const k=LCAT.findIndex(c=>c[1].includes(n));return k<0?1:k;};
 const slMode=()=>tool==='ter'?forceSl:0;
-const rollRand=()=>{const L=window.__O.CAT[(CATS[selCat]||CATS[0])[0]];pendRand=(Math.random()*L.length)|0;};
+const rollRand=()=>{const L=window.__O.CAT[PCAT()[0]];pendRand=(Math.random()*L.length)|0;};
 const bigAt=i=>ED.big.findIndex(([,x0,y0,w,d])=>{const x=i%N,y=(i/N)|0;return x>=x0&&x<x0+w&&y>=y0&&y<y0+d;});
 const free=(x,z)=>{const i=z*N+x;return W.land(x,z)&&!W.riv(x,z)&&GS.lmkA[i]<0&&bigAt(i)<0;};
 /* the ramp runs down toward the lowest neighbour, i.e. rises away from it */
@@ -2557,7 +2565,7 @@ const apply=tiles=>{let n=0,bad='';for(const [x,z] of tiles){const i=z*N+x,w=why
   else if(tool==='land'){const it=LAND[selLand][1];clearT(i);GS.kind[i]=K.EMPTY;if(it==='tree'){GS.deco[i]=1;GS.man[i]|=2;}else if(typeof it==='number'){GS.terr[i]=it;GS.pv[i]=9;}else{const r=rot||DIRN.indexOf(rdirP(x,z))||1,n=+it.slice(1);GS.prop[i]=(n&15)|(r<<4)|((n>>4)<<7);}}
   else if(tool==='ter'){const t=TERS[selTer][1];clearT(i);GS.kind[i]=K.EMPTY;GS.terr[i]=t<0?GS.TWA:t;GS.pv[i]=t<0?0:9;}
   else if(tool==='tree'){clearT(i);GS.kind[i]=K.EMPTY;GS.deco[i]=1;GS.man[i]|=2;}
-  else if(tool==='bld'){const c=CATS[selCat],L=window.__O.CAT[c[0]];clearT(i);GS.kind[i]=c[2];const it=selItem>=0?selItem:n===0?pendRand:(Math.random()*L.length)|0,f=[c[0],it,rot?DIRN[rot]:undefined];/* 건물은 사람 크기에 맞게 2×2: 오른쪽·아래 세 칸이 비어 있으면 함께 쓴다 */const q=[i+1,i+N,i+N+1];if(x<N-2&&z<N-2&&q.every(j=>GS.kind[j]!==K.ROAD&&W.land(j%N,(j/N)|0)&&GS.LVL[j]===GS.LVL[i]&&!GS.sl[j]&&GS.terr[j]!==GS.TWA)){for(const j of q)clearT(j);for(const j of q)GS.kind[j]=c[2];GS.kind[i]=c[2];f[3]=2;}ED.fb.set(i,f);}
+  else if(tool==='bld'){const c=PCAT(),L=window.__O.CAT[c[0]];clearT(i);GS.kind[i]=c[2];const it=selItem>=0?selItem:n===0?pendRand:(Math.random()*L.length)|0,f=[c[0],it,rot?DIRN[rot]:undefined];/* 건물은 사람 크기에 맞게 2×2: 오른쪽·아래 세 칸이 비어 있으면 함께 쓴다 */const q=[i+1,i+N,i+N+1];if(x<N-2&&z<N-2&&q.every(j=>GS.kind[j]!==K.ROAD&&W.land(j%N,(j/N)|0)&&GS.LVL[j]===GS.LVL[i]&&!GS.sl[j]&&GS.terr[j]!==GS.TWA)){for(const j of q)clearT(j);for(const j of q)GS.kind[j]=c[2];GS.kind[i]=c[2];f[3]=2;}ED.fb.set(i,f);}
   else if(tool==='big'){const [x0,y0,w,d]=bigFp(x,z);for(let yy=y0;yy<y0+d;yy++)for(let xx=x0;xx<x0+w;xx++){const j=yy*N+xx;clearT(j);GS.kind[j]=K.EMPTY;GS.sl[j]=0;}ED.big.push([selBig,x0,y0,w,d,bigDir()]);}
   if(!(tool==='hgt'||(tool==='ter'&&(TERS[selTer][1]>=0||TERS[selTer][1]===-4))||(tool==='road'&&RID()>0&&RID()!==6)))GS.sl[i]=0;n++;}
  if(!n&&bad)msg(bad);return n;};
@@ -2595,7 +2603,7 @@ const proto=key=>{let g=PRO.get(key);if(g)return g;if(key.startsWith('P:')){cons
  g=R2.children[R2.children.length-1];R2.remove(g);g.position.set(0,0,0);PRO.set(key,g);return g;};
 const gm=m=>{let c=GMAT.get(m);if(!c){c=m.clone();c.transparent=true;c.opacity=.5;c.depthWrite=false;c.onBeforeCompile=m.onBeforeCompile;if(m.customProgramCacheKey)c.customProgramCacheKey=m.customProgramCacheKey;GMAT.set(m,c);}return c;};
 const ghostOf=key=>{let g=GHO.get(key);if(g)return g;g=proto(key).clone(true);g.traverse(o=>{if(o.isMesh){o.material=Array.isArray(o.material)?o.material.map(gm):gm(o.material);o.castShadow=false;o.receiveShadow=false;o.renderOrder=97;}});GHO.set(key,g);return g;};
-const ghostAt=(x,z)=>{let g;if(tool==='bld'){const it=selItem>=0?selItem:pendRand;g=ghostOf(CATS[selCat][0]+':'+it+':'+(DIRN[rot]||rdirP(x,z))+':2').clone();g.position.set(x,W.hT(x,z),z);}/* 미리보기도 실제 2×2 크기 */
+const ghostAt=(x,z)=>{let g;if(tool==='bld'){const it=selItem>=0?selItem:pendRand;g=ghostOf(PCAT()[0]+':'+it+':'+(DIRN[rot]||rdirP(x,z))+':2').clone();g.position.set(x,W.hT(x,z),z);}/* 미리보기도 실제 2×2 크기 */
  else if(tool==='big'){const [x0,y0,w,d]=bigFp(x,z);g=ghostOf('B:'+selBig+':'+bigDir()).clone();g.position.set(x0+w/2,W.hT(x0,y0),y0+d/2);}if(g)GH.add(g);};
 let TR=null;const thumbR=()=>{if(TR)return TR;const c=document.createElement('canvas');c.width=c.height=128;const rr=new THREE.WebGLRenderer({canvas:c,antialias:true,alpha:true,preserveDrawingBuffer:true});rr.toneMapping=THREE.ACESFilmicToneMapping;rr.toneMappingExposure=1.08;rr.outputColorSpace=THREE.SRGBColorSpace;
  const sc=new THREE.Scene();sc.environment=new THREE.PMREMGenerator(rr).fromScene(new RoomEnvironment(),.04).texture;sc.add(new THREE.HemisphereLight('#ffffff','#b8c4d0',1.3));const L=new THREE.DirectionalLight('#fff6e8',2.4);L.position.set(-2,8,7);sc.add(L);TR={rr,sc,cm:new THREE.OrthographicCamera(-1,1,1,-1,.1,100),c};return TR;};
@@ -2677,8 +2685,8 @@ const ICO={ter:'<path d="m2.5 19.5 6.5-12 4.5 7 2.5-3.5 5.5 8.5z"/>',road:'<path
 const BARK={ter:'T:grass',road:'T:road',bld:'res:9:z+',land:'P:tree'};
 const icb=(k,lab,on,fn)=>{const b=mkb('',on,fn,lab);b.title=lab;b.className='icb';b.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true">'+ICO[k]+'</svg>';return b;};
 const mkb=(t,on,fn,lab)=>{const b=document.createElement('button');b.textContent=t;if(on!==null)b.setAttribute('aria-pressed',on?'true':'false');if(lab)b.setAttribute('aria-label',lab);b.onclick=fn;return b;};
-const setTool=id=>{if(id!=='big')lbig=false;if(id==='bld'&&selCat>=CATS.length)id='big';if(id==='big'&&!(window.__O.BIG[selBig]))selBig=0;if(id==='bld'&&tool!=='bld')rollRand();if(id!=='move')setSel([]);ctxClose();tool=id;stroke=null;hov=null;clrH();need=true;drawUI();const t=TOOLS.find(t=>t[0]===id);msg(id==='move'?'':t[1]+' · '+t[2],id==='move'?1:undefined);};
-const catBtns=()=>[...CATS.map((c,i)=>mkb(c[1],(tool==='bld'||tool==='big')&&selCat===i,()=>{selCat=i;selItem=0;if(tool!=='bld')setTool('bld');else drawUI();})),mkb('농촌',selCat===CATS.length+1&&(tool==='big'||tool==='bld'),()=>{selCat=CATS.length+1;lbig=false;selBig=window.__O.BIG.findIndex(e=>RURAL.has(e[5]));if(tool!=='big')setTool('big');else drawUI();}),mkb('시설',selCat===CATS.length&&(tool==='big'||tool==='bld'),()=>{selCat=CATS.length;lbig=false;selBig=window.__O.BIG.findIndex(e=>e[4]==='fac'&&!RURAL.has(e[5])&&e[5]!=='villageTree'&&e[5]!=='grave');if(tool!=='big')setTool('big');else drawUI();})];
+const setTool=id=>{if(id!=='big')lbig=false;if(id==='bld'&&selIsBig)id='big';if(id==='big'&&!(window.__O.BIG[selBig]))selBig=0;if(id==='bld'&&tool!=='bld')rollRand();if(id!=='move')setSel([]);ctxClose();tool=id;stroke=null;hov=null;clrH();need=true;drawUI();const t=TOOLS.find(t=>t[0]===id);msg(id==='move'?'':t[1]+' · '+t[2],id==='move'?1:undefined);};
+const catBtns=()=>SECTS.map(([l],k)=>mkb(l,(tool==='bld'||tool==='big')&&!lbig&&selSec===k,()=>{selSec=k;selGr=0;drawUI();}));
 /* 건물 탭: 1칸 기본 건물 + 같은 분류의 큰 건물(칸 수 표시) */
 const bigCard=(e,i)=>{const w=Math.ceil(e[2]),d=Math.ceil(e[3]),b=card('B:'+i+':z+',e[0],tool==='big'&&selBig===i,()=>{lbig=false;selBig=i;rot=rot||1;if(tool!=='big')setTool('big');else{drawUI();if(hovT)show(brush(hovT));}});if(w*d>1){const s=document.createElement('i');s.className='sz';s.textContent=w+'×'+d;b.append(s);}b.title=e[0]+(w*d>1?' '+w+'×'+d:'');return b;};
 const drawUI=()=>{const bar=$('barc');bs=1;bar.replaceChildren(...TOOLS.filter(t=>!t[3]).map(([id,t])=>{const on=tool===id||(id==='bld'&&tool==='big'&&!lbig)||(id==='land'&&tool==='big'&&lbig),b=card(BARK[id],t,on,()=>setTool(on?'move':id));b.classList.add('tcard');return b;}));const on=bar.querySelector('[aria-pressed="true"]');if(on&&on.scrollIntoView)on.scrollIntoView({block:'nearest',inline:'nearest'});requestAnimationFrame(placeInd);
@@ -2689,9 +2697,9 @@ const drawUI=()=>{const bar=$('barc');bs=1;bar.replaceChildren(...TOOLS.filter(t
  if(tool==='road'){$('cats').replaceChildren();$('cats').hidden=true;$('items').replaceChildren(...ROADS.map(([t,k],i)=>card(k,t,selRoad===i,()=>{selRoad=i;re();})));return;}
   const dirs=(tool==='bld'?[['자동',0]]:[]).concat([1,2,3,4].map(d=>[arw(d),d]).sort((a,b)=>'↙↘↗↖'.indexOf(a[0])-'↙↘↗↖'.indexOf(b[0]))),cur=tool==='big'?(rot||1):rot,dl=document.createElement('span');dl.className='sep';
  const db=dirs.map(([t,v])=>{const b=mkb(t,cur===v,()=>{rot=v;re();},v?'방향 '+t:'방향 자동');b.className='dir';b.title='방향 (R)';return b;});
- $('cats').replaceChildren(...catBtns(),...(selCat<CATS.length?[Object.assign(document.createElement('span'),{className:'csep'}),...GRN.map((n,g)=>mkb(n,selGr===g,()=>{selGr=g;const L2=window.__O.CAT[CATS[selCat][0]];if(g&&L2[selItem]&&grOf(L2[selItem])!==g){const f=L2.findIndex(e=>grOf(e)===g);if(f>=0)selItem=f;}drawUI();}))]:[]));const c=selCat<CATS.length?CATS[selCat][0]:selCat===CATS.length?'fac':'rural',BL=O.BIG.map((e,i)=>[e,i]).filter(([e])=>e[5]!=='villageTree'&&e[5]!=='grave'&&(c==='rural'?RURAL.has(e[5]):!RURAL.has(e[5])&&(e[4]||'fac')===c));
- const OL=CORD[c]||[],ord=n=>{const k=OL.indexOf(n);return k<0?999:k;},IT=[...(c==='fac'||c==='rural'?[]:O.CAT[c].map((e,i)=>(c==='off'&&e[1]>=10)?null:{n:e[0],g:grOf(e),p:[e,i]}).filter(Boolean)),...BL.map(([e,i])=>({n:e[0],g:BGR[e[5]]||1,b:[e,i]}))].filter(t=>!selGr||c==='fac'||c==='rural'||t.g===selGr).sort((a,b)=>(c==='fac'||c==='rural'?0:a.g-b.g)||ord(a.n)-ord(b.n));
- $('items').replaceChildren(...IT.map(t=>t.b?bigCard(t.b[0],t.b[1]):card(c+':'+t.p[1]+':z+',t.p[0][0],tool==='bld'&&selItem===t.p[1],()=>{selItem=t.p[1];if(tool!=='bld'){const k=selCat;setTool('bld');selCat=k;}re();})));};/* 분야 안에서 등급 → 카탈로그 순서 */
+ const gr=SECTS[selSec][1];$('cats').replaceChildren(...catBtns(),...(gr?[Object.assign(document.createElement('span'),{className:'csep'}),...GRN.map((n,g)=>mkb(n,selGr===g,()=>{selGr=g;drawUI();}))]:[]));
+ const IT=secItems()[selSec].filter(t=>!gr||!selGr||t.g===selGr).slice().sort((a,b)=>gr?a.g-b.g:0);
+ $('items').replaceChildren(...IT.map(t=>t.b?(()=>{const b=bigCard(t.b[0],t.b[1]);b.addEventListener('click',()=>{selIsBig=true;},true);return b;})():card(t.p[0]+':'+t.p[1]+':z+',t.n,tool==='bld'&&selPC===t.p[0]&&selItem===t.p[1],()=>{selPC=t.p[0];selItem=t.p[1];selIsBig=false;if(tool!=='bld')setTool('bld');else re();})));};/* 섹터 → 등급 → 카탈로그 순서 */
 /* 켜진 도구 뒤 알약 — 칸이 바뀌면 스프링으로 미끄러진다 */
 /* ───── 모션 한 벌 — calapp 과 같은 곡선·시간·스프링(OS 「동작 줄이기」와 상관없이 움직인다) ─────
    0.22 팝업·메뉴 · 0.3 판 전환 · 0.52 켜진 표시(늘었다 줄며) · 시트 0.5 · 판은 누른 단추에서 펴지고 그 단추로 줄어든다 */
