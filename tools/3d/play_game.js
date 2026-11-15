@@ -117,7 +117,7 @@ const mkPeople=()=>{SOCC.clear();SEATS=window.__SEATS||[];if(PPL){for(const m of
  /* 스님: 대웅전마다 셋 — 요사채 앞 → 석탑 탑돌이(시계 방향 3바퀴) → 대웅전 앞 합장 → 범종각 앞 → 요사채. 가까이(6칸) 있는 전각·석탑을 찾아 길을 잇는다 */if(MONK>=0)for(const b of (ED.big||[])){const e=window.__O.BIG[b[0]];if(!e||e[5]!=='templeHall')continue;const FV={'z+':[0,1],'x+':[1,0],'z-':[0,-1],'x-':[-1,0]},C=q=>[q[1]+q[3]/2,q[2]+q[4]/2],[hx,hz]=C(b),[fx,fz]=FV[b[5]||'z+'],near=f=>{let best=null,bd=6.5;for(const q of ED.big){const e2=window.__O.BIG[q[0]];if(!e2||e2[5]!==f)continue;const [x,z]=C(q),dd=Math.hypot(x-hx,z-hz);if(dd<bd){bd=dd;best=q;}}return best;};
   const hd=(b[5]==='x+'||b[5]==='x-')?b[3]:b[4],bx_=hx+fx*(hd/2+.3),bz_=hz+fz*(hd/2+.3),face=Math.atan2(-fx,-fz),sx=fz,sz=-fx,RT=[];RT.push([bx_+sx*.42,bz_+sz*.42,5,face],[bx_-sx*.42,bz_-sz*.42,4,face]);
   const pg=near('stonePagoda');if(pg){const [px,pz]=C(pg);for(let r=0;r<3;r++)for(let k=0;k<10;k++){const t=k/10*Math.PI*2;RT.push([px+Math.cos(t)*.55,pz+Math.sin(t)*.55,0,null]);}}
-  const bl=near('bellPavilion');if(bl){const [x,z]=C(bl),f=FV[bl[5]||'z+'];RT.push([x+f[0]*1.25,z+f[1]*1.25,3,null]);}const ys=near('yosa');if(ys){const [x,z]=C(ys),f=FV[ys[5]||'z+'];RT.push([x+f[0]*.85,z+f[1]*.85,6,null]);}
+  const sr=near('buddhaShrine');if(sr){const [x,z]=C(sr),f=FV[sr[5]||'z+'];RT.push([x+f[0]*1.75,z+f[1]*1.75,5,Math.atan2(-f[0],-f[1])]);}const bl=near('bellPavilion');if(bl){const [x,z]=C(bl),f=FV[bl[5]||'z+'];RT.push([x+f[0]*1.25,z+f[1]*1.25,3,null]);}const ys=near('yosa');if(ys){const [x,z]=C(ys),f=FV[ys[5]||'z+'];RT.push([x+f[0]*.85,z+f[1]*.85,6,null]);}
   for(let m=0;m<3;m++){const ri=(m*11+1)%RT.length,[px,pz]=RT[ri];P.push({mk:1,rt:RT,ri,wt:0,cart:false,v:MONK,slot:cnt[MONK]++,on:-1,cw:-1,q:null,x:Math.floor(px),z:Math.floor(pz),dx:0,dz:0,px,pz,tx:px,tz:pz,hd:0,ph:Rn()*6.283,sp:.2+Rn()*.05,wait:Rn()*3,mv:0,r:0,hid:false,sit:-1,goS:-1});}}
  const meshes=[],IM=[];for(let v=0;v<NV;v++){IM[v]={};if(!cnt[v])continue;for(const [g,o] of Object.entries(PG[v])){const m=new THREE.InstancedMesh(o.G,pplM,cnt[v]);m.instanceMatrix.setUsage(THREE.DynamicDrawUsage);m.frustumCulled=false;m.userData.keep=1;m.receiveShadow=true;W.sc.add(m);meshes.push(m);IM[v][g]=m;}}
  const blob=new THREE.InstancedMesh(pblG,blobM,P.length);blob.userData.keep=1;blob.frustumCulled=false;blob.renderOrder=2;W.sc.add(blob);meshes.push(blob);
@@ -276,7 +276,7 @@ const BGR={terraceApt:2,cityHome:2,cornerShop:2,penthouse:3,mixedTower:3,hyperma
  ['공업',0,['창고 회색','창고 파랑','공장동','벽돌 공장','물류센터','정밀공장','인쇄소','제분소','벽돌가마','냉동창고','양조장','재활용센터','목재소','트럭차고지','우유공장','제빵공장','주물공장','제지공장','화학탱크','컨테이너야적장','시멘트공장','공장','자동차공장','반도체공장']],
  ['기반시설',0,['송전탑','급수탑','변전소','정수장','태양광','정유탱크','발전소']],
  ['공공',0,['파출소','119 안전센터','우체국','주민센터','보건소','경찰서','소방서','구청','시청','법원','종합병원']],
- ['교육·문화',0,['유치원','초등학교','중학교','고등학교','강의동','대학교','도서관','미술관','박물관','천문대','성당','교회','사찰','고궁','대웅전','일주문','범종각','요사채','산신각','석탑','석등','불상']],
+ ['교육·문화',0,['유치원','초등학교','중학교','고등학교','강의동','대학교','도서관','미술관','박물관','천문대','성당','교회','사찰','고궁','대웅전','일주문','범종각','요사채','산신각','석불단','석탑','석등','불상','연등','당간지주','향로','돌탑']],
  ['여가',0,['체육관','실내수영장','테니스장','농구장','미니골프','스케이트장','골프연습장','승마장','아레나','종합경기장','야구장','축제광장','야시장','전통시장','캠핑장','자동차극장','대관람차','전망타워','놀이공원','워터파크','수족관','동물원','식물원','호수공원']],
  ['교통',0,['버스터미널','기차역','여객선터미널','소형공항','등대']],
  ['농촌',0,['농가','슬레이트농가','기와양옥','기와양옥(파랑)','마을회관','마을마트','농약사','방앗간','양수장','컨테이너창고','축사','철골축사','사일로','비닐하우스','풍력발전','B:버스터미널']]];

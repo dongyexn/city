@@ -648,10 +648,11 @@ const TPL={
    for(let yy=16;yy<h-30;yy+=8)for(let xx=x0+6+(((yy/8)|0)%2)*4;xx<x0+52;xx+=8){g.fillStyle=(xx+yy)%3?'#e0b860':'#c45a48';g.beginPath();g.arc(xx,yy,1.6,0,7);g.fill();}g.restore();g.fillStyle='#6b3e24';g.fillRect(x0+4,h-26,48,14);}g.fillStyle='#5a331d';g.fillRect(62,0,4,h);}),
  wall:()=>TX('tplwall',128,128,(g,w,h,R)=>{/* 회벽 + 석간주 인방 */g.fillStyle='#efe6d2';g.fillRect(0,0,w,h);for(let k=0;k<500;k++){g.fillStyle=R()<.5?'rgba(255,255,255,.3)':'rgba(120,90,60,.07)';g.fillRect(R()*w,R()*h,1.5,1.5);}g.fillStyle='#8a3a26';g.fillRect(0,0,w,10);g.fillRect(0,h-16,w,16);g.fillRect(0,h*.42,w,6);g.fillRect(0,0,6,h);g.fillRect(w-6,0,6,h);}),
  masa:()=>TX('masato',256,256,(g,w,h,R)=>{/* 마사토 마당: 고운 흙, 잔돌, 빗자루 자국 */g.fillStyle='#d9ccae';g.fillRect(0,0,w,h);for(let k=0;k<2600;k++){const c=R();g.fillStyle=c<.4?'rgba(150,125,90,.28)':c<.8?'rgba(255,250,235,.45)':'rgba(110,100,90,.35)';g.fillRect(R()*w,R()*h,1+R()*2,1+R()*2);}g.strokeStyle='rgba(160,135,100,.12)';g.lineWidth=1;for(let y=0;y<h;y+=9){g.beginPath();g.moveTo(0,y);for(let x=0;x<=w;x+=16)g.lineTo(x,y+Math.sin(x*.05+y)*2);g.stroke();}}),
- gran:()=>TX('granite',128,128,(g,w,h,R)=>{/* 화강암: 희끗한 반점 */g.fillStyle='#bdb7ab';g.fillRect(0,0,w,h);for(let k=0;k<1800;k++){const c=R();g.fillStyle=c<.35?'rgba(70,66,60,.35)':c<.7?'rgba(250,248,240,.5)':'rgba(150,130,110,.25)';g.fillRect(R()*w,R()*h,1+R()*1.5,1+R()*1.5);}}),
+ gran:()=>TX('granite2',128,128,(g,w,h,R)=>{/* 블럭 돌 색: 차분한 회색 바탕에 옅은 얼룩과 잔점 */g.fillStyle='#c3c6c7';g.fillRect(0,0,w,h);for(let k=0;k<40;k++){g.fillStyle=R()<.5?'rgba(150,155,160,.18)':'rgba(235,236,234,.25)';g.beginPath();g.ellipse(R()*w,R()*h,6+R()*14,4+R()*9,R()*3,0,7);g.fill();}for(let k=0;k<500;k++){g.fillStyle=R()<.5?'rgba(90,95,100,.22)':'rgba(255,255,255,.35)';g.fillRect(R()*w,R()*h,1.2,1.2);}}),
+ halo:()=>TX('halo',256,256,(g,w,h)=>{/* 광배 돋을새김: 바깥 불꽃무늬, 안쪽 연꽃·덩굴 둥근 테 */g.fillStyle='#c3c6c7';g.fillRect(0,0,w,h);g.strokeStyle='rgba(95,100,105,.55)';g.lineWidth=2.2;for(let k=0;k<14;k++){const y=h-12-k*16,xx=w/2;for(const sx of [-1,1]){g.beginPath();g.moveTo(xx+sx*90,y+10);g.quadraticCurveTo(xx+sx*112,y-4,xx+sx*98,y-14);g.quadraticCurveTo(xx+sx*104,y,xx+sx*82,y+2);g.stroke();}}g.fillStyle='rgba(95,100,105,.35)';for(let k=0;k<9;k++){const a=k/9*Math.PI;g.beginPath();g.ellipse(w/2+Math.cos(a)*44,h*.5-Math.sin(a)*44*.6,8,4,a,0,7);g.fill();}g.lineWidth=1.5;for(const r of [36,58,72]){g.beginPath();g.arc(w/2,h*.5,r,0,7);g.stroke();}}),
  seok:()=>TX('seokchuk',256,128,(g,w,h,R)=>{/* 석축: 크기 다른 장대석을 바른층 쌓기 */g.fillStyle='#7d776d';g.fillRect(0,0,w,h);let y=0;while(y<h){const rh=20+R()*14;let x=-R()*50;while(x<w){const rw=40+R()*60,c=160+R()*45|0;g.fillStyle=`rgb(${c},${c-5},${c-14})`;g.beginPath();g.roundRect(x+1.5,y+1.5,rw-3,rh-3,3);g.fill();for(let k=0;k<12;k++){g.fillStyle='rgba(60,55,50,.18)';g.fillRect(x+R()*rw,y+R()*rh,2,2);}x+=rw;}y+=rh;}}),
 };
-const TPLI=()=>{TPL.door();TPL.masa();TPL.seok();TPL.dc();TPL.gran();TPL.wall();},TG=()=>MT(TPL.gran(),{roughness:.85}),TGW=()=>MT(T.giwa(),{roughness:.55,side:THREE.DoubleSide});
+const TPLI=()=>{TPL.door();TPL.masa();TPL.seok();TPL.dc();TPL.gran();TPL.wall();TPL.halo();},TG=()=>MT(TPL.gran(),{roughness:.85}),TGW=()=>MT(T.giwa(),{roughness:.55,side:THREE.DoubleSide});
 const PIL=()=>M('#8a3a26',{roughness:.65}),WOOD=()=>MT(T.plank('#8a5a36'),{roughness:.8});
 /* 배흘림 기둥 + 주춧돌 */const tcol=(x,z,y0,h,r=.04)=>{bx(x-r*1.6,x+r*1.6,y0,y0+.025,z-r*1.6,z+r*1.6,TG(),.006);add(lathe([[0,0],[r*.94,0],[r,h*.33],[r*.97,h*.6],[r*.84,h],[0,h]],12),PIL(),x,y0+.025,z);};
 /* 공포(포작): 처마 밑 층층이 내민 나무쪽 — 단청색 */const tbrk=(x0,x1,z,y,s,step=.2)=>{const g=M('#2f7d64'),rd=M('#b8382f');for(let x=x0;x<=x1+1e-6;x+=step){for(let k=0;k<3;k++){const o=.018+k*.022;bx(x-.022,x+.022,y+k*.026,y+k*.026+.024,s>0?z:z-o,s>0?z+o:z,k%2?rd:g,.004,false);}}};
@@ -683,12 +684,26 @@ const tPagoda=(x,z,y0,s=1)=>grp(x,y0,z,0,()=>{const st=TG(),c=(w,y,h)=>bx(-w,w,y
 const tLantern=(x,z,y0,s=1)=>grp(x,y0,z,0,()=>{const st=TG();cyl(.09*s,.1*s,.03*s,0,0,0,st,8);add(lathe([[.085*s,0],[.075*s,.025*s],[.03*s,.04*s],[0,.04*s]],8),st,0,.03*s,0);cyl(.022*s,.022*s,.15*s,0,.065*s,0,st,8);add(lathe([[0,0],[.03*s,0],[.075*s,.025*s],[.08*s,.035*s],[0,.035*s]],8),st,0,.21*s,0);
  cyl(.05*s,.05*s,.085*s,0,.245*s,0,st,8);for(let k=0;k<4;k++){const a=k*Math.PI/2+Math.PI/8;const e=add(new THREE.PlaneGeometry(.022*s,.05*s),M('#2a2420',{roughness:1}),Math.sin(a)*.0475*s,.29*s,Math.cos(a)*.0475*s,false);e.rotation.y=a;}
  add(new THREE.ConeGeometry(.1*s,.05*s,8),st,0,.355*s,0).rotation.y=Math.PI/8;cyl(.1*s,.1*s,.008*s,0,.326*s,0,st,8);cyl(.018*s,.022*s,.02*s,0,.38*s,0,st,8);sph(.02*s,0,.41*s,0,st);});
-/* 석조여래좌상: 팔각 대좌·연화대, 결가부좌, 육계, 광배 */
-const tBuddha=(x,z,y0,s=1,ry=0)=>grp(x,y0,z,ry,()=>{const st=TG(),st2=MT(TPL.gran(),{color:'#d8d2c6',roughness:.8});cyl(.2*s,.22*s,.06*s,0,0,0,st,8);cyl(.15*s,.17*s,.1*s,0,.06*s,0,st,8);
- for(let k=0;k<12;k++){const a=k/12*Math.PI*2;const p=add(new THREE.SphereGeometry(.05*s,10,8),st2,Math.sin(a)*.15*s,.2*s,Math.cos(a)*.15*s);p.scale.set(.7,.55,1.1);p.rotation.y=a;}cyl(.17*s,.15*s,.05*s,0,.16*s,0,st2,16);
- const sk=M('#cfc8ba',{roughness:.75,map:TPL.gran()});sph(.15*s,0,.255*s,.02*s,sk,1.1,.42,.75);add(lathe([[0,0],[.095*s,0],[.1*s,.06*s],[.085*s,.15*s],[.05*s,.21*s],[0,.22*s]],16),sk,0,.25*s,0);sph(.038*s,0,.3*s,.07*s,sk,1.3,.55,.8);
- sph(.06*s,0,.52*s,0,sk,1,1.08,1);sph(.03*s,0,.585*s,0,sk);for(const a of [-1,1])sph(.014*s,a*.058*s,.5*s,0,sk,.6,1.5,.9);
- const hb=add(new THREE.CircleGeometry(.24*s,28),st2,0,.48*s,-.08*s);hb.scale.y=1.25;const hb2=add(new THREE.CircleGeometry(.24*s,28),st2,0,.48*s,-.085*s);hb2.scale.y=1.25;hb2.rotation.y=Math.PI;add(new THREE.TorusGeometry(.12*s,.008*s,6,24),st,0,.52*s,-.075*s,false);});
+/* 석불좌상(항마촉지인): 팔각 연화대좌(복련·중대·앙련 두 겹), 결가부좌 무릎·발바닥, 편단우견 가사 주름, 오른손은 무릎 아래로·왼손은 무릎 위, 나발·육계·긴 귀·백호·삼도, 불꽃무늬 주형 거신광배 */
+const tBuddha=(x,z,y0,s=1,ry=0)=>grp(x,y0,z,ry,()=>{const st=TG(),sk=MT(TPL.gran(),{color:'#e6e6e2',roughness:.8}),dk=M('#7d8084',{roughness:.9});
+ cyl(.23*s,.24*s,.05*s,0,0,0,st,8);for(let k=0;k<16;k++){const a=k/16*Math.PI*2+.2,p=add(new THREE.SphereGeometry(.05*s,10,8),st,Math.sin(a)*.19*s,.065*s,Math.cos(a)*.19*s);p.scale.set(.75,.4,1.15);p.rotation.set(.55,a,0,'YXZ');}
+ cyl(.12*s,.12*s,.08*s,0,.07*s,0,st,8);for(let k=0;k<8;k++){const a=k/8*Math.PI*2+Math.PI/8,e=add(new THREE.PlaneGeometry(.06*s,.045*s),dk,Math.sin(a)*.112*s,.11*s,Math.cos(a)*.112*s,false);e.rotation.y=a;e.scale.set(1,1,1);}
+ for(const [r,y,n,o] of [[.15,.165,16,0],[.12,.19,16,.2]])for(let k=0;k<n;k++){const a=k/n*Math.PI*2+o,p=add(new THREE.SphereGeometry(.05*s,10,8),st,Math.sin(a)*r*s,y*s,Math.cos(a)*r*s);p.scale.set(.75,.45,1.15);p.rotation.set(-.6,a,0,'YXZ');}
+ cyl(.17*s,.17*s,.02*s,0,.2*s,0,st,24);const P=.22*s;
+ sph(.165*s,0,P+.045*s,.02*s,sk,1.15,.36,.72);for(const a of [-1,1]){sph(.058*s,a*.13*s,P+.05*s,.07*s,sk,1,.8,1);sph(.03*s,a*.055*s,P+.085*s,.075*s,sk,1.3,.4,.8);}
+ for(let k=0;k<3;k++){const t=add(new THREE.TorusGeometry(.12*s,.004*s,5,24,Math.PI),sk,0,P+.06*s,.03*s+k*.02*s,false);t.rotation.x=-Math.PI/2+.25;t.scale.set(1.2-k*.15,1,.6);}
+ add(lathe([[0,0],[.085*s,0],[.09*s,.05*s],[.078*s,.12*s],[.088*s,.17*s],[.07*s,.205*s],[0,.215*s]],18),sk,0,P+.06*s,0);
+ {const t=add(new THREE.TorusGeometry(.088*s,.012*s,6,24),sk,.005*s,P+.18*s,.0,false);t.rotation.set(Math.PI/2,0,.75);t.scale.set(1,1.05,1);for(let k=1;k<4;k++){const u=add(new THREE.TorusGeometry(.086*s,.004*s,5,20,Math.PI*.9),sk,0,P+.18*s-k*.035*s,0,false);u.rotation.set(Math.PI/2,0,.75-k*.06);}}
+ const limb=(a,b,r)=>{const v=new THREE.Vector3(b[0]-a[0],b[1]-a[1],b[2]-a[2]),L=v.length(),e=add(new THREE.CapsuleGeometry(r,L,4,10),sk,(a[0]+b[0])/2,(a[1]+b[1])/2,(a[2]+b[2])/2);e.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),v.normalize());};
+ limb([-.095*s,P+.245*s,0],[-.115*s,P+.14*s,.04*s],.026*s);limb([-.115*s,P+.14*s,.04*s],[-.13*s,P+.06*s,.11*s],.022*s);sph(.022*s,-.13*s,P+.05*s,.125*s,sk,1,.7,1.3);
+ limb([.095*s,P+.245*s,0],[.11*s,P+.14*s,.03*s],.026*s);limb([.11*s,P+.14*s,.03*s],[.03*s,P+.105*s,.08*s],.022*s);sph(.032*s,.0,P+.1*s,.085*s,sk,1.3,.45,.9);
+ cyl(.03*s,.034*s,.05*s,0,P+.26*s,0,sk,14);for(const k of [.272,.288])add(new THREE.TorusGeometry(.031*s,.0025*s,4,16),sk,0,P+k*s,0,false).rotation.x=Math.PI/2;
+ const H=P+.345*s;sph(.066*s,0,H,0,sk,1,1.1,.95);const hb=MT(TX('nabal',64,64,(g,w,h)=>{g.fillStyle='#8f9296';g.fillRect(0,0,w,h);for(let y=2;y<h;y+=5)for(let x=2+(y/5%2)*2.5;x<w;x+=5){g.fillStyle='#b4b6b8';g.beginPath();g.arc(x,y,1.9,0,7);g.fill();}},4,2),{roughness:.9});
+ {const c=add(new THREE.SphereGeometry(.069*s,22,12,0,Math.PI*2,0,Math.PI*.42),hb,0,H+.006*s,-.004*s);c.scale.set(1,1.1,.97);c.rotation.x=-.32;}sph(.036*s,0,H+.085*s,-.008*s,hb,1,.85,1);
+ for(const a of [-1,1]){sph(.016*s,a*.066*s,H-.012*s,-.002*s,sk,.45,1.9,.8);bx(a*.024*s-.011*s,a*.024*s+.011*s,H+.002*s,H+.0045*s,.058*s,.063*s,dk,.001,false);}sph(.004*s,0,H+.022*s,.066*s,sk);sph(.009*s,0,H-.008*s,.068*s,sk,.8,1.2,.9);bx(-.012*s,.012*s,H-.031*s,H-.028*s,.058*s,.062*s,dk,.001,false);
+ {const sh=new THREE.Shape();sh.moveTo(-.22,0);sh.bezierCurveTo(-.3,.22,-.27,.42,-.12,.55);sh.quadraticCurveTo(-.03,.6,0,.68);sh.quadraticCurveTo(.03,.6,.12,.55);sh.bezierCurveTo(.27,.42,.3,.22,.22,0);sh.lineTo(-.22,0);
+  const g=new THREE.ExtrudeGeometry(sh,{depth:.025,bevelEnabled:true,bevelThickness:.006,bevelSize:.006,bevelSegments:1});g.scale(s,s,s);const t=TPL.halo().clone();t.repeat.set(1/.6,1/.7);t.offset.set(.5,0);t.needsUpdate=true;add(g,[MT(t,{roughness:.85}),st],0,P,-.12*s);{const b=new THREE.ShapeGeometry(sh);b.scale(s,s,s);const e=add(b,st,0,P,-.12*s-.008*s,false);e.rotation.y=Math.PI;e.position.x=0;}
+  for(const [r,y] of [[.1,.345],[.17,.17]]){const e=add(new THREE.TorusGeometry(r*s,.008*s,5,28),st,0,P+y*s-(y>.3?0:.0),-.09*s,false);if(y<.3)e.scale.set(1,.85,1);}}});
 /* 범종각: 정면 1칸 사모지붕 누각, 청동 범종(용뉴·음통·당좌) + 당목 */
 const tBell=(x,z,y0,s=1)=>grp(x,y0,z,0,()=>{const r=.42*s,H=.5*s;bx(-r-.12,r+.12,0,.07,-r-.12,r+.12,MT(TPL.seok()),.006);bx(-r-.13,r+.13,.06,.07,-r-.13,r+.13,TG(),.004,false);for(const a of [-1,1])for(const b of [-1,1])tcol(a*r,b*r,.07,H,.035*s);
  for(const z of [-r,r])bx(-r-.03,r+.03,.07+H,.07+H+.05,z-.025,z+.025,MT(TPL.dc()),.004);for(const xx of [-r,r])bx(xx-.025,xx+.025,.07+H,.07+H+.05,-r,r,MT(TX('dancheong2',256,64,()=>{},1,1)),.004);bx(-r,r,.07+H+.02,.07+H+.05,-.025,.025,WOOD(),.004);
@@ -707,6 +722,21 @@ const tYosa=(x,z,y0,ry,L=1.4)=>grp(x,y0,z,ry,()=>{const D=.3,H=.4;bx(-L-.04,L+.0
 /* 산신각: 작은 한 칸 전각 */
 const tSanshin=(x,z,y0,ry=0)=>grp(x,y0,z,ry,()=>{bx(-.36,.36,0,.09,-.3,.3,MT(TPL.seok()),.006);for(const a of [-1,1])for(const b of [-1,1])tcol(a*.26,b*.2,.09,.32,.028);const dm=MT(TX('kkotsal',128,128,()=>{},1,1)),wm=MT(TPL.wall());add(new THREE.BoxGeometry(.5,.3,.38),[wm,wm,wm,wm,dm,wm],0,.25,0);
  bx(-.29,.29,.41,.45,-.23,.23,MT(TPL.dc()),.004);grp(0,.44,0,0,()=>hipRoof(.48,.42,.25,.1,TGW(),.025));});
+/* 연등: 연꽃잎 등 — 둥근 몸통에 꽃잎 둘레, 흰 꼬리표 */const LCOL=['#e8505a','#f29ab0','#f2c84a','#5fb86a','#f4f1e8','#4f8fd6','#f08a4a'];
+const lotusLamp=(x,y,z,c,s=1)=>{const m=M(c,{roughness:.6,emissive:c,emissiveIntensity:.18});sph(.034*s,x,y,z,m,1,.8,1);for(let k=0;k<6;k++){const a=k/6*Math.PI*2,p=add(new THREE.SphereGeometry(.018*s,8,6),m,x+Math.sin(a)*.03*s,y+.012*s,z+Math.cos(a)*.03*s,false);p.scale.set(.7,1.3,.7);p.rotation.set(-.5,a,0,'YXZ');}bx(x-.004*s,x+.004*s,y-.075*s,y-.03*s,z-.001,z+.001,M('#f4f1e8'),.001,false);};
+const lampLine=(x0,x1,z,yTop,n,o=0,s=1)=>{const cm=M('#5a4a3a');bx(x0,x1,yTop,yTop+.005,z-.003,z+.003,cm,.001,false);for(let k=0;k<n;k++){const x=x0+(k+.5)*(x1-x0)/n,u=(x-(x0+x1)/2)/((x1-x0)/2),sag=.06*(1-u*u),y=yTop-sag-.06*s;bx(x-.002,x+.002,y+.03*s,yTop-sag,z-.002,z+.002,cm,.001,false);lotusLamp(x,y,z,LCOL[(k+o)%LCOL.length],s);}};
+const tLamps=(x,z,y0,L=1.4,ry=0)=>grp(x,y0,z,ry,()=>{const pm=MT(T.plank('#8a5a36'),{roughness:.8});for(const a of [-1,1]){bx(a*L-.02,a*L+.02,0,1.0,-.02,.02,pm,.006);bx(a*L-.05,a*L+.05,0,.03,-.05,.05,TG(),.006);}lampLine(-L,L,-.1,.92,12,0);lampLine(-L,L,.1,.84,12,3);});
+/* 향로: 배례석(연꽃 새긴 넓적한 돌) 위 청동 세발 향로, 향 연기 */const tIncense=(x,z,y0,s=1)=>grp(x,y0,z,0,()=>{const st=TG();bx(-.2*s,.2*s,0,.035*s,-.13*s,.13*s,st,.008);for(let k=0;k<8;k++){const a=k/8*Math.PI*2;sph(.02*s,Math.sin(a)*.05*s,.04*s,Math.cos(a)*.05*s,st,1,.35,1.4).rotation.y=a;}
+ const br=M('#5f6b4f',{metalness:.55,roughness:.45,envMapIntensity:.8});for(let k=0;k<3;k++){const a=k/3*Math.PI*2;cyl(.008*s,.006*s,.05*s,Math.sin(a)*.045*s,.035*s,Math.cos(a)*.045*s,br,6);}add(lathe([[0,0],[.05*s,0],[.07*s,.03*s],[.065*s,.06*s],[.055*s,.065*s],[0,.065*s]],18),br,0,.075*s,0);for(const a of [-1,1])add(new THREE.TorusGeometry(.016*s,.004*s,5,12),br,a*.068*s,.13*s,0,false).rotation.y=Math.PI/2;
+ for(let k=0;k<3;k++)cyl(.002*s,.002*s,.06*s,(k-1)*.015*s,.14*s,0,M('#a0522d'),4);});
+/* 당간지주: 두 돌기둥 사이에 당간(깃대), 오색 번(幡) */const tDanggan=(x,z,y0,s=1)=>grp(x,y0,z,0,()=>{const st=TG();bx(-.2*s,.2*s,0,.05*s,-.14*s,.14*s,st,.008);for(const a of [-1,1]){bx(a*.07*s-.03*s,a*.07*s+.03*s,.05*s,.75*s,-.045*s,.045*s,st,.012);for(const y of [.35,.6])bx(a*.07*s-.032*s,a*.07*s+.032*s,y*s,y*s+.03*s,-.012*s,.012*s,M('#6f7276'),.002,false);}
+ cyl(.016*s,.022*s,1.55*s,0,.05*s,0,MT(T.plank('#8a5a36'),{roughness:.8}),10);sph(.03*s,0,1.62*s,0,M('#b08d3a',{metalness:.6,roughness:.4}));bx(0,.24*s,1.5*s,1.51*s,-.004,.004,M('#5a4a3a'),.001,false);
+ const bn=TX('beon',64,256,(g,w,h)=>{const C=['#3d6fc4','#e8c43a','#d8433b','#f4f1e8','#2f8a5a'];for(let i=0;i<5;i++){g.fillStyle=C[i];g.fillRect(i*w/5,0,w/5+1,h);}g.fillStyle='rgba(0,0,0,.12)';for(let y=0;y<h;y+=32)g.fillRect(0,y,w,2);});const e=add(new THREE.PlaneGeometry(.2*s,.62*s,1,6),MT(bn,{side:THREE.DoubleSide,roughness:.8}),.12*s,1.19*s,0,false);});
+/* 돌탑: 소원을 빌며 쌓은 납작돌 무더기 */const tCairn=(x,z,y0,s=1)=>grp(x,y0,z,0,()=>{const C=['#b9bcbd','#a7a49c','#c9c8c2','#9a9a96'];for(const [cx,cz,n,sc] of [[-.12,-.05,7,1],[.16,.1,5,.75],[.02,.24,3,.55]]){let y=0;for(let k=0;k<n;k++){const r=(.11-k*.012)*sc*s,h=r*.45,e=sph(r,cx*s+Math.sin(k*2.3)*.008*s,y+h,cz*s+Math.cos(k*1.7)*.008*s,M(C[(k+n)%4],{roughness:.9}),1,.45,.85);e.rotation.y=k*.9;y+=h*1.7;}}for(let k=0;k<6;k++)sph(.025*s,(Math.sin(k*2.1)*.35)*s,.012*s,(Math.cos(k*1.3)*.35)*s,M(C[k%4],{roughness:.9}),1,.5,.9);});
+/* 석불단: 두 단 석축 위 큰 석불좌상, 배례석·향로, 석등 한 쌍, 연등, 뒤 소나무 */const tShrine=(x,z,y0)=>grp(x,y0,z,0,()=>{TPL.seok();const sk=MT(TX('seokchuk',256,128,()=>{},3.4,.25),{roughness:.85}),sk2=MT(TX('seokchuk',256,128,()=>{},2.7,.3),{roughness:.85}),st=TG();bx(-1.38,1.38,0,.1,-1.4,1.0,sk,.008);bx(-1.39,1.39,.09,.1,-1.41,1.01,st,.004,false);bx(-1.08,1.08,.1,.22,-1.38,.42,sk2,.008);bx(-1.09,1.09,.21,.22,-1.39,.43,st,.004,false);
+ for(let k=0;k<3;k++){bx(-.3,.3,0,(k+1)*.033,1.0+(2-k)*.07,1.0+(3-k)*.07,st,.004);bx(-.3,.3,.1,.1+(k+1)*.04,.42+(2-k)*.065,.42+(3-k)*.065,st,.004);}
+ tBuddha(0,-.62,.22,1.75,0);tIncense(0,.15,.22,1.15);for(const a of [-1,1])tLantern(a*.85,.68,.1,1.2);
+ pine(-1.15,-1.2,1.05,.15,.22);pine(1.2,-1.15,1.1,-.2,.22);for(const a of [-1,1])bx(a*1.3-.015,a*1.3+.015,.1,1.08,1.25-.015,1.25+.015,MT(T.plank('#8a5a36')),.004);lampLine(-1.3,1.3,1.25,1.02,11,2);});
 Object.assign(B3,{
  templeComplex(){/* 산사 7×8: 앞(+z)이 아래 비탈 쪽. 마당 높이 = 석축 위 */TPLI();const Y0=B+.12,SK4=MT(TX('seokchuk',256,128,()=>{},4,1),{roughness:.85});
   lawn(-3.5,3.5,2.4,4);add(new THREE.BoxGeometry(7,.12,6.4),[SK4,SK4,MT(TX('masato',256,256,()=>{},4,4),{roughness:.95}),M('#8a8478'),SK4,SK4],0,B+.06,-.8);
@@ -721,12 +751,17 @@ Object.assign(B3,{
   /* 장독대·화분: 요사채 옆 */for(let k=0;k<4;k++){const e=add(lathe([[0,0],[.035,0],[.05,.04],[.045,.08],[.03,.09],[0,.09]],12),MT(T.onggi()),2.72+(k%2)*.13,Y0,-1.75-((k/2)|0)*.13);}},
  templeHall(){TPLI();tHall(0,0,B,1);},
  stonePagoda(){TPLI();tPagoda(0,0,B,1.1);},
- buddha(){TPLI();tBuddha(0,0,B,1.3,0);},
+ buddha(){TPLI();tBuddha(0,-.05,B,1.15,0);},
  stoneLantern(){TPLI();tLantern(0,0,B,1.4);},
  bellPavilion(){TPLI();tBell(0,0,B,1.35);},
  iljumun(){TPLI();tGate(0,0,B,1.25);},
  yosa(){TPLI();tYosa(0,0,B,0,1.42);},
  sanshin(){TPLI();tSanshin(0,0,B,0);},
+ buddhaShrine(){TPLI();tShrine(0,0,B);},
+ lotusLanterns(){TPLI();tLamps(0,0,B,1.42);},
+ danggan(){TPLI();tDanggan(0,0,B,1);},
+ stoneCairn(){TPLI();tCairn(0,0,B,1);},
+ incense(){TPLI();tIncense(0,0,B,1.6);},
 });
 /* 스님 걷는 길(산사 지역 좌표, 마당 높이): 요사채 → 탑돌이(시계 방향 3바퀴) → 대웅전 앞 → 범종각 → 요사채 */
 window.__TPLR=(()=>{const R=[],P=(x,z,w=0,f=0)=>R.push([x,z,w,f]);P(2.0,.25,6);P(1.05,.5);for(let r=0;r<3;r++)for(let k=0;k<10;k++){const t=k/10*Math.PI*2-Math.PI/2;P(Math.cos(t)*.52,1.15+Math.sin(t)*.52);}P(.6,.45);P(.38,-.24,5,1);P(-.38,-.24,4,1);P(-1.2,.35);P(-1.85,1.0,3);P(-1.0,2.0);P(1.0,2.1);P(1.9,1.0);return R;})();
