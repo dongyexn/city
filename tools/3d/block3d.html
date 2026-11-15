@@ -1473,17 +1473,21 @@ const AT=ptex(512,(g,n,R)=>{g.fillStyle='#5f6779';g.fillRect(0,0,n,n);for(let k=
     else if(b&&dot(DV[b],d)===0&&sAt(x+DV[b][0],y+DV[b][1],T)!==dd){const d2=DV[b];hs=C4.map(c=>dot(c,d)<0&&dot(c,d2)<0?0:1);}
     /* a straight ramp whose low side meets lower ground (sand, road, paving) runs on down to it instead of ending in a step;
        edges shared with another ramp at the same height get no side wall (it only showed as a seam line) */
-    let dr=0;if(hs.reduce((p,q)=>p+q,0)===2){const lt=top(x-d[0],y-d[1]);if(lt){const g=(T-LH)-Math.min(...lt);if(g>.01&&g<.2)dr=Math.round(g*100)/100;}}
+    let dr=0;if(0&&hs.reduce((p,q)=>p+q,0)===2){/* 이웃 높이 맞춤(fitM)으로 대신 */const lt=top(x-d[0],y-d[1]);if(lt){const g=(T-LH)-Math.min(...lt);if(g>.01&&g<.2)dr=Math.round(g*100)/100;}}
     let cov=0;for(let k=0;k<4;k++){const A=C4[k],B=C4[(k+1)%4],ex=Math.round(A[0]+B[0]),ez=Math.round(A[1]+B[1]);if(sAt(x+ex,y+ez,T))cov|=1<<k;}
     const key=hs.join('')+':'+dr+':'+cov;if(!G.has(key))G.set(key,{hs,L:[],dr,cov});G.get(key).L.push([x,y,T,tp]);}
    const pv=new THREE.Vector3();let nS=0;
+   /* 비탈을 이웃 높이에 맞춰 늘이고 줄인다: 아래 끝은 낮은 쪽 이웃 윗면(모래·길은 더 낮다), 위 끝은 높은 쪽 이웃 윗면(잔디는 더 높다) */
+   const fitM=(x,y,T,RH_)=>{const v=SL_T.get(y*N+x),dd=v?v[1]:0,d=DV[dd>4?dd-4:dd]||[0,0],base=T-LH,hiN=top(x+d[0],y+d[1]),loN=top(x-d[0],y-d[1]);let Hi=T-.022,Lo=base;
+    if(hiN&&!riv(x+d[0],y+d[1])){const t=Math.max(...hiN);if(Math.abs(t-(T-.022))<.2)Hi=t-.004;}if(loN&&!riv(x-d[0],y-d[1])){const t=Math.max(...loN);if(Math.abs(t-base)<.2)Lo=t+.004;}
+    const sy=Math.max(.3,(Hi-Lo)/RH_);m4.makeScale(1,sy,1);m4.setPosition(x+.5,Lo+sy*h,y+.5);};
    for(const {hs,L,dr,cov} of G.values()){const P=[],Nn=[],TY=[],RH=LH-.022,Y=k=>-h+hs[k]*RH,V=k=>[C4[k][0],Y(k),C4[k][1]];
     const tri=(a,b,c,ty,n)=>{const u=[b[0]-a[0],b[1]-a[1],b[2]-a[2]],v=[c[0]-a[0],c[1]-a[1],c[2]-a[2]];let cr=[u[1]*v[2]-u[2]*v[1],u[2]*v[0]-u[0]*v[2],u[0]*v[1]-u[1]*v[0]];if(!n){const l=Math.hypot(...cr);n=cr.map(q=>q/l);if(n[1]<0)n=n.map(q=>-q);}if(cr[0]*n[0]+cr[1]*n[1]+cr[2]*n[2]<0){[b,c]=[c,b];ty=[ty[0],ty[2],ty[1]];}P.push(...a,...b,...c);TY.push(...ty);for(let k=0;k<3;k++)Nn.push(...n);};
     const nh=hs.reduce((p,q)=>p+q,0),odd=nh===1?hs.indexOf(1):nh===3?hs.indexOf(0):0,o2=(odd+2)%4,o1=(odd+1)%4,o3=(odd+3)%4;
     /* top: mostly the bilinear patch (a touch of the hip/valley crease kept), then eased so the ramp rounds into the ground at both ends;
        edges use the same profile so neighbouring ramps still meet, and the low edge dips a little to hide the seam below */
     const cx=C4[odd][0]>0,cz=C4[odd][1]>0,F=(u,v)=>{const B=hs[0]*(1-u)*(1-v)+hs[1]*u*(1-v)+hs[2]*u*v+hs[3]*(1-u)*v;if(nh===2)return B;const a=cx?u:1-u,b=cz?v:1-v,Pc=nh===1?Math.min(a,b):1-Math.min(a,b);return Pc*.15+B*.85;},
-      Ez=f=>f+(f*f*(3-2*f)-f)*.35,Hh=(u,v)=>{const f=Ez(F(u,v));return -h-.025*(1-f)+f*RH;},GN=8,e=1e-3,
+      Ez=f=>{/* 곧은 비탈 + 위쪽 모서리만 둥글게(도로 경사처럼) */const r=.22,k=1/(1-r/2);if(f<=1-r)return k*f;const s=(f-(1-r))/r;return k*((1-r)+r*(s-s*s/2));},Hh=(u,v)=>{const f=Ez(F(u,v));return -h-.025*(1-f)+f*RH;},GN=8,e=1e-3,
       nrm=(u,v)=>{const dx=(Hh(Math.min(1,u+e),v)-Hh(Math.max(0,u-e),v))/(Math.min(1,u+e)-Math.max(0,u-e)),dz=(Hh(u,Math.min(1,v+e))-Hh(u,Math.max(0,v-e)))/(Math.min(1,v+e)-Math.max(0,v-e)),l=Math.hypot(dx,1,dz);return [-dx/l,1/l,-dz/l];};
     for(let j=0;j<GN;j++)for(let i=0;i<GN;i++){const q=[[i,j],[i+1,j],[i+1,j+1],[i,j+1]].map(([a,b])=>{const u=a/GN,v=b/GN,y=Hh(u,v);return {p:[u-.5,y,v-.5],n:nrm(u,v),t:y+1};});
      for(const [A,B,C] of [[q[0],q[2],q[1]],[q[0],q[3],q[2]]]){P.push(...A.p,...B.p,...C.p);Nn.push(...A.n,...B.n,...C.n);TY.push(A.t,B.t,C.t);}}
@@ -1496,7 +1500,7 @@ const AT=ptex(512,(g,n,R)=>{g.fillStyle='#5f6779';g.fillRect(0,0,n,n);for(let k=
       tri(a0,b0,b1,[y0+1,y0+1,y1+1]);tri(a0,b1,a1,[y0+1,y1+1,y1+1]);const ab=[A[0],y1-.02,A[1]],bb=[B[0],y1-.02,B[1]];tri(a0,a1,ab,[y0+1,y1+1,y1+1],[-(B[0]-A[0]),0,-(B[1]-A[1])]);tri(b0,bb,b1,[y0+1,y1+1,y1+1],[B[0]-A[0],0,B[1]-A[1]]);}}
     const wg=new THREE.BufferGeometry();wg.setAttribute('position',new THREE.Float32BufferAttribute(P,3));wg.setAttribute('normal',new THREE.Float32BufferAttribute(Nn,3));wg.setAttribute('aTY',new THREE.Float32BufferAttribute(TY,1));
     const n=L.length,wk=new Float32Array(n),wt=new Float32Array(n),wv=new Float32Array(n),wa=new Float32Array(n*4),wm=new THREE.InstancedMesh(wg,mat,n);
-    L.forEach(([x,y,T,tp],i)=>{m4.makeTranslation(x+.5,T-h,y+.5);wm.setMatrixAt(i,m4);wk[i]=tp?11:10;wt[i]=tp===3?2:tp===4?3:tp===5?4:tp===6?5:tp===7?7:0;wv[i]=tp===3?(()=>{const sv=SL_T.get(y*N+x),dv=sv&&DV[((sv[1]-1)%4)+1],j=dv?(y+dv[1])*N+x+dv[0]:-1;return (j>=0&&PAVE[j]>=1&&PAVE[j]<=5?PAVE[j]:PAVE[y*N+x])-1;})():0;/* 경사 포장은 올라가는 쪽 칸과 같은 무늬 */cc.setRGB(1,1,1).multiplyScalar(tp?1:.94+hsh(x,y)*.08);wm.setColorAt(i,cc);});
+    L.forEach(([x,y,T,tp],i)=>{fitM(x,y,T,RH);wm.setMatrixAt(i,m4);wk[i]=tp?11:10;wt[i]=tp===3?2:tp===4?3:tp===5?4:tp===6?5:tp===7?7:0;wv[i]=tp===3?(()=>{const sv=SL_T.get(y*N+x),dv=sv&&DV[((sv[1]-1)%4)+1],j=dv?(y+dv[1])*N+x+dv[0]:-1;return (j>=0&&PAVE[j]>=1&&PAVE[j]<=5?PAVE[j]:PAVE[y*N+x])-1;})():0;/* 경사 포장은 올라가는 쪽 칸과 같은 무늬 */cc.setRGB(1,1,1).multiplyScalar(tp?1:.94+hsh(x,y)*.08);wm.setColorAt(i,cc);});
     wg.setAttribute('aKind',new THREE.InstancedBufferAttribute(wk,1));wg.setAttribute('aTop',new THREE.InstancedBufferAttribute(wt,1));wg.setAttribute('aVar',new THREE.InstancedBufferAttribute(wv,1));wg.setAttribute('aAO',new THREE.InstancedBufferAttribute(wa,4));
     wm.castShadow=true;wm.receiveShadow=true;sc.add(wm);nS+=n;}
    /* stairs: three steps rising toward +x, turned per tile */
@@ -1515,7 +1519,7 @@ const AT=ptex(512,(g,n,R)=>{g.fillStyle='#5f6779';g.fillRect(0,0,n,n);for(let k=
       const top=-h+(v+1)/3*RH,hh=top-yb,g=new RoundedBoxGeometry(w/3,hh,hgt/3,2,.06).toNonIndexed();g.translate(-.5+(ix+w/2)/3,yb+hh/2,-.5+(jz+hgt/2)/3);g.setAttribute('aTY',new THREE.Float32BufferAttribute(new Float32Array(g.attributes.position.count).fill(top+1),1));parts.push(g);}
      const sg=mergeGeometries(parts);
      const n=L.length,wk=new Float32Array(n),wt=new Float32Array(n),wv=new Float32Array(n),wa=new Float32Array(n*4),sm=new THREE.InstancedMesh(sg,mat,n),pv3=new THREE.Vector3();
-     L.forEach(([x,y,T,tp],i)=>{m4.makeTranslation(x+.5,T-h,y+.5);sm.setMatrixAt(i,m4);wk[i]=tp?11:10;wt[i]=tp===3?2:tp===4?3:tp===5?4:tp===6?5:tp===7?7:0;wv[i]=tp===3?(()=>{const sv=SL_T.get(y*N+x),dv=sv&&DV[((sv[1]-1)%4)+1],j=dv?(y+dv[1])*N+x+dv[0]:-1;return (j>=0&&PAVE[j]>=1&&PAVE[j]<=5?PAVE[j]:PAVE[y*N+x])-1;})():0;/* 경사 포장은 올라가는 쪽 칸과 같은 무늬 */cc.setRGB(1,1,1);sm.setColorAt(i,cc);});
+     L.forEach(([x,y,T,tp],i)=>{fitM(x,y,T,RH);sm.setMatrixAt(i,m4);wk[i]=tp?11:10;wt[i]=tp===3?2:tp===4?3:tp===5?4:tp===6?5:tp===7?7:0;wv[i]=tp===3?(()=>{const sv=SL_T.get(y*N+x),dv=sv&&DV[((sv[1]-1)%4)+1],j=dv?(y+dv[1])*N+x+dv[0]:-1;return (j>=0&&PAVE[j]>=1&&PAVE[j]<=5?PAVE[j]:PAVE[y*N+x])-1;})():0;/* 경사 포장은 올라가는 쪽 칸과 같은 무늬 */cc.setRGB(1,1,1);sm.setColorAt(i,cc);});
      sg.setAttribute('aKind',new THREE.InstancedBufferAttribute(wk,1));sg.setAttribute('aTop',new THREE.InstancedBufferAttribute(wt,1));sg.setAttribute('aVar',new THREE.InstancedBufferAttribute(wv,1));sg.setAttribute('aAO',new THREE.InstancedBufferAttribute(wa,4));
      sm.castShadow=true;sm.receiveShadow=true;sc.add(sm);nS+=n;}}
    window.NSLOPE=nS;}}
