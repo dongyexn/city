@@ -79,9 +79,9 @@ const genIsland=(type,shape,num,NS=128)=>{
  const blob=(x0,y0,r,amp=.35,seed=0)=>{const T=[];let L=9;for(let y=Math.floor(y0-r-2);y<=y0+r+2;y++)for(let x=Math.floor(x0-r-2);x<=x0+r+2;x++){if(!In(x,y))continue;const i=id(x,y);if(ocean[i]||cd[i]<3)continue;const a=Math.atan2(y-y0,x-x0),rr=r*(1+amp*(fbm(Math.cos(a)*1.3+seed,Math.sin(a)*1.3+seed*.7,3)-.5)*2);if(Math.hypot(x-x0,y-y0)<rr){T.push(i);L=Math.min(L,LVL[i]);}}for(const i of T)carve(i,L);return T;};
  const downA=(x,y)=>{let best=0,bv=1e9;for(let k=0;k<16;k++){const a=k/16*Math.PI*2,xx=Math.round(x+Math.cos(a)*4),yy=Math.round(y+Math.sin(a)*4);if(!In(xx,yy))continue;const i=id(xx,yy),v=ocean[i]?-99:cd[i]+LVL[i]*2.5;if(v<bv){bv=v;best=a;}}return best;};
  /* 강: 목표 지점(반대편 바다)을 향하되 굽이치며 흐른다. 하류로 갈수록 넓어지고, 폭은 원형 단면으로 깎는다 */
- const flow=(sx,sy,tx,ty,w0,w1,join,steps=900)=>{let x=sx,y=sy,a=Math.atan2(ty-y,tx-x),L=LVL[id(Math.round(sx),Math.round(sy))]||1,n=0;const seed=R()*50;
+ const flow=(sx,sy,tx,ty,w0,w1,join,steps=900)=>{let x=sx,y=sy,a=Math.atan2(ty-y,tx-x),L=LVL[id(Math.round(sx),Math.round(sy))]||1,n=0;const seed=R()*50,L0=L,c0=Math.max(1,cd[id(Math.round(sx),Math.round(sy))]||1);/* 본류는 바다까지 단을 나눠 내려간다(단마다 폭포) */
   for(let st=0;st<steps;st++){const at=Math.atan2(ty-y,tx-x);let d=at-a;d=Math.atan2(Math.sin(d),Math.cos(d));a+=d*.06+(fbm(st*.022+seed,seed,2)-.5)*.34;x+=Math.cos(a)*.5;y+=Math.sin(a)*.5;const cxr=Math.round(x),cyr=Math.round(y);if(!In(cxr,cyr))break;const ci=id(cxr,cyr);if(ocean[ci])break;
-   if(join&&st>8&&terr[ci]===TWA)break;L=Math.min(L,LVL[ci]);const w=(w0+(w1-w0)*Math.min(1,st/160))*(1+.22*(fbm(st*.04,seed+9,2)-.5))*Sc,r=w/2;
+   if(join&&st>8&&terr[ci]===TWA)break;L=Math.min(L,LVL[ci]);if(!join&&L0>1)L=Math.min(L,Math.max(1,1+Math.floor((L0-1)*Math.min(1,(cd[ci]||0)/c0)+.35)));const w=(w0+(w1-w0)*Math.min(1,st/160))*(1+.22*(fbm(st*.04,seed+9,2)-.5))*Sc,r=w/2;
    for(let yy=Math.floor(y-r-1);yy<=y+r+1;yy++)for(let xx=Math.floor(x-r-1);xx<=x+r+1;xx++){if(!In(xx,yy))continue;if(Math.hypot(xx+.5-x,yy+.5-y)<=Math.max(.6,r))carve(id(xx,yy),L);}n++;}return [n,x,y];};
  const pickIn=(minCd,tries=500)=>{let s=-1,bs=-1;for(let k=0;k<tries;k++){const i=(R()*NN)|0;if(land(i)&&cd[i]>minCd&&LVL[i]>=bs){bs=LVL[i];s=i;}}return s;};
  if(!MULTI.has(shape)){
@@ -89,11 +89,12 @@ const genIsland=(type,shape,num,NS=128)=>{
   /* 수원: 섬 안쪽(바다에서 먼 곳)의 한쪽, 하구: 그 반대편 바다 */
   const th=FV?FTH+Math.PI+(R()-.5)*.5:R()*Math.PI*2,ux=Math.cos(th),uy=Math.sin(th);let s0=-1;for(let f=.55;f>=0&&s0<0;f-=.1){const px=Math.round(cx+ux*mcd*f),py=Math.round(cy+uy*mcd*f);if(In(px,py)&&land(id(px,py))&&cd[id(px,py)]>4*Sc)s0=id(px,py);}
   const rv={forest:.85,farm:.95,city:.85,ind:.6,metro:.9}[type]||.8;
-  if(s0>=0&&R()<rv){let sx=s0%N,sy=(s0/N)|0;const lk=FV?1:{forest:.8,farm:.65,city:.45,ind:.25,metro:.3}[type]||.4;
-   if(R()<lk){const r=(5+R()*4)*Sc;blob(sx,sy,r,.38,R()*30);sx-=ux*r*.7;sy-=uy*r*.7;}
+  if(s0>=0&&R()<rv){let sx=s0%N,sy=(s0/N)|0;const lk=FV?1:{forest:.9,farm:.8,city:.7,ind:.45,metro:.55}[type]||.6;/* 수원 호수를 더 자주 */
+   if(R()<lk){const r=(5+R()*5)*Sc;blob(sx,sy,r,.38,R()*30);sx-=ux*r*.7;sy-=uy*r*.7;}
    const tx=cx-ux*N,ty=cy-uy*N,[n,ex,ey]=flow(sx,sy,tx,ty,2.2,type==="metro"?5.5:4.6,false);
    /* 지류: 옆 고지대에서 본류로 */const nt=type==='forest'||type==='farm'?2:R()<.6?1:0;
    for(let k=0;k<nt;k++){const t=.3+R()*.4,mx=sx+(ex-sx)*t,my=sy+(ey-sy)*t,sd=(k%2?1:-1),px=Math.round(mx-uy*sd*mcd*.6),py=Math.round(my+ux*sd*mcd*.6);if(In(px,py)&&land(id(px,py))&&terr[id(px,py)]!==TWA)flow(px,py,mx,my,1.3,1.8,true,400);}}
+  /* 바닷가 개울: 바다에서 조금 들어간 높은 땅의 샘에서 가까운 바닷가로 — 단마다 작은 폭포, 끝은 섬 밖으로 떨어지는 폭포 */{const ns={forest:2,farm:FV?1:2,city:2,ind:1,metro:1}[type]||1;for(let k=0;k<ns;k++){let s=-1,bs=-1;for(let t=0;t<400;t++){const i=(R()*NN)|0;if(!land(i)||terr[i]===TWA||cd[i]<5*Sc||cd[i]>11*Sc)continue;if(LVL[i]>bs){bs=LVL[i];s=i;}}if(s<0||bs<2)continue;const px=s%N,py=(s/N)|0,dx=px-cx,dy=py-cy,dl=Math.hypot(dx,dy)||1;blob(px,py,(1.6+R()*1.2)*Sc,.4,R()*30);flow(px,py,px+dx/dl*N,py+dy/dl*N,1.4,2.2,false,500);}}
   /* 작은 연못·둠벙 */const np={forest:4,farm:FV?1:4,city:2,ind:1,metro:1}[type]||1;for(let k=0;k<np;k++){const s=pickIn(6*Sc,200);if(s>=0)blob(s%N,(s/N)|0,(2.6+R()*2.2)*Sc,.5,R()*30);}}
  /* river banks keep within one level of the water so they read as banks, not canyons */
  for(let i=0;i<NN;i++)if(terr[i]===TWA){const x=i%N,y=(i/N)|0;for(const [dx,dy] of D4){const k=id(x+dx,y+dy);if(land(k)&&terr[k]!==TWA&&LVL[k]>LVL[i]+1)LVL[k]=LVL[i]+1;}}relax();

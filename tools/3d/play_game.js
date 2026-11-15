@@ -401,6 +401,10 @@ const pickObj=(cx,cy)=>{if(!W)return null;const b=cv.getBoundingClientRect();RCV
  return best&&best.o;};
 const fbAt=i=>{for(const a of [i,i-1,i-N,i-N-1]){if(a<0)continue;const f=ED.fb.get(a);if(!f)continue;if(a===i)return a;if(f[3]===2&&(i%N)-(a%N)<=1&&(i%N)>=(a%N))return a;}return -1;};
 const rotBld=i=>{const before=snap(),b=bigAt(i);if(b>=0){const e=ED.big[b],k=DIRN.indexOf(e[5]||'z+');e[5]=e[3]===e[4]?DIRN[(k%4)+1]:DIRN[((k+1)%4)+1];/* 정사각이면 90°, 아니면 자리 그대로 180° */}else{const a=fbAt(i);if(a<0)return;const f=ED.fb.get(a),k=Math.max(1,DIRN.indexOf(f[2]||'z+'));f[2]=DIRN[(k%4)+1];}UN.push(before);if(UN.length>20)UN.shift();RE.length=0;busy('반영 중',rebuild);};
+const rotPick=()=>{if(!W)return false;const T=SEL.length?SEL:(hovT?[hovT]:[]);if(!T.length)return false;
+ for(const t of T){const i=t[1]*N+t[0];if(bigAt(i)>=0||fbAt(i)>=0){ctxClose();rotBld(i);msg('돌렸어요',900);return true;}}
+ for(const t of T){if(GS.prop[t[1]*N+t[0]]){ctxClose();propEdit(t,1);msg('돌렸어요',900);return true;}}
+ const S=T.filter(t=>GS.sl[t[1]*N+t[0]]);if(S.length){ctxClose();const st=GS.sl[S[0][1]*N+S[0][0]]>4;runAs('ter',S,()=>{forceSl=st?2:1;});return true;}return false;};
 const treeCut=t=>{const i=t[1]*N+t[0],before=snap();GS.deco[i]=0;GS.man[i]&=~2;UN.push(before);if(UN.length>20)UN.shift();RE.length=0;busy('반영 중',rebuild);};
 const objPos=o=>o.t==='car'?[o.G.position.x,o.G.position.z]:[o.p.px,o.p.pz];
 const objOpen=(px,py,o)=>{let c=$('ctx');if(!c){c=document.createElement('div');c.id='ctx';c.className='glass';c.setAttribute('role','menu');document.body.appendChild(c);}setSel([]);
@@ -654,7 +658,7 @@ addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;const k=e.ke
  if((e.ctrlKey||e.metaKey)&&k.toLowerCase()==='z'){e.preventDefault();e.shiftKey?redo():undo();return;}if((e.ctrlKey||e.metaKey)&&k.toLowerCase()==='y'){e.preventDefault();redo();return;}if(e.ctrlKey||e.metaKey||e.altKey)return;
  if(k===' '){space=true;e.preventDefault();}else if(k==='Escape'&&!$('shot').hidden){$('shot').hidden=true;}else if(k==='Escape'&&$('ctx')&&!$('ctx').hidden){ctxClose();}else if(k==='Escape'&&panelAny()){for(const [p] of PANELS)panelClose(p);}else if(k==='Escape'&&document.body.classList.contains('hopen')){$('hamb').click();}else if(k==='Escape'){if(stroke){stroke=null;clrH();need=true;}else{ctxClose();setSel([]);setTool('move');}}
  else if(k>='1'&&k<='9'&&TOOLS[+k-1])setTool(TOOLS[+k-1][0]);
- else if((k==='r'||k==='R')&&(tool==='bld'||tool==='big'||slMode())){rot=(tool==='big'?(rot||1):rot)%4+1;drawUI();if(hovT)show(brush(hovT));msg('방향 '+arw(rot),900);}else if(k==='q'||k==='Q')rotView(1);else if(k==='+'||k==='=')zoomAt(.8,innerWidth/2,innerHeight/2);else if(k==='-')zoomAt(1.25,innerWidth/2,innerHeight/2);else if(k==='0')fit();
+ else if((k==='r'||k==='R')&&(tool==='bld'||tool==='big'||slMode())){rot=(tool==='big'?(rot||1):rot)%4+1;drawUI();if(hovT)show(brush(hovT));msg('방향 '+arw(rot),900);}else if((k==='r'||k==='R')&&rotPick()){}/* 고른(또는 가리킨) 건물·시설·소품·경사·계단을 R로 돌린다 */else if(k==='q'||k==='Q')rotView(1);else if(k==='+'||k==='=')zoomAt(.8,innerWidth/2,innerHeight/2);else if(k==='-')zoomAt(1.25,innerWidth/2,innerHeight/2);else if(k==='0')fit();
  else if(k.startsWith('Arrow')){e.preventDefault();const s=90;panPx(k==='ArrowLeft'?s:k==='ArrowRight'?-s:0,k==='ArrowUp'?s:k==='ArrowDown'?-s:0);}});
 addEventListener('keyup',e=>{if(e.key===' ')space=false;});
 /* ---- islands: three save slots, each remembers which terrain it was made from ---- */
