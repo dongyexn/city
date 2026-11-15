@@ -575,7 +575,7 @@ Object.assign(B3,{
   const bus=(x,z)=>grp(x,B,z,Math.PI/2,()=>{const gm=M('#2f9a58',{roughness:.35});bx(-.33,.33,.02,.22,-.11,.11,gm,.03);bx(-.29,.27,.14,.2,-.112,.112,GL,.006,false);bx(-.33,.33,.1,.115,-.113,.113,M('#f4f4f0'),.004,false);bx(.33,.336,.1,.2,-.09,.09,GL,.004,false);for(const xx of [-.2,.2])for(const s2 of [-1,1]){const w=add(new THREE.CylinderGeometry(.04,.04,.02,12),DK,xx,.04,s2*.11);w.rotation.x=Math.PI/2;}});bus(.15,.0);bus(.6,.0);bench(-.5,.3,0);person(-.35,.25,'#e0444a');},
 });
 Object.assign(P,{
- busStop(){/* 시골 버스정류장: 지붕 있는 쉼터 + 의자 + 표지판 */const wd=M('#e7ebf0',{roughness:.5});bx(-.2,.2,B+.24,B+.27,-.12,.08,M('#2f9a58',{roughness:.5}),.01);bx(-.2,.2,B,B+.24,-.12,-.105,PH({color:'#dff1fb',roughness:.06,transparent:true,opacity:.5}),.003,false);for(const x of [-.19,.19])bx(x-.008,x+.008,B,B+.24,-.12,.08,wd,.003);bench(0,-.06,0);grp(-.32,B,.05,Math.PI/2,()=>{const w=MT(T.plank('#b98a5a'));bx(-.1,.1,.04,.05,-.03,.03,w,.004);for(const a of [-.08,.08])bx(a-.01,a+.01,0,.04,-.025,.025,MT(T.stone()),.003);});cyl(.006,.006,.34,.28,B,.06,M('#8a929c'),6);add(new THREE.CylinderGeometry(.05,.05,.01,20),M('#3d7de0'),.28,B+.33,.06).rotation.x=Math.PI/2;},
+ busStop(){/* 시골 버스정류장: 지붕 있는 쉼터 + 의자 + 표지판 */const wd=M('#e7ebf0',{roughness:.5});bx(-.2,.2,B+.24,B+.27,-.12,.08,M('#2f9a58',{roughness:.5}),.01);bx(-.2,.2,B,B+.24,-.12,-.105,PH({color:'#dff1fb',roughness:.06,transparent:true,opacity:.5}),.003,false);for(const x of [-.19,.19])bx(x-.008,x+.008,B,B+.24,-.12,.08,wd,.003);bench(0,-.06,0);grp(-.245,B,.16,Math.PI/2,()=>{const w=MT(T.plank('#b98a5a'));bx(-.1,.1,.04,.05,-.03,.03,w,.004);for(const a of [-.08,.08])bx(a-.01,a+.01,0,.04,-.025,.025,MT(T.stone()),.003);});cyl(.006,.006,.34,.235,B,.16,M('#8a929c'),6);add(new THREE.CylinderGeometry(.05,.05,.01,20),M('#3d7de0'),.235,B+.33,.16)/* 1.85배로 키워도 표지판·의자가 칸 안에 */.rotation.x=Math.PI/2;},
 });
 /* ===== 한국 농촌 묶음: 정자목 · 마을회관 · 슬레이트 농가 · 기와 양옥 · 컨테이너 창고 · 철골 축사 · 마을마트 · 농약사 · 양수장 · 묘 ===== */
 /* 질감 통일: 벽·바닥은 회반죽/돌/널빤지/골강판, 금속은 은은한 광, 풀은 잔디 무늬 — 색은 질감 위에 입힌다 */
@@ -624,8 +624,13 @@ Object.assign(B3,{
   for(let k=0;k<3;k++)bx(.12+k*.07,.18+k*.07,B,B+.07,.2,.32,RZ('#f2ead8'),.012);cyl(.03,.03,.1,-.25,B,.27,RZ('#e8e2d6'),12);cyl(.012,.012,.03,-.25,B+.1,.27,MTL('#e0444a'),8);},
  pumpHouse(){/* 양수장: 시멘트 블록 기계실 · 철문 · 굵은 송수관 · 표지 */const bk=MT(T.brick('#d6d2c8','#b6b0a4'));bx(-.22,.18,B,B+.24,-.25,.1,bk,.01);bx(-.24,.2,B+.24,B+.27,-.27,.12,corr('#9aa3ad',3,1),.006);bx(-.06,.06,B,B+.17,.1,.106,corr('#5d7f96',3,1),.002,false);signZ(-.18,.14,B+.18,B+.23,.101,'양수장','#ffffff','#2b4f8a','bold 30px sans-serif');
   const pm=M('#3f6fa8',{roughness:.4,metalness:.3});pipe([.18,B+.08,-.1],[.38,B+.08,-.1],.03,'#3f6fa8');pipe([.38,B+.08,-.1],[.38,B+.08,-.4],.03,'#3f6fa8');cyl(.05,.05,.03,.18,B+.065,-.1,pm,14).rotation.z=Math.PI/2;bx(.3,.36,B+.05,B+.12,-.14,-.06,MTL('#e0444a'),.006);paveA(-.3,.26,-.33,.18,'#cfcac0');},
- grave(){/* 산소: 봉분 둘 · 비석 · 상석 · 둘레 낮은 둔덕(잔디) */const gr=GRS('#b8d890'),st=STN();for(const [x,z] of [[-.14,-.05],[.16,-.05]]){sph(.14,x,B,z,gr,1,.55,1);bx(x-.06,x+.06,B,B+.02,z+.16,z+.24,st,.004);bx(x-.035,x+.035,B,B+.12,z+.12,z+.145,st,.006);}
-  for(let k=0;k<9;k++){const a=Math.PI*(.15+.7*k/8);sph(.07,Math.cos(a)*.36,B,-.05-Math.sin(a)*.3,gr,1.2,.45,1);}},
+ grave(){/* 산소: 칸을 꽉 채우는 둥근 봉분 하나 · 뒤를 감싸는 매끈한 반달 둔덕(사성) · 비석 · 상석 · 망주석 한 쌍 */const gr=GRS('#a8c25a'),gr2=GRS('#95b04c'),st=STN();
+  sph(.25,0,B,-.06,gr,1,.68,1);
+  {const g=new THREE.TorusGeometry(.33,.075,10,28,Math.PI*1.1);g.rotateZ(-Math.PI*.05);g.rotateX(-Math.PI/2);g.scale(1,.75,1);add(g,gr2,0,B,-.06);}
+  bx(-.055,.055,B,B+.22,.22,.255,st,.008);bx(-.07,.07,B+.215,B+.235,.21,.265,st,.006);
+  bx(-.13,.13,B,B+.05,.29,.4,st,.008);bx(-.09,.09,B,B+.025,.41,.45,st,.004);
+  for(const x of [-.32,.32]){bx(x-.025,x+.025,B,B+.2,.3,.35,st,.006);sph(.032,x,B+.2,.325,st,1,1,1);}
+  },
 });
 const yangokB=(roof)=>{const bk=MT(T.brick('#b5543c','#8a3a28'));paveA(-.4,.4,-.4,.4,'#cfc6b4');bx(-.3,.24,B,B+.05,-.32,.06,STN(),.004);bx(-.28,.22,B+.05,B+.26,-.3,.04,bk,.006);
   for(const x of [-.22,-.04])bx(x,x+.12,B+.12,B+.21,.04,.046,GL,.003,false);bx(.1,.18,B+.05,B+.21,.04,.046,MT(T.vplank('#6b4428')),.003,false);for(let k=0;k<2;k++)bx(.08,.2,B+k*.025,B+k*.025+.025,.06+k*.0,.12-k*.03,RZ('#bdb6a8'),.004);

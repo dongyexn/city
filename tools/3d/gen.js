@@ -262,6 +262,7 @@ const genIsland=(type,shape,num,NS=128)=>{
    if(!fixed&&pass<2)continue;}
   for(let k=BIGS.length-1;k>=0;k--)if(!BIGS[k])BIGS.splice(k,1);}
  const H=new Uint8Array(HN*HN);for(let y=0;y<HN;y++)for(let x=0;x<HN;x++)H[y*HN+x]=Math.max(0,(LVL[id(Math.min(x,N-1),Math.min(y,N-1))]||1)-1);
+ /* 논밭 자리: 차도 바로 옆·섬 바깥 가장자리·산비탈에는 두지 않는다(평야에만) — 그런 칸은 풀밭(가끔 나무)으로 */{const CR=Math.max(3,Math.round(N/45));for(let i=0;i<NN;i++){const t=terr[i];if(t!==10&&t!==12)continue;const x=i%N,y=(i/N)|0;const nearRd=D4.some(([dx,dy])=>In(x+dx,y+dy)&&isR(id(x+dx,y+dy)));if(nearRd||cd[i]<=CR||MT[i]>=.1){terr[i]=0;lvl[i]=0;if(!nearRd&&!prop[i]&&!kind[i]&&R()<.2)tree(i);}}}
  /* 논밭 정돈: 같은 높이로 이어진 논·밭 묶음이 작으면(흩뿌려진 조각) 풀밭으로 */{const seen=new Uint8Array(NN);for(let s0=0;s0<NN;s0++){const t=terr[s0];if(seen[s0]||(t!==10&&t!==12))continue;const c=[s0];seen[s0]=1;for(let h=0;h<c.length;h++){const i=c[h],x=i%N,y=(i/N)|0;for(const [dx,dy] of D4){if(!In(x+dx,y+dy))continue;const j=id(x+dx,y+dy);if(!seen[j]&&terr[j]===t&&LVL[j]===LVL[i]){seen[j]=1;c.push(j);}}}if(c.length<(t===12?6:5))for(const i of c){terr[i]=0;lvl[i]=0;}}}
  /* 밭·논과 잔디 사이엔 경사를 두지 않는다(단차가 생김) */for(let i=0;i<NN;i++){if(!sl[i]||sl[i]>4)continue;const x=i%N,y=(i/N)|0,D=[null,[0,1],[1,0],[0,-1],[-1,0]][sl[i]],j=In(x+D[0],y+D[1])?id(x+D[0],y+D[1]):-1,f=k=>k>=0&&(terr[k]===10||terr[k]===12);if(f(i)||f(j))sl[i]=0;}
  /* 논 사이엔 경사가 없다 — 논 칸의 경사는 없애 계단식 단으로(밭 경사는 밭흙 경사로 남긴다). 섬 가장자리 절벽에 바로 붙은 논은 풀 둔치로 */for(let i=0;i<NN;i++){if(sl[i]&&terr[i]===12&&!isR(i)&&pv[i]!==6)sl[i]=0;}
