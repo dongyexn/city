@@ -227,9 +227,12 @@ const genIsland=(type,shape,num,NS=128)=>{
   let fi=0;for(const i of c){if(!nearR(i)||bigm[i])continue;const x=i%N,y=(i/N)|0;const gap=type==='forest'?R()<.45:((x+y*3)%(z==='res'&&L===1?3:4)===0);if(gap){pave(i);continue;}
    /* 빈 필지: 앞줄을 다 채우지 않는다 — 바깥으로 갈수록 잔디·나무·쉼터가 늘어난다 */
    {const pE=({metro:z==='com'?.14:.26,city:z==='com'?.16:.3,ind:.16}[type]||0)*(1+Math.max(0,d-.4)*1.5);if(R()<pE){const q=R();if(q<.2)pave(i);else if(q<.82)tree(i);else prop[i]=[1,2,3][(R()*3)|0];continue;}}
-   kind[i]=z==='pub'&&fi>0?K.RES:kd;lvl[i]=z==='pub'&&fi>0?2:L;fi++;}
+   if(kind[i])continue;const kk=z==='pub'&&fi>0?K.RES:kd,ll=z==='pub'&&fi>0?2:L;kind[i]=kk;lvl[i]=ll;fi++;
+   /* 사람 크기에 맞게 건물 한 채가 2×2 필지를 쓴다: 길 반대쪽(안쪽)과 옆 칸까지 같은 건물 칸으로 */if(type!=='forest'&&kk!==K.POLICE&&kk!==K.FIRE&&kk!==K.POWER){let ix=0,iy=0;for(const [dx,dy] of D4){if(In(x+dx,y+dy)&&isR(id(x+dx,y+dy))){ix=-dx;iy=-dy;break;}}
+    const fr=j=>blk[j]===blk[i]&&!isR(j)&&!kind[j]&&!bigm[j]&&!pv[j]&&LVL[j]===LVL[i]&&!water(j)&&lmkA[j]<0;
+    if(ix||iy){for(const sd of [1,-1]){const sx=iy?sd:0,sy=ix?sd:0;if(!In(x+ix+sx,y+iy+sy))continue;const q=[id(x+ix,y+iy),id(x+sx,y+sy),id(x+ix+sx,y+iy+sy)];if(q.every(fr)){for(const j of q){kind[j]=kk;lvl[j]=ll;}break;}}}}}
   /* metro: apartment complexes as 2×2 groups inside large residential blocks */
-  if(type==='metro'&&z!=='com'){for(const i of c){const x=i%N,y=(i/N)|0;if(nearR(i)||kind[i]||bigm[i])continue;const q=[i,i+1,i+N,i+N+1];if(q.every(k=>blk[k]===blk[i]&&!nearR(k)&&!kind[k]&&!bigm[k]&&LVL[k]===LVL[i])&&R()<.35){for(const k of q){kind[k]=K.COM;lmkA[k]=i;lvl[k]=2;}}}}
+  if(type==='metro'&&z!=='com'){for(const i of c){const x=i%N,y=(i/N)|0;if(nearR(i)||kind[i]||bigm[i])continue;{const q3=[];for(let a=0;a<3;a++)for(let b=0;b<3;b++)q3.push(i+a*N+b);if(q3.every(k=>blk[k]===blk[i]&&!nearR(k)&&!kind[k]&&!bigm[k]&&LVL[k]===LVL[i])&&R()<.45){for(const k of q3){kind[k]=K.COM;lmkA[k]=i;lvl[k]=2;}continue;}}const q=[i,i+1,i+N,i+N+1];if(q.every(k=>blk[k]===blk[i]&&!nearR(k)&&!kind[k]&&!bigm[k]&&LVL[k]===LVL[i])&&R()<.35){for(const k of q){kind[k]=K.COM;lmkA[k]=i;lvl[k]=2;}}}}
   /* the middle: paved path ring + lawn with a tree or a bench */
   for(const i of c){if(kind[i]||pv[i]||bigm[i])continue;const x=i%N,y=(i/N)|0;let nb=0;for(const [dx,dy] of D4){const k=id(x+dx,y+dy);if(kind[k]&&kind[k]!==K.ROAD)nb++;}if(type==='forest'){if(R()<.35)tree(i);continue;}if((nb&&R()<.55)||z==='ind'||(z==='com'&&R()<.6))pave(i);else if(R()<.4)tree(i);else if(R()<.12)prop[i]=[1,2,3][(R()*3)|0];}}
  /* 농촌: 마을 중심 가까이 버스터미널 1곳, 길가 곳곳에 버스정류장 */
