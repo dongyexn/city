@@ -1,6 +1,6 @@
 {
-  "name": "ISLE",
-  "short_name": "ISLE",
+  "name": "FLOAT",
+  "short_name": "FLOAT",
   "description": "섬 위에 펼쳐진 한국 도시를 구경하고 꾸미는 감상형 도시 게임",
   "lang": "ko",
   "start_url": "./",
