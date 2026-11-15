@@ -278,6 +278,7 @@ const genIsland=(type,shape,num,NS=128)=>{
     if(!c4.every(j=>!ocean[j]&&!water(j)&&!kind[j]&&!bigm[j]&&lmkA[j]<0&&!pv[j]&&!sl[j]&&LVL[j]===L&&terr[j]!==10&&terr[j]!==12))continue;if(placed.some(([a,b])=>Math.abs(a-x)<4&&Math.abs(b-y)<4))continue;
     let dir=null;for(const [dn,[fx,fy]] of Object.entries(FD)){const r1=fx>0?[[x+2,y],[x+2,y+1]]:fx<0?[[x-1,y],[x-1,y+1]]:fy>0?[[x,y+2],[x+1,y+2]]:[[x,y-1],[x+1,y-1]];if(r1.every(([a,b])=>In(a,b)&&isR(id(a,b))&&LVL[id(a,b)]===L)){dir=dn;break;}}if(!dir)continue;
     for(const j of c4){deco[j]=0;terr[j]=0;lvl[j]=0;prop[j]=0;bigm[j]=1;}BIGS.push(['hanok',x,y,2,2,dir]);placed.push([x,y]);}}}}
+ /* 사찰은 섬에 하나: 산사가 섰으면 다른 사찰(2×2)은 빼고, 없으면 사찰 하나만 남긴다 */{let keep=BIGS.some(b=>b&&b[0]==='templeHall');for(let k=BIGS.length-1;k>=0;k--){const b=BIGS[k];if(!b||b[0]!=='temple')continue;if(!keep){keep=true;continue;}for(let yy=b[2];yy<b[2]+b[4];yy++)for(let xx=b[1];xx<b[1]+b[3];xx++)bigm[id(xx,yy)]=0;BIGS.splice(k,1);}}
  /* 9. 고립 건물 없애기: 길에서 걸어서(같은 높이, 또는 경사로 한 단) 못 닿는 건물 칸은 이웃 길·마당 높이로 땅을 맞추고, 그래도 안 되면 비워 풀밭으로 */
  {const bld=i=>(kind[i]>=K.RES&&kind[i]!==K.WATER&&kind[i]!==K.PARK)||bigm[i];
   for(let pass=0;pass<3;pass++){const seen=new Uint8Array(NN),q=[];for(let i=0;i<NN;i++)if(isR(i)){seen[i]=1;q.push(i);}
