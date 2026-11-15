@@ -168,7 +168,7 @@ const genIsland=(type,shape,num,NS=128)=>{
   /* 큰 마을: 마을회관·경로당, 마을마트·농약사, 교회 / 마을마다 어귀(들 쪽)에 정자목 */{const V0=VIL[VIL.length-1],t=nearV.filter(i=>Math.hypot(i%N-V0[0],((i/N)|0)-V0[1])<VR*1.4);pb(t.length?t:nearV,'villageHall 3 2');pb(t.length?t:nearV,'villageMart 2 1');pb(nearV,'farmSupply 1 1');pb(nearV,'chapel 2 2');}
   for(const [vx,vy] of VIL){const e=front.filter(i=>{const d=Math.hypot(i%N-vx,((i/N)|0)-vy);return d>VR*.55&&d<VR*1.3&&MT[i]<.12;});if(e.length)pb(e,'villageTree 2 2');}
   /* 집이 2×2로 커져 자리 찾기가 어려우니 더 여러 번 시도 */for(let k=0;k<VIL.length*36;k++)pb(nearV,'slateHouse 2 2|yangok 2 2|yangokBlue 2 2|farmhouse 2 2|slateHouse 2 2|hanok 2 2|yangok 2 2');
-  /* 들 가운데엔 들에 어울리는 시설(창고 컨테이너·하우스·양수장)만 — 축사·정미소·헛간·사일로는 마을 언저리 */const edgeV=front.filter(i=>{const d=vd(i%N,(i/N)|0);return d>=VR*.5&&d<VR*1.05;});for(let k=0;k<VIL.length*2;k++)pb(edgeV,'cowshed 3 2|riceMill 1 1|barn 2 1|silo 2 2');for(let k=0;k<VIL.length;k++)pb(midV,'containerStore 1 1');
+  /* 들 가운데엔 들에 어울리는 시설(창고 컨테이너·하우스·양수장)만 — 축사·정미소·헛간·사일로는 마을 언저리 */const edgeV=front.filter(i=>{const d=vd(i%N,(i/N)|0);return d>=VR*.5&&d<VR*1.05;});for(let k=0;k<VIL.length*2;k++)pb(edgeV,'cowshed 3 2|riceMill 1 1|barn 2 1|silo 2 2|flourMill 2 2');for(let k=0;k<VIL.length;k++)pb(midV,'containerStore 1 1');
   /* 물가 양수장 */for(let k=0;k<2;k++)pb(front.filter(i=>WD[i]<=3*Sc),'pumpHouse 1 1');
   for(let k=0;k<3+((R()*3)|0);k++)pb(plain,'greenhouseFarm 4 3');
   if(R()<.6)pb(edgeV,'equestrian 4 3');/* 풍력발전기는 바람 센 바닷가나 산자락에 */if(R()<.75){const wc=front.filter(i=>cd[i]>0&&cd[i]<=4*Sc||MT[i]>=.12);pb(wc.length?wc:plain,'wind 2 2');}
