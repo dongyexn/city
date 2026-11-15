@@ -224,11 +224,14 @@ const genIsland=(type,shape,num,NS=128)=>{
   if(z==='wild'){for(const i of c)if(!bigm[i]&&R()<.55)tree(i);continue;}
   /* frontage: a building on most road-facing tiles, every few a walkway through to the middle */
   const kd=z==='com'?K.COM:z==='ind'?K.IND:z==='pub'?[K.POLICE,K.FIRE,K.POWER][(R()*3)|0]:K.RES;
-  let fi=0;for(const i of c){if(!nearR(i)||bigm[i])continue;const x=i%N,y=(i/N)|0;const gap=type==='forest'?R()<.45:((x+y*3)%(z==='res'&&L===1?3:4)===0);if(gap){pave(i);continue;}
+  const SW=(type==='city'||type==='metro'||type==='ind')&&w>=3&&h>=3;/* 도시: 길가 한 줄은 인도(주민이 걸어 다니고 횡단보도로 건넌다), 건물은 그 안쪽 줄부터 */
+  if(SW)for(const i of c)if(nearR(i)&&!bigm[i]&&!kind[i]&&!water(i))pave(i);
+  const sideW=i=>{const x=i%N,y=(i/N)|0;for(const [dx,dy] of D4){if(!In(x+dx,y+dy))continue;const k=id(x+dx,y+dy);if(blk[k]===blk[i]&&nearR(k)&&pv[k]&&LVL[k]===LVL[i])return [dx,dy];}return null;},fRow=SW?(i=>!nearR(i)&&!pv[i]&&!water(i)&&!!sideW(i)):nearR;
+  let fi=0;for(const i of c){if(!fRow(i)||bigm[i])continue;const x=i%N,y=(i/N)|0;const gap=type==='forest'?R()<.45:((x+y*3)%(z==='res'&&L===1?3:4)===0);if(gap){pave(i);continue;}
    /* 빈 필지: 앞줄을 다 채우지 않는다 — 바깥으로 갈수록 잔디·나무·쉼터가 늘어난다 */
    {const pE=({metro:z==='com'?.14:.26,city:z==='com'?.16:.3,ind:.16}[type]||0)*(1+Math.max(0,d-.4)*1.5);if(R()<pE){const q=R();if(q<.2)pave(i);else if(q<.82)tree(i);else prop[i]=[1,2,3][(R()*3)|0];continue;}}
    if(kind[i])continue;const kk=z==='pub'&&fi>0?K.RES:kd,ll=z==='pub'&&fi>0?2:L;kind[i]=kk;lvl[i]=ll;fi++;
-   /* 사람 크기에 맞게 건물 한 채가 2×2 필지를 쓴다: 길 반대쪽(안쪽)과 옆 칸까지 같은 건물 칸으로 */if(type!=='forest'&&kk!==K.POLICE&&kk!==K.FIRE&&kk!==K.POWER){let ix=0,iy=0;for(const [dx,dy] of D4){if(In(x+dx,y+dy)&&isR(id(x+dx,y+dy))){ix=-dx;iy=-dy;break;}}
+   /* 사람 크기에 맞게 건물 한 채가 2×2 필지를 쓴다: 길 반대쪽(안쪽)과 옆 칸까지 같은 건물 칸으로 */if(type!=='forest'&&kk!==K.POLICE&&kk!==K.FIRE&&kk!==K.POWER){let ix=0,iy=0;{const sw=SW?sideW(i):null;if(sw){ix=-sw[0];iy=-sw[1];}else for(const [dx,dy] of D4){if(In(x+dx,y+dy)&&isR(id(x+dx,y+dy))){ix=-dx;iy=-dy;break;}}}
     const fr=j=>blk[j]===blk[i]&&!isR(j)&&!kind[j]&&!bigm[j]&&!pv[j]&&LVL[j]===LVL[i]&&!water(j)&&lmkA[j]<0;
     if(ix||iy){for(const sd of [1,-1]){const sx=iy?sd:0,sy=ix?sd:0;if(!In(x+ix+sx,y+iy+sy))continue;const q=[id(x+ix,y+iy),id(x+sx,y+sy),id(x+ix+sx,y+iy+sy)];if(q.every(fr)){for(const j of q){kind[j]=kk;lvl[j]=ll;}break;}}}}}
   /* metro: apartment complexes as 2×2 groups inside large residential blocks */
