@@ -157,7 +157,7 @@ const pplTick=(dt,t)=>{if(!PPL)return;CWB.clear();SEATS=window.__SEATS||[];for(c
 /* ---- 반려동물: 개·고양이(뼈대 애니메이션 GLB, tools/3d/pets). 걷는 길 위를 천천히 돌아다니다 서서 쉬거나 앉는다. 주민처럼 가까이 볼 때만 그린다
    · 자기 자리(반지름 PET_R)를 가져 소품·조경(__OBS)·다른 동물·주민과 겹치지 않는다
    · 강아지 일부는 주민과 산책(주인 발자취를 따라 걷고, 주인이 서면 앉는다). 혼자 있는 동물 곁을 지나는 주민은 가끔 멈춰 바라본다 ---- */
-const PETD=JSON.parse($('pets').textContent),PET_S={dog:.23,cat:.2},PET_SP={dog:.2,cat:.16},PET_R={dog:.12,cat:.1},PETN={dog:'강아지',cat:'고양이'};let PETT=null,PETS=null;
+const PETD=JSON.parse($('pets').textContent),PET_S={dog:.23,cat:.235},PET_SP={dog:.2,cat:.16},PET_R={dog:.12,cat:.12},PETN={dog:'강아지',cat:'고양이'};let PETT=null,PETS=null;
 const petLoad=()=>PETT||(PETT=(async()=>{const [{GLTFLoader},SU]=await Promise.all([import('three/addons/loaders/GLTFLoader.js'),import('three/addons/utils/SkeletonUtils.js')]);const L=new GLTFLoader(),o={clone:SU.clone};for(const k of Object.keys(PETD)){const g=await L.parseAsync(b64d(PETD[k]).buffer,'');g.scene.traverse(m=>{if(m.isMesh){m.castShadow=true;m.frustumCulled=false;m.material.roughness=.85;m.material.metalness=0;}});o[k]=g;}return o;})());
 /* 털색: 원본 텍스처에서 털 부분만 색상·채도·밝기를 바꾼다. 아주 어두운 곳(눈·코·줄무늬 끝)과 밝고 흰 곳(가슴·주둥이·눈 반짝임)은 그대로.
    [고정 색상(없으면 -1), 채도 배율, 밝기 배율, 채도 더하기] — 개: 원본 황갈·크림·초코·블랙·그레이 / 고양이: 원본 회갈 줄무늬·치즈·블랙·화이트·그레이 */
